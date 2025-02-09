@@ -1,0 +1,76 @@
+#test aes
+#block: 00112233445566778899AABBCCDDEEFF
+#key:   00001111222233334444555566667777
+
+lui x1, 0x00112       
+addi x1, x1, 0x233
+lui x2, 0x44556 
+addi x2, x2, 0x677
+lui x3, 0x8899a       
+addi x3, x3, 0x55d
+addi x3, x3, 0x55e
+lui x4, 0xccdde      
+addi x4, x4, 0x77f
+addi x4, x4, 0x780
+
+lui x5, 0x00001       
+addi x5, x5, 0x111
+lui x6, 0x22223
+addi x6, x6, 0x333
+lui x7, 0x44445       
+addi x7, x7, 0x555
+lui x8, 0x66667    
+addi x8, x8, 0x777
+
+set_block:
+lui x9, 0
+aes_write_block x1, x9
+addi x9, x9, 1
+aes_write_block x2, x9
+addi x9, x9, 1
+aes_write_block x3, x9
+addi x9, x9, 1
+aes_write_block x4, x9
+
+
+set_key:
+lui x9, 0
+aes_write_key x5, x9
+addi x9, x9, 1
+aes_write_key x6, x9
+addi x9, x9, 1
+aes_write_key x7, x9
+addi x9, x9, 1
+aes_write_key x8, x9
+
+#set config 0: encode 1: decode
+aes_write_config x0, x0
+
+init:
+addi x10, x0, 1
+aes_write_ctrl x10, x0
+
+addi x2,x0,1
+check_status:
+aes_read_status x1, x0
+bne x1,x2,check_status
+
+next:
+addi x10, x0, 2
+aes_write_ctrl x10, x0
+
+addi x2,x0,2
+check_status_1:
+aes_read_status x1, x0
+bne x1,x2,check_status_1
+
+
+
+
+
+
+
+
+
+
+
