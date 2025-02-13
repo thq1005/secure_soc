@@ -63,35 +63,35 @@
 //AES-128
 `define AES_ROUND           10
 `define KEY_WIDTH           128
-`define ADDR_CTRL           8'h8
+`define ADDR_CTRL           32'h00020008
 `define CTRL_INIT_BIT       0
 `define CTRL_NEXT_BIT       1
-`define ADDR_STATUS         8'h9
+`define ADDR_STATUS         32'h00020009
 `define STATUS_READY_BIT    0
 `define STATUS_VALID_BIT    1
-`define ADDR_CONFIG         8'ha
+`define ADDR_CONFIG         32'h0002000a
 `define CTRL_ENCDEC_BIT     0
-`define ADDR_KEY0           8'h10
-`define ADDR_KEY3           8'h13
-`define ADDR_BLOCK0         8'h14
-`define ADDR_BLOCK3         8'h17
-`define ADDR_RESULT0        8'h30
-`define ADDR_RESULT3        8'h33
+`define ADDR_KEY0           32'h00020010
+`define ADDR_KEY3           32'h00020013
+`define ADDR_BLOCK0         32'h00020014
+`define ADDR_BLOCK3         32'h00020017
+`define ADDR_RESULT0        32'h00020030
+`define ADDR_RESULT3        32'h00020033
 
 //Asyn AXI to AXI bridge
 `define FIFO_DEPTH               8
 
 //DMA
-`define ADDR_VALID          8'h0
-`define ADDR_ADDR_SRC       8'h1
-`define ADDR_ADDR_DST       8'h2
-`define ADDR_CONFIG         8'h3
-`define DMA_BURST_BIT0      0
-`define DMA_BURST_BIT1      1
-`define DMA_LEN_BIT0        2
-`define DMA_LEN_BIT7        9
-`define DMA_SIZE_BIT0       10
-`define DMA_SIZE_BIT1       11
+`define ADDR_VALID          32'h00010000
+`define ADDR_ADDR_SRC       32'h00010001
+`define ADDR_ADDR_DST       32'h00010005
+`define ADDR_CONFIG         32'h0001000a
+`define DMA_BURST_BIT0      11
+`define DMA_BURST_BIT1      12
+`define DMA_LEN_BIT0        0
+`define DMA_LEN_BIT7        7
+`define DMA_SIZE_BIT0       8
+`define DMA_SIZE_BIT2       10
 
 //ADDR MAP
 `define ADDR_DATA           32'h00000000

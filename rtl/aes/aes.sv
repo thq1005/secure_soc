@@ -7,7 +7,7 @@ module aes(
     input logic cs_i,
     input logic we_i,
     
-    input logic [7:0] addr_i,
+    input logic [31:0] addr_i,
     input logic [31:0] wdata_i,
     output logic [31:0] rdata_o
     );

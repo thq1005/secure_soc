@@ -1,4 +1,4 @@
-
+`include "define.sv"
 module slave_1_aes(
   input logic clk_i,
   input logic rst_ni,

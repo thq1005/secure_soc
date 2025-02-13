@@ -1,3 +1,4 @@
+`include "define.sv"
 module slave_0_sdram(
   input logic clk_i,
   input logic rst_ni,

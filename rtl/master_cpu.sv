@@ -1,5 +1,4 @@
 `include "define.sv"
-
 module master_cpu(
       input logic clk_i,
       input logic rst_ni,
@@ -34,7 +33,7 @@ module master_cpu(
       //R channel
       input  logic [`ID_BITS - 1:0] m_rid,
       input  logic [`DATA_WIDTH - 1:0] m_rdata,
-      input  logic [2:0] m0_rresp,
+      input  logic [2:0] m_rresp,
       input  logic m_rvalid,
       input  logic m_rlast,
       output logic m_rready
