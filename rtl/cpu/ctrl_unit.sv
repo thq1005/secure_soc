@@ -1,4 +1,4 @@
-`include "define.sv"
+`include "../define.sv"
 
 module ctrl_unit(
 	input logic [31:0] inst_i,

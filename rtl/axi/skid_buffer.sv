@@ -1,4 +1,4 @@
-`include "define.sv"
+`include "../define.sv"
 module skid_buffer(
     input logic clk_i,
     input logic rst_ni,

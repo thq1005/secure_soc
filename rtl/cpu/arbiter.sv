@@ -1,4 +1,4 @@
-`include "define.sv"
+`include "../define.sv"
 
 module arbiter(
     input logic clk_i,

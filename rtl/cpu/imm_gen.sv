@@ -1,4 +1,4 @@
-`include "define.sv"
+`include "../define.sv"
 module imm_gen(
 	input logic [31:7] inst_i,
 	input logic [2:0] ImmSel_i,

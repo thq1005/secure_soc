@@ -27,7 +27,7 @@ module dmac_read (
     output logic                m_rready
 );
 
-    localparam IDLE = 2'd0, RA = 2'd1, R = 2'd2
+    localparam IDLE = 2'd0, RA = 2'd1, R = 2'd2;
     logic [3:0] r_state, r_next_state;
 
         
@@ -61,17 +61,6 @@ module dmac_read (
         endcase
     end    
              
-        
-    always_ff @(posedge clk_i) begin
-        if (!rst_ni) begin
-            m_rvalid = 0;
-        end 
-        else if (rlast_i && rvalid_i) 
-            m_rvalid = 1;
-        else 
-            m_rvalid = 0;
-    end
-        
 
     always_ff @(posedge clk_i) begin
         if (!rst_ni) begin

@@ -1,4 +1,4 @@
-`include "define.sv"
+`include "../define.sv"
 
 module axi_interface_master(
     input logic clk_i,

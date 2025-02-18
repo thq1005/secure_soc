@@ -1,6 +1,6 @@
 `include "../define.sv"
 
-module axi_dmac (
+module dmac (
         input clk_i,
         input rst_ni,
         input [`ID_BITS - 1:0] s_awid,
@@ -156,7 +156,7 @@ module axi_dmac (
         .m_rvalid,
         .m_rlast,
         .m_rready
-    )
+    );
 
     dmac_write write_inst (
         .clk_i,
@@ -184,7 +184,7 @@ module axi_dmac (
         .m_bresp,
         .m_bvalid,
         .m_bready
-    )
+    );
 
 
     always_ff @(posedge clk_i) begin
@@ -224,7 +224,7 @@ module axi_dmac (
                 config_we = 1'b1;
             
             if (waddr_w == `ADDR_VALID)
-                valid_new = wdata_i[0];
+                valid_new = wdata_w[0];
         end
     end
 

@@ -79,39 +79,39 @@ module top(
 
     
     //signal of m1
-    logic [`ID_BITS - 1:0] m1_awid;
-    logic [`ADDR_WIDTH - 1:0] m1_awaddr;
-    logic [`LEN_BITS - 1:0] m1_awlen;
-    logic [`SIZE_BITS -1 :0] m1_awsize;
-    logic [1:0] m1_awburst;
-    logic m1_awvalid;
-    logic m1_awready;
+    logic [`ID_BITS - 1:0] m_awid;
+    logic [`ADDR_WIDTH - 1:0] m_awaddr;
+    logic [`LEN_BITS - 1:0] m_awlen;
+    logic [`SIZE_BITS -1 :0] m_awsize;
+    logic [1:0] m_awburst;
+    logic m_awvalid;
+    logic m_awready;
     //W channel
-    logic [`DATA_WIDTH - 1:0] m1_wdata;
-    logic [(`DATA_WIDTH/8)-1:0] m1_wstrb;
-    logic m1_wvalid;
-    logic m1_wlast;
-    logic m1_wready;
+    logic [`DATA_WIDTH - 1:0] m_wdata;
+    logic [(`DATA_WIDTH/8)-1:0] m_wstrb;
+    logic m_wvalid;
+    logic m_wlast;
+    logic m_wready;
     //B channel
-    logic [`ID_BITS - 1:0] m1_bid;
-    logic [2:0] m1_bresp;
-    logic m1_bvalid;
-    logic m1_bready;
+    logic [`ID_BITS - 1:0] m_bid;
+    logic [2:0] m_bresp;
+    logic m_bvalid;
+    logic m_bready;
     //AR channel
-    logic [`ID_BITS - 1:0] m1_arid;
-    logic [`ADDR_WIDTH - 1:0] m1_araddr;
-    logic [`LEN_BITS - 1:0] m1_arlen;
-    logic [1:0] m1_arburst;
-    logic [`SIZE_BITS - 1:0] m1_arsize;
-    logic m1_arvalid;
-    logic m1_arready;
+    logic [`ID_BITS - 1:0] m_arid;
+    logic [`ADDR_WIDTH - 1:0] m_araddr;
+    logic [`LEN_BITS - 1:0] m_arlen;
+    logic [1:0] m_arburst;
+    logic [`SIZE_BITS - 1:0] m_arsize;
+    logic m_arvalid;
+    logic m_arready;
     //R channel
-    logic [`ID_BITS - 1:0] m1_rid;
-    logic [`DATA_WIDTH - 1:0] m1_rdata;
-    logic [2:0] m1_rresp;
-    logic m1_rvalid;
-    logic m1_rlast;
-    logic m1_rready;
+    logic [`ID_BITS - 1:0] m_rid;
+    logic [`DATA_WIDTH - 1:0] m_rdata;
+    logic [2:0] m_rresp;
+    logic m_rvalid;
+    logic m_rlast;
+    logic m_rready;
 
     //signal of s1
     logic [`ID_BITS - 1:0] s1_awid;
@@ -148,74 +148,141 @@ module top(
     logic s1_rlast;
     logic s1_rready;
 
+    //signal of s1
+    logic [`ID_BITS - 1:0] s_awid;
+    logic [`ADDR_WIDTH - 1:0] s_awaddr;
+    logic [`LEN_BITS - 1:0] s_awlen;
+    logic [`SIZE_BITS -1 :0] s_awsize;
+    logic [1:0] s_awburst;
+    logic s_awvalid;
+    logic s_awready;
+    //W channel
+    logic [`DATA_WIDTH - 1:0] s_wdata;
+    logic [(`DATA_WIDTH/8)-1:0] s_wstrb;
+    logic s_wvalid;
+    logic s_wlast;
+    logic s_wready;
+    //B channel
+    logic [`ID_BITS - 1:0] s_bid;
+    logic [2:0] s_bresp;
+    logic s_bvalid;
+    logic s_bready;
+    //AR channel
+    logic [`ID_BITS - 1:0] s_arid;
+    logic [`ADDR_WIDTH - 1:0] s_araddr;
+    logic [`LEN_BITS - 1:0] s_arlen;
+    logic [1:0] s_arburst;
+    logic [`SIZE_BITS - 1:0] s_arsize;
+    logic s_arvalid;
+    logic s_arready;
+    //R channel
+    logic [`ID_BITS - 1:0] s_rid;
+    logic [`DATA_WIDTH - 1:0] s_rdata;
+    logic [2:0] s_rresp;
+    logic s_rvalid;
+    logic s_rlast;
+    logic s_rready;
 
     master_cpu m_inst (
-        .clk_i         (ACLK_1),
-        .rst_ni        (ARESETn_1),
-        .m0_awid       (m0_awid),
-        .m0_awaddr     (m0_awaddr),
-        .m0_awlen      (m0_awlen),
-        .m0_awsize     (m0_awsize),
-        .m0_awburst    (m0_awburst),
-        .m0_awvalid    (m0_awvalid),
-        .m0_awready    (m0_awready),
-        .m0_wdata      (m0_wdata),
-        .m0_wstrb      (m0_wstrb),
-        .m0_wvalid     (m0_wvalid),
-        .m0_wlast      (m0_wlast),
-        .m0_wready     (m0_wready),
-        .m0_bid        (m0_bid),
-        .m0_bresp      (m0_bresp),
-        .m0_bvalid     (m0_bvalid),
-        .m0_bready     (m0_bready),
-        .m0_arid       (m0_arid),
-        .m0_araddr     (m0_araddr),
-        .m0_arlen      (m0_arlen),
-        .m0_arburst    (m0_arburst),
-        .m0_arsize     (m0_arsize),
-        .m0_arvalid    (m0_arvalid),
-        .m0_arready    (m0_arready),
-        .m0_rid        (m0_rid),
-        .m0_rdata      (m0_rdata),
-        .m0_rresp      (m0_rresp),
-        .m0_rvalid     (m0_rvalid),
-        .m0_rlast      (m0_rlast),
-        .m0_rready     (m0_rready),
-        //m1
-        .m1_awid       (m1_awid),
-        .m1_awaddr     (m1_awaddr),
-        .m1_awlen      (m1_awlen),
-        .m1_awsize     (m1_awsize),
-        .m1_awburst    (m1_awburst),
-        .m1_awvalid    (m1_awvalid),
-        .m1_awready    (m1_awready),
-        .m1_wdata      (m1_wdata),
-        .m1_wstrb      (m1_wstrb),
-        .m1_wvalid     (m1_wvalid),
-        .m1_wlast      (m1_wlast),
-        .m1_wready     (m1_wready),
-        .m1_bid        (m1_bid),
-        .m1_bresp      (m1_bresp),
-        .m1_bvalid     (m1_bvalid),
-        .m1_bready     (m1_bready),
-        .m1_arid       (m1_arid),
-        .m1_araddr     (m1_araddr),
-        .m1_arlen      (m1_arlen),
-        .m1_arburst    (m1_arburst),
-        .m1_arsize     (m1_arsize),
-        .m1_arvalid    (m1_arvalid),
-        .m1_arready    (m1_arready),
-        .m1_rid        (m1_rid),
-        .m1_rdata      (m1_rdata),
-        .m1_rresp      (m1_rresp),
-        .m1_rvalid     (m1_rvalid),
-        .m1_rlast      (m1_rlast),
-        .m1_rready     (m1_rready)
+        .clk_i        (ACLK_1),
+        .rst_ni       (ARESETn_1),
+        .m_awid       (m0_awid),
+        .m_awaddr     (m0_awaddr),
+        .m_awlen      (m0_awlen),
+        .m_awsize     (m0_awsize),
+        .m_awburst    (m0_awburst),
+        .m_awvalid    (m0_awvalid),
+        .m_awready    (m0_awready),
+        .m_wdata      (m0_wdata),
+        .m_wstrb      (m0_wstrb),
+        .m_wvalid     (m0_wvalid),
+        .m_wlast      (m0_wlast),
+        .m_wready     (m0_wready),
+        .m_bid        (m0_bid),
+        .m_bresp      (m0_bresp),
+        .m_bvalid     (m0_bvalid),
+        .m_bready     (m0_bready),
+        .m_arid       (m0_arid),
+        .m_araddr     (m0_araddr),
+        .m_arlen      (m0_arlen),
+        .m_arburst    (m0_arburst),
+        .m_arsize     (m0_arsize),
+        .m_arvalid    (m0_arvalid),
+        .m_arready    (m0_arready),
+        .m_rid        (m0_rid),
+        .m_rdata      (m0_rdata),
+        .m_rresp      (m0_rresp),
+        .m_rvalid     (m0_rvalid),
+        .m_rlast      (m0_rlast),
+        .m_rready     (m0_rready)
         );
         
+    dmac dma (
+        .clk_i      (ACLK_1),
+        .rst_ni     (ARESETn_1),
+        .s_awid     (s_awid),
+        .s_awaddr   (s_awaddr),
+        .s_awlen    (s_awlen),
+        .s_awsize   (s_awsize),
+        .s_awburst  (s_awburst),
+        .s_awvalid  (s_awvalid),
+        .s_awready  (s_awready),
+        .s_wdata    (s_wdata),
+        .s_wstrb    (s_wstrb),
+        .s_wvalid   (s_wvalid),
+        .s_wlast    (s_wlast),
+        .s_wready   (s_wready),
+        .s_bid      (s_bid),
+        .s_bresp    (s_bresp),
+        .s_bvalid   (s_bvalid),
+        .s_bready   (s_bready),
+        .s_arid     (s_arid),
+        .s_araddr   (s_araddr),
+        .s_arlen    (s_arlen),
+        .s_arburst  (s_arburst),
+        .s_arsize   (s_arsize),
+        .s_arvalid  (s_arvalid),
+        .s_arready  (s_arready),
+        .s_rid      (s_rid),
+        .s_rdata    (s_rdata),
+        .s_rresp    (s_rresp),
+        .s_rvalid   (s_rvalid),
+        .s_rlast    (s_rlast),
+        .s_rready   (s_rready),
+        .m_awid     (m_awid),
+        .m_awaddr   (m_awaddr),
+        .m_awlen    (m_awlen),
+        .m_awsize   (m_awsize),
+        .m_awburst  (m_awburst),
+        .m_awvalid  (m_awvalid),
+        .m_awready  (m_awready),
+        .m_wdata    (m_wdata),
+        .m_wstrb    (m_wstrb),
+        .m_wvalid   (m_wvalid),
+        .m_wlast    (m_wlast),
+        .m_wready   (m_wready),
+        .m_bid      (m_bid),
+        .m_bresp    (m_bresp),
+        .m_bvalid   (m_bvalid),
+        .m_bready   (m_bready),
+        .m_arid     (m_arid),
+        .m_araddr   (m_araddr),
+        .m_arlen    (m_arlen),
+        .m_arburst  (m_arburst),
+        .m_arsize   (m_arsize),
+        .m_arvalid  (m_arvalid),
+        .m_arready  (m_arready),
+        .m_rid      (m_rid),
+        .m_rdata    (m_rdata),
+        .m_rresp    (m_rresp),
+        .m_rvalid   (m_rvalid),
+        .m_rlast    (m_rlast),
+        .m_rready   (m_rready)
+    );
+    
     slave_0_sdram s0_inst (
-        .clk_i      (ACLK_2),
-        .rst_ni     (ARESETn_2),
+        .clk_i      (ACLK_1),
+        .rst_ni     (ARESETn_1),
         .awid       (s0_awid),
         .awaddr     (s0_awaddr),
         .awlen      (s0_awlen),
@@ -248,8 +315,8 @@ module top(
     );
     
     slave_1_aes s1_inst (
-        .clk_i      (ACLK_2),
-        .rst_ni     (ARESETn_2),
+        .clk_i      (ACLK_1),
+        .rst_ni     (ARESETn_1),
         .awid       (s1_awid),
         .awaddr     (s1_awaddr),
         .awlen      (s1_awlen),
@@ -281,11 +348,11 @@ module top(
         .rready     (s1_rready)
     );    
 
-    Asynchronous_AXI_to_AXI_Bridge bridge (
-        .ACLK_m        (ACLK_1),
-        .ARESETn_m     (ARESETn_1),
-        .ACLK_s        (ACLK_2),
-        .ARESETn_s     (ARESETn_2),
+
+
+    axi_bus bus (
+        .clk_i         (ACLK_1),
+        .rst_ni        (ARESETn_1),
         //m0
         .m0_awid       (m0_awid),
         .m0_awaddr     (m0_awaddr),
@@ -347,35 +414,35 @@ module top(
         .s0_rlast      (s0_rlast),
         .s0_rready     (s0_rready),
         //m1
-        .m1_awid       (m1_awid),
-        .m1_awaddr     (m1_awaddr),
-        .m1_awlen      (m1_awlen),
-        .m1_awsize     (m1_awsize),
-        .m1_awburst    (m1_awburst),
-        .m1_awvalid    (m1_awvalid),
-        .m1_awready    (m1_awready),
-        .m1_wdata      (m1_wdata),
-        .m1_wstrb      (m1_wstrb),
-        .m1_wvalid     (m1_wvalid),
-        .m1_wlast      (m1_wlast),
-        .m1_wready     (m1_wready),
-        .m1_bid        (m1_bid),
-        .m1_bresp      (m1_bresp),
-        .m1_bvalid     (m1_bvalid),
-        .m1_bready     (m1_bready),
-        .m1_arid       (m1_arid),
-        .m1_araddr     (m1_araddr),
-        .m1_arlen      (m1_arlen),
-        .m1_arburst    (m1_arburst),
-        .m1_arsize     (m1_arsize),
-        .m1_arvalid    (m1_arvalid),
-        .m1_arready    (m1_arready),
-        .m1_rid        (m1_rid),
-        .m1_rdata      (m1_rdata),
-        .m1_rresp      (m1_rresp),
-        .m1_rvalid     (m1_rvalid),
-        .m1_rlast      (m1_rlast),
-        .m1_rready     (m1_rready),
+        .m_awid        (m_awid),
+        .m_awaddr      (m_awaddr),
+        .m_awlen       (m_awlen),
+        .m_awsize      (m_awsize),
+        .m_awburst     (m_awburst),
+        .m_awvalid     (m_awvalid),
+        .m_awready     (m_awready),
+        .m_wdata       (m_wdata),
+        .m_wstrb       (m_wstrb),
+        .m_wvalid      (m_wvalid),
+        .m_wlast       (m_wlast),
+        .m_wready      (m_wready),
+        .m_bid         (m_bid),
+        .m_bresp       (m_bresp),
+        .m_bvalid      (m_bvalid),
+        .m_bready      (m_bready),
+        .m_arid        (m_arid),
+        .m_araddr      (m_araddr),
+        .m_arlen       (m_arlen),
+        .m_arburst     (m_arburst),
+        .m_arsize      (m_arsize),
+        .m_arvalid     (m_arvalid),
+        .m_arready     (m_arready),
+        .m_rid         (m_rid),
+        .m_rdata       (m_rdata),
+        .m_rresp       (m_rresp),
+        .m_rvalid      (m_rvalid),
+        .m_rlast       (m_rlast),
+        .m_rready      (m_rready),
         //s1
         .s1_awid       (s1_awid),
         .s1_awaddr     (s1_awaddr),
@@ -405,7 +472,37 @@ module top(
         .s1_rresp      (s1_rresp),
         .s1_rvalid     (s1_rvalid),
         .s1_rlast      (s1_rlast),
-        .s1_rready     (s1_rready)
+        .s1_rready     (s1_rready),
+        //s
+        .s_awid       (s_awid),
+        .s_awaddr     (s_awaddr),
+        .s_awlen      (s_awlen),
+        .s_awsize     (s_awsize),
+        .s_awburst    (s_awburst),
+        .s_awvalid    (s_awvalid),
+        .s_awready    (s_awready),
+        .s_wdata      (s_wdata),
+        .s_wstrb      (s_wstrb),
+        .s_wvalid     (s_wvalid),
+        .s_wlast      (s_wlast),
+        .s_wready     (s_wready),
+        .s_bid        (s_bid),
+        .s_bresp      (s_bresp),
+        .s_bvalid     (s_bvalid),
+        .s_bready     (s_bready),
+        .s_arid       (s_arid),
+        .s_araddr     (s_araddr),
+        .s_arlen      (s_arlen),
+        .s_arburst    (s_arburst),
+        .s_arsize     (s_arsize),
+        .s_arvalid    (s_arvalid),
+        .s_arready    (s_arready),
+        .s_rid        (s_rid),
+        .s_rdata      (s_rdata),
+        .s_rresp      (s_rresp),
+        .s_rvalid     (s_rvalid),
+        .s_rlast      (s_rlast),
+        .s_rready     (s_rready)
     );
     
 endmodule

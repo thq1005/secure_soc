@@ -1,4 +1,4 @@
-
+`include "../define.sv"
 module axi_addr(
     input logic [`ADDR_WIDTH-1:0] i_last_addr,
     input logic [`SIZE_BITS-1 :0] i_size,

@@ -1,4 +1,4 @@
-`include "define.sv"
+`include "../define.sv"
 
 module aes_decipher_block(
     input logic clk_i,

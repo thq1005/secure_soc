@@ -85,7 +85,7 @@
 `define ADDR_VALID          32'h00010000
 `define ADDR_ADDR_SRC       32'h00010001
 `define ADDR_ADDR_DST       32'h00010005
-`define ADDR_CONFIG         32'h0001000a
+`define ADDR_CONFIG_DMA     32'h0001000a
 `define DMA_BURST_BIT0      11
 `define DMA_BURST_BIT1      12
 `define DMA_LEN_BIT0        0

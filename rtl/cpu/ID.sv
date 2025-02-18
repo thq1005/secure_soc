@@ -84,7 +84,7 @@ module ID(
 		//.Mul_ext_o(Mul_ext_w)
 		/* valid signal when CPU access cache */
 		.Valid_cpu2cache_o(Valid_cpu2cache_w),
-		.Valid_cpu2dme_o (Valid_cpu2dma_w)
+		.Valid_cpu2dma_o (Valid_cpu2dma_w)
 		);
 		
 		

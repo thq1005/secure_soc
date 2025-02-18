@@ -184,39 +184,39 @@ module axi_bus(
     );
     
     //AW channel
-    wire [`ID_BITS - 1:0] awid;
-    wire [`ADDR_WIDTH - 1:0] awaddr;
-    wire [`LEN_BITS - 1:0] awlen;
-    wire [`SIZE_BITS -1 :0] awsize;
-    wire [1:0] awburst;
-    wire awvalid;
-    wire awready;
+    logic [`ID_BITS - 1:0] awid;
+    logic [`ADDR_WIDTH - 1:0] awaddr;
+    logic [`LEN_BITS - 1:0] awlen;
+    logic [`SIZE_BITS -1 :0] awsize;
+    logic [1:0] awburst;
+    logic awvalid;
+    logic awready;
     //W channel
-    wire [`DATA_WIDTH - 1:0] wdata;
-    wire [(`DATA_WIDTH/8)-1:0] wstrb;
-    wire wvalid;
-    wire wlast;
-    wire wready;
+    logic [`DATA_WIDTH - 1:0] wdata;
+    logic [(`DATA_WIDTH/8)-1:0] wstrb;
+    logic wvalid;
+    logic wlast;
+    logic wready;
     //B channel
-    wire [`ID_BITS - 1:0] bid;
-    wire [2:0] bresp;
-    wire bvalid;
-    wire bready;
+    logic [`ID_BITS - 1:0] bid;
+    logic [2:0] bresp;
+    logic bvalid;
+    logic bready;
     //AR channel
-    wire [`ID_BITS - 1:0] arid;
-    wire [`ADDR_WIDTH - 1:0] araddr;
-    wire [`LEN_BITS - 1:0] arlen;
-    wire [1:0] arburst;
-    wire [`SIZE_BITS - 1:0] arsize;
-    wire arvalid;
-    wire arready;
+    logic [`ID_BITS - 1:0] arid;
+    logic [`ADDR_WIDTH - 1:0] araddr;
+    logic [`LEN_BITS - 1:0] arlen;
+    logic [1:0] arburst;
+    logic [`SIZE_BITS - 1:0] arsize;
+    logic arvalid;
+    logic arready;
     //R channel
-    wire [`ID_BITS - 1:0] rid;
-    wire [`DATA_WIDTH - 1:0] rdata;
-    wire [2:0] rresp;
-    wire rvalid;
-    wire rlast;
-    wire rready;
+    logic [`ID_BITS - 1:0] rid;
+    logic [`DATA_WIDTH - 1:0] rdata;
+    logic [2:0] rresp;
+    logic rvalid;
+    logic rlast;
+    logic rready;
 
     logic handshaked;
     logic [`ID_BITS-1:0] wid;
@@ -248,7 +248,7 @@ module axi_bus(
  
     assign awready = (awid == `ID_CPU2MEM | awid == `ID_DMA2MEM) ? s0_awready :
                      (awid == `ID_CPU2DMA) ? s_awready :
-                     (awid == `ID_DMA2AES) : s1_awready : 0;
+                     (awid == `ID_DMA2AES) ? s1_awready : 0;
 
     always_ff @(posedge clk_i) begin
         if (~rst_ni) 
@@ -266,7 +266,7 @@ module axi_bus(
         .rdata_o (wid),
         .full  (),
         .empty ()
-    )
+    );
 
     always_comb begin
         if (wid == `ID_CPU2MEM || wid == `ID_CPU2DMA) begin
@@ -274,18 +274,18 @@ module axi_bus(
             wlast  = m0_wlast;
             wstrb  = m0_wstrb;
             wdata  = m0_wdata;
+        end
         else if (wid == `ID_DMA2MEM || wid == `ID_DMA2AES) begin
             wvalid = m_wvalid;
             wlast  = m_wlast;
             wstrb  = m_wstrb;
             wdata  = m_wdata;
         end
-        end
     end
 
     assign wready = (wid == `ID_CPU2MEM | wid == `ID_DMA2MEM) ? s0_wready :
                     (wid == `ID_CPU2DMA) ? s_wready :
-                    (wid == `ID_DMA2AES) : s1_wready : 0;
+                    (wid == `ID_DMA2AES) ? s1_wready : 0;
 
     always_comb begin
         bid     = '0;
@@ -335,7 +335,7 @@ module axi_bus(
     
     assign arready = (arid == `ID_CPU2MEM | arid == `ID_DMA2MEM) ? s0_arready :
                      (arid == `ID_CPU2DMA) ? s_arready :
-                     (arid == `ID_DMA2AES) : s1_arready : 0;    
+                     (arid == `ID_DMA2AES) ? s1_arready : 0;    
 
     always_comb begin
         rid = '0;
@@ -350,7 +350,7 @@ module axi_bus(
             rvalid = s0_rvalid;
             rlast = s0_rlast;
         end
-        else (s1_rvalid) begin
+        else if (s1_rvalid) begin
             rid = s1_rid;
             rdata = s1_rdata;
             rresp = s1_rresp;
@@ -401,7 +401,7 @@ module axi_bus(
     assign s0_arid    = arid;
     assign s0_araddr  = araddr;
     assign s0_arlen   = arlen;
-    assign s0_arburst = arburts;
+    assign s0_arburst = arburst;
     assign s0_arsize  = arsize;
     assign s0_arvalid = (arid == `ID_DMA2MEM || arid == `ID_CPU2MEM) ? arvalid : 0;
     assign s0_rready  = (rid == `ID_DMA2MEM || rid == `ID_CPU2MEM) ? rready : 0;
@@ -420,7 +420,7 @@ module axi_bus(
     assign s1_arid    = arid;
     assign s1_araddr  = araddr;
     assign s1_arlen   = arlen;
-    assign s1_arburst = arburts;
+    assign s1_arburst = arburst;
     assign s1_arsize  = arsize;
     assign s1_arvalid = (arid == `ID_DMA2AES) ? arvalid : 0;
     assign s1_rready  = (rid == `ID_DMA2AES) ? rready : 0;
@@ -439,7 +439,7 @@ module axi_bus(
     assign s_arid    = arid;
     assign s_araddr  = araddr;
     assign s_arlen   = arlen;
-    assign s_arburst = arburts;
+    assign s_arburst = arburst;
     assign s_arsize  = arsize;
     assign s_arvalid = (arid == `ID_CPU2DMA) ? arvalid : 0;
     assign s_rready  = (rid == `ID_CPU2DMA) ? rready : 0;

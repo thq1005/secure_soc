@@ -86,9 +86,9 @@ module master_cpu(
     .rdata_o      (mem_rdata_w),
     .rvalid_o     (mem_rvalid_w),
     .handshaked_o (mem_handshaked_w),
-    .dma_addr_o   (dma_addr_w),
-    .dma_wdata_o  (dma_wdata_w),
-    .dma_cs_o     (dma_cs_w)
+    .dma_addr_i   (dma_addr_w),
+    .dma_wdata_i  (dma_wdata_w),
+    .dma_cs_i     (dma_cs_w)
     );
     
     riscv_cache cpu_inst (

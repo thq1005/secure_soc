@@ -1,4 +1,4 @@
-`include "define.sv"
+`include "../define.sv"
 module aes_key_mem(
     input  logic clk_i,
     input  logic rst_ni,
