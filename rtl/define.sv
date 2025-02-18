@@ -97,4 +97,10 @@
 `define ADDR_DATA           32'h00000000
 `define ADDR_DMA            32'h00010000
 `define ADDR_AES            32'h00020000
+
+//id
+`define ID_CPU2MEM          0
+`define ID_CPU2DMA          1
+`define ID_DMA2MEM          2
+`define ID_DMA2AES          3
 `endif

@@ -76,6 +76,21 @@ module axi_dmac (
     logic [`ADDR_WIDTH-1:0] waddr_w;
     logic [`DATA_WIDTH-1:0] wdata_w;
     logic [(`DATA_WIDTH/8)-1:0] strb_w;
+    logic rdata_valid_w;
+    logic [`DATA_WIDTH-1:0] data_w;
+
+
+    logic [`ADDR_WIDTH-1:0] src_addr_reg;
+    logic src_addr_we;
+    
+    logic [`ADDR_WIDTH-1:0] dst_addr_reg;
+    logic dst_addr_we;
+
+    logic [2+`SIZE_BITS+`LEN_BITS-1:0] config_reg; // | burst | size | len |
+    logic config_we;                               // 12    11 10   8 7    0
+
+    logic valid_reg;   
+    logic valid_new;
 
     axi_interface_slave s_itf (
         .clk_i      (clk_i),
@@ -121,11 +136,13 @@ module axi_dmac (
     dmac_read read_inst (
         .clk_i,
         .rst_ni,
-        .valid,
-        .src_addr,
-        .len,
-        .size,
-        .burst,
+        .valid_i    (valid_reg),
+        .src_addr_i (src_addr_reg),
+        .len_i      (config_reg[`DMA_LEN_BIT7:`DMA_LEN_BIT0]),
+        .size_i     (config_reg[`DMA_SIZE_BIT2:`DMA_SIZE_BIT0]),
+        .burst_i    (config_reg[`DMA_BURST_BIT1:`DMA_BURST_BIT0]),
+        .rdata_valid_o (rdata_valid_w),
+        .data_o     (data_w),
         .m_arid,
         .m_araddr,
         .m_arlen,
@@ -141,17 +158,34 @@ module axi_dmac (
         .m_rready
     )
 
-    logic [`ADDR_WIDTH-1:0] src_addr_reg;
-    logic src_addr_we;
-    
-    logic [`ADDR_WIDTH-1:0] dst_addr_reg;
-    logic dst_addr_we;
+    dmac_write write_inst (
+        .clk_i,
+        .rst_ni,
+        .valid_i    (valid_reg),
+        .dst_addr_i (dst_addr_reg),
+        .len_i      (config_reg[`DMA_LEN_BIT7:`DMA_LEN_BIT0]),
+        .size_i     (config_reg[`DMA_SIZE_BIT2:`DMA_SIZE_BIT0]),
+        .burst_i    (config_reg[`DMA_BURST_BIT1:`DMA_BURST_BIT0]),
+        .rdata_valid_i (rdata_valid_w),
+        .data_i     (data_w),
+        .m_awid,
+        .m_awaddr,
+        .m_awlen,
+        .m_awburst,
+        .m_awsize,
+        .m_awvalid,
+        .m_awready,
+        .m_wdata,
+        .m_wstrb,
+        .m_wvalid,
+        .m_wlast,
+        .m_wready,
+        .m_bid,
+        .m_bresp,
+        .m_bvalid,
+        .m_bready
+    )
 
-    logic [2+`SIZE_BITS+`LEN_BITS-1:0] config_reg; // | burst | size | len |
-    logic config_we;                               // 12    11 10   8 7    0
-
-    logic valid_reg;   
-    logic valid_new;
 
     always_ff @(posedge clk_i) begin
         if (!rst_ni) begin            
