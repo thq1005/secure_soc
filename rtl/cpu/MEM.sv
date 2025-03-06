@@ -15,6 +15,9 @@ module MEM(
 	/* valid signal when CPU access cache */
 	input logic Valid_cpu2cache_mem_i,
 	input logic Valid_cpu2dma_mem_i,
+	input logic csr_we_mem_i,
+	input logic [31:0] csr_waddr_mem_i,
+	input logic [31:0] csr_rdata_mem_i,
 	output logic [31:0] alu_wb_o,
 	output logic [31:0] pc4_wb_o,
 	output logic [31:0] mem_wb_o,
@@ -32,10 +35,9 @@ module MEM(
 	output logic mem_cs_o,
 	input logic  [127:0] mem_rdata_i,
 	input logic  mem_rvalid_i,
-
-	output logic [31:0] dma_addr_o,
-	output logic [31:0] dma_wdata_o,
-	output logic dma_cs_o
+	output logic csr_we_wb_o,
+	output logic [31:0] csr_waddr_wb_o,
+	output logic [31:0] csr_rdata_wb_o
 	);
 	
 	logic [31:0] mem_w;
@@ -46,6 +48,9 @@ module MEM(
 	logic RegWEn_r;
 	logic [4:0] rsW_r;
 	logic [31:0] inst_r;
+	logic [31:0] csr_waddr_mem_r;
+	logic csr_we_mem_r;
+	logic [31:0] csr_rdata_wb_r;
 
 	/* valid signal that memory response to cache */
 	cpu_req_type cpu_req_w;
@@ -85,6 +90,9 @@ module MEM(
 			RegWEn_r <= 1'b0;
 			rsW_r <= 5'b0;
 			inst_r <= 32'b0;
+			csr_waddr_mem_r <= 32'b0;
+			csr_we_mem_r <= 1'b0;
+			csr_rdata_wb_r <= 32'b0;
 		end
 		else if (enable_i) begin
 			if (reset_i) begin
@@ -95,6 +103,9 @@ module MEM(
 				RegWEn_r <= 1'b0;
 				rsW_r <= 5'b0;
 				inst_r <= 32'b0;
+				csr_waddr_mem_r <= 32'b0;
+				csr_we_mem_r <= 1'b0;
+				csr_rdata_wb_r <= 32'b0;
 			end
 			else begin
 				alu_r <= alu_mem_i;
@@ -104,6 +115,9 @@ module MEM(
 				RegWEn_r <= RegWEn_mem_i;
 				rsW_r <= rsW_mem_i;
 				inst_r <= inst_mem_i;
+				csr_waddr_mem_r <= csr_waddr_mem_i;
+				csr_we_mem_r <= csr_we_mem_i;
+				csr_rdata_wb_r <= csr_rdata_mem_i;
 			end
 		end
 	end
@@ -129,9 +143,7 @@ module MEM(
 	/* control stall for previous stages */
 	assign stall_by_dcache_o = (Valid_cpu2cache_mem_i&(~cpu_result_w.ready)) ? 1'b1 : 1'b0;
 	
-	//for dma
-	assign dma_addr_o  = alu_mem_i;
-	assign dma_wdata_o = rs2_mem_i;
-	assign dma_cs_o = Valid_cpu2dma_mem_i & (~stall_by_icache_i); 
-
+	assign csr_waddr_mem_o = csr_waddr_mem_r;
+	assign csr_we_mem_o = csr_we_mem_r;
+	assign csr_rdata_wb_o = csr_rdata_wb_r;
 endmodule

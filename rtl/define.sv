@@ -5,6 +5,7 @@
 `define OP_Rtype 		 7'b0110011
 `define OP_Itype 		 7'b0010011
 `define OP_Itype_load    7'b0000011
+`define OP_Itype_csr     7'b1110011
 `define OP_Stype 		 7'b0100011
 `define OP_Btype 		 7'b1100011
 `define OP_JAL 		     7'b1101111

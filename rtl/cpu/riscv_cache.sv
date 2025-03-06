@@ -71,6 +71,25 @@ module riscv_cache(
 	logic imem_cs_o;
 	logic [127:0] imem_rdata_i;
 	logic imem_rvalid_i;
+
+	logic [31:0] csr_pc_w;
+	logic intr_flag;
+	logic is_mret;
+
+	logic [31:0] csr_rdata_ex_w;
+	logic csr_we_ex_w;
+	logic [31:0] csr_waddr_ex_w;
+	logic alu_csr_sel_w;
+
+	logic csr_we_mem_w;
+	logic [31:0] csr_waddr_mem_w;
+	logic [31:0] csr_rdata_mem_w;
+
+	logic csr_we_wb_w;
+	logic [31:0] csr_waddr_wb_w;
+	logic [31:0] csr_rdata_wb_w;
+
+	logic [31:0] csr_wdata_w;
 //	/* evaluation */
 //	logic [31:0] icache_no_acc_w, icache_no_hit_w, icache_no_miss_w, dcache_no_acc_w, dcache_no_hit_w, dcache_no_miss_w;
 //	//logic [31:0] no_command_w;
@@ -109,7 +128,10 @@ module riscv_cache(
 	    .mem_we_o(imem_we_o),
 	    .mem_cs_o(imem_cs_o),
 	    .mem_rdata_i(imem_rdata_i),
-	    .mem_rvalid_i(imem_rvalid_i)
+	    .mem_rvalid_i(imem_rvalid_i),
+		.csr_pc_i (csr_pc_w),
+		.intr_flag(intr_flag),
+		.is_mret  (is_mret)
 		);
 		
 	ID ID(
@@ -124,6 +146,10 @@ module riscv_cache(
 		.enable_i(~(Stall_EX_w | stall_by_dcache_w  | stall_by_icache_w)),
 		.reset_i(Flush_EX_w),
 		.hit_d_i(hit_d_w),
+		.aes_intr(aes_intr_i),		
+		.csr_wdata_i (csr_wdata_w),
+		.csr_waddr_i (csr_waddr_wb_w),
+		.csr_we_i    (csr_we_wb_w),
 		.rs1_ex_o(rs1_ex_w),
 		.rs2_ex_o(rs2_ex_w),
 		.imm_ex_o(imm_ex_w),
@@ -140,7 +166,14 @@ module riscv_cache(
 		.inst_ex_o(inst_ex_w),
 		.hit_ex_o(hit_ex_w),
 		.Valid_cpu2cache_ex_o(Valid_cpu2cache_ex_w),
-		.Valid_cpu2dma_ex_o(Valid_cpu2dma_ex_w)
+		.Valid_cpu2dma_ex_o(Valid_cpu2dma_ex_w),
+		.csr_rdata_o (csr_rdata_ex_w),
+		.csr_we_o (csr_we_ex_w),
+		.csr_waddr_o (csr_waddr_ex_w),
+		.alu_csr_sel_o (alu_csr_sel_w),
+		.pc_intr_o (csr_pc_w),
+		.intr_flag (intr_flag),
+		.is_mret   (is_mret)
 		);
 		
 	EX EX(
@@ -166,6 +199,10 @@ module riscv_cache(
 		.enable_i(~(Stall_MEM_w | stall_by_dcache_w  | stall_by_icache_w )),
 		.reset_i(Flush_MEM_w),
 		.Valid_cpu2cache_ex_i(Valid_cpu2cache_ex_w),
+		.csr_rdata_ex_i(csr_rdata_ex_w),
+		.csr_we_ex_i(csr_we_ex_w),
+		.csr_waddr_ex_i(csr_waddr_ex_w),
+		.alu_csr_sel_i(alu_csr_sel_w),
 		.alu_mem_o(alu_mem_w),
 		.rs2_mem_o(rs2_mem_w),
 		.pc4_mem_o(pc4_mem_w),
@@ -178,7 +215,10 @@ module riscv_cache(
 		.inst_mem_o(inst_mem_w),
 		.alu_o(alu_w),
 		.Valid_cpu2cache_mem_o(Valid_cpu2cache_mem_w),
-		.Valid_cpu2dma_mem_o(Valid_cpu2dma_mem_w)
+		.Valid_cpu2dma_mem_o(Valid_cpu2dma_mem_w),
+		.csr_we_mem_o(csr_we_mem_w),
+		.csr_waddr_mem_o(csr_waddr_mem_w),
+		.csr_rdata_mem_o(csr_rdata_mem_w)
 		);
 		
 	MEM MEM(
@@ -196,6 +236,9 @@ module riscv_cache(
 		.reset_i(Flush_WB_w),
 		.Valid_cpu2cache_mem_i(Valid_cpu2cache_mem_w),
 		.stall_by_icache_i(stall_by_icache_w),
+		.csr_we_mem_i(csr_we_mem_w),
+		.csr_waddr_mem_i(csr_waddr_mem_w),
+		.csr_rdata_mem_i(csr_rdata_mem_w),
 		.alu_wb_o(alu_wb_w),
 		.pc4_wb_o(pc4_wb_w),
 		.mem_wb_o(mem_wb_w),
@@ -212,7 +255,10 @@ module riscv_cache(
 	    .mem_we_o(dmem_we_o),
 	    .mem_cs_o(dmem_cs_o),
 	    .mem_rdata_i(dmem_rdata_i),
-	    .mem_rvalid_i(dmem_rvalid_i)
+	    .mem_rvalid_i(dmem_rvalid_i),
+		.csr_we_wb_o(csr_we_wb_w),
+		.csr_waddr_wb_o(csr_waddr_wb_w),	
+		.csr_rdata_wb_o(csr_rdata_wb_w)	
 		);
 		
 	WB WB(
@@ -222,9 +268,11 @@ module riscv_cache(
 		.pc4_wb_i(pc4_wb_w),
 		.mem_wb_i(mem_wb_w),
 		.WBSel_wb_i(WBSel_wb_w),
+		.csr_i (csr_rdata_wb_w),
 		//.RegWEn_wb_i(RegWEn_wb_w),
 		//.rsW_wb_i(rsW_wb_w),
-		.dataWB_o(data_wb_w)
+		.dataWB_o(data_wb_w),
+		.wdata_csr_o (csr_wdata_w)
 		//.RegWEn_o(RegWEn_w),
 		//.rsW_o(rsW_w)
 		);

@@ -18,7 +18,7 @@ addi x5, x5, 0x111
 lui x6, 0x22223
 addi x6, x6, 0x333
 lui x7, 0x44445       
-addi x7, x7, 0x555
+addi x7, x7, 0x555  
 lui x8, 0x66667    
 addi x8, x8, 0x777
 
@@ -63,14 +63,3 @@ addi x2,x0,2
 check_status_1:
 aes_read_status x1, x0
 bne x1,x2,check_status_1
-
-
-
-
-
-
-
-
-
-
-

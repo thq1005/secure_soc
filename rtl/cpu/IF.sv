@@ -26,13 +26,18 @@ module IF(
 	output logic mem_we_o,
 	output logic mem_cs_o,
 	input logic [127:0] mem_rdata_i,
-	input logic mem_rvalid_i
+	input logic mem_rvalid_i,
+
+	input logic [31:0] csr_pc_i,
+	input logic intr_flag,
+	input logic is_mret
 	);
 	
     
 	logic [31:0] PC_mux_w, PC_mux1_w;
 	logic [31:0] PC_w, inst_w, PC_add4_w;
 	logic [31:0] PC_r, inst_r, PC_add4_r;
+	logic [31:0] PC_mux2_w;
 	logic hit_r;
 	logic overf_PC_w;
 	
@@ -64,8 +69,10 @@ module IF(
 		.r_o(PC_mux1_w)
 		);
 	
+	assign PC_mux2_w = (intr_flag | is_mret) ? csr_pc_i : PC_mux1_w;
+
 	pc PC_IF(
-		.data_i(PC_mux1_w),
+		.data_i(PC_mux2_w),
 		.clk_i(clk_i),
 		.rst_ni(rst_ni),
 		.enable_i(enable_pc_i),

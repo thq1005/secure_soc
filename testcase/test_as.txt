@@ -1,0 +1,1 @@
+csrrw x1, mstatus, x3

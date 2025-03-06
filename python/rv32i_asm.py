@@ -20,7 +20,8 @@ opcode_table = {
     'beq': '1100011', 'bne': '1100011', 'blt': '1100011', 'bge': '1100011', 'bltu': '1100011', 'bgeu': '1100011', # SB-type
     'jalr': '1100111', # I-type
     'jal': '1101111', # UJ-type
-    'lui': '0110111', 'auipc': '0010111' # U-type
+    'lui': '0110111', 'auipc': '0010111', # U-type 
+    'csrrs': '1110011' , 'csrrsi': '1110011', 'csrrw': '1110011', 'csrrwi': '1110011', 'csrrc': '1110011', 'csrrci': '1110011' # I-type
 }
 
 funct3_table = {
@@ -33,8 +34,9 @@ funct3_table = {
     'beq': '000', 'bne': '001', 'blt': '100', 'bge': '101', 'bltu': '110', 'bgeu': '111', # SB-type
     'jalr': '000', # I-type
     'jal': '000', # UJ-type
-    'lui': '011', 'auipc': '001' # U-type
-}
+    'lui': '011', 'auipc': '001', # U-type
+    'csrrw': '001', 'csrrwi': '101', 'csrrs': '010', 'csrrsi': '110', 'csrrc': '011', 'csrrw': '111'  
+    }
 
 funct7_table = {
     'add': '0000000', 'sub': '0100000', 'xor': '0000000', 'or': '0000000', 'and': '0000000', 'sll': '0000000', 'srl': '0000000', 'sra': '0100000', 'slt': '0000000', 'sltu': '0000000', # R-type
@@ -52,6 +54,15 @@ reg_table = {
     'x8': '01000', 'x9': '01001', 'x10': '01010', 'x11': '01011', 'x12': '01100', 'x13': '01101', 'x14': '01110', 'x15': '01111',
     'x16': '10000', 'x17': '10001', 'x18': '10010', 'x19': '10011', 'x20': '10100', 'x21': '10101', 'x22': '10110', 'x23': '10111',
     'x24': '11000', 'x25': '11001', 'x26': '11010', 'x27': '11011', 'x28': '11100', 'x29': '11101', 'x30': '11110', 'x31': '11111'
+}
+
+csr_table = {
+    'mstatus': '001100000000',
+    'mie'    : '001100000100',
+    'mtvec'  : '001100000101',
+    'mepc'   : '001101000001',
+    'mcause' : '001101000010',
+    'mip'    : '001101000100'
 }
 
 # Conver hex to binary
@@ -259,6 +270,12 @@ def asm_to_bin(instruction):
             imm = "000000000000"
             rs1 = reg_table[parts[2]]
             return f"{imm[:7]}{rs2}{rs1}{funct3}{imm[7:]}{opcode_table[opcode]}"
+        elif opcode in ['csrrw', 'csrrwi', 'csrrc', 'csrrci', 'csrrs', 'csrrsi']:
+            funct3 = funct3_table[opcode]
+            rs1 = reg_table[parts[3]]
+            rd  = reg_table[parts[-1]]
+            imm = csr_table[parts[2][:-1]]
+            return f"{imm}{rs1}{funct3}{rd}{opcode_table[opcode]}"
     else:
         raise ValueError(f"Unknown opcode: {opcode}")
 
@@ -268,10 +285,10 @@ def process(code):
 
     for line in code:
         if line.endswith(":"):
-            continue
-        
+            continue 
         try:
             instr_bin = asm_to_bin(line)
+            print(instr_bin)
             if instr_bin is None:
                 print(f"Warning: asm_to_bin returned None for line: {line}")
             binary_code.append(instr_bin)

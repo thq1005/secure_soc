@@ -23,7 +23,12 @@ module EX(
 	/* valid signal when CPU access cache */
 	input logic Valid_cpu2cache_ex_i,
 	input logic Valid_cpu2dma_ex_i,
-	input logic [31:0] aes_addr_ex_i,
+
+	input logic [31:0] csr_rdata_ex_i,
+	input logic csr_we_ex_i,
+	input logic [31:0] csr_waddr_ex_i,
+	input logic alu_csr_sel_i,
+
 	output logic [31:0] alu_mem_o,
 	output logic [31:0] rs2_mem_o,
 	output logic [31:0] pc4_mem_o,
@@ -37,7 +42,10 @@ module EX(
 	output logic [31:0] alu_o,
 	/* valid signal when CPU access cache */
 	output logic Valid_cpu2cache_mem_o,
-	output logic Valid_cpu2dma_mem_o
+	output logic Valid_cpu2dma_mem_o,
+	output logic csr_we_mem_o,
+	output logic [31:0] csr_waddr_mem_o,
+	output logic [31:0] csr_rdata_mem_o
 	);
 	
 	logic [31:0] alu_w;
@@ -52,9 +60,15 @@ module EX(
 	logic [31:0] rs1_ex_w, rs2_ex_w;
 	logic [31:0] rs1_haz_w, rs2_haz_w;
 
+	logic [31:0] csr_waddr_ex_r;
+	logic csr_we_ex_r;
+
+	logic [31:0] csr_rdata_ex_r;
 	/* valid signal when CPU access cache */
 	logic Valid_cpu2cache_r;
 	logic Valid_cpu2dma_r;
+
+	logic [31:0] rs2_csr_w;
 	brcomp BrComp_EX(
 		.rs1_i(rs1_ex_w),
 		.rs2_i(rs2_ex_w),
@@ -93,10 +107,11 @@ module EX(
 		.c_o(rs2_haz_w)
 		);
 		
-	
+	assign rs2_csr_w = (alu_csr_sel_i) ? csr_rdata_ex_i : rs2_haz_w;
+
 	alu ALU_EX(
 		.rs1_i(rs1_haz_w),
-		.rs2_i(rs2_haz_w),
+		.rs2_i(rs2_csr_w),
 		.AluSel_i(AluSel_ex_i),
 		.Result_o(alu_w)
 		);
@@ -113,6 +128,9 @@ module EX(
 			inst_r <= 32'b0;
 			Valid_cpu2cache_r <= 1'b0;
 			Valid_cpu2dma_r   <= 1'b0;
+			csr_waddr_ex_r <= 32'b0;
+			csr_we_ex_r <= 1'b0;
+			csr_rdata_ex_r <= 32'b0;
 		end
 		else if (enable_i) begin
 			if (reset_i) begin
@@ -126,6 +144,9 @@ module EX(
 				inst_r <= 32'b0;
 				Valid_cpu2cache_r <= 1'b0;
 				Valid_cpu2dma_r   <= 1'b0;
+				csr_waddr_ex_r <= 32'b0;
+				csr_we_ex_r <= 1'b0;
+				csr_rdata_ex_r <= 32'b0;
 			end
 			else begin
 				alu_r <= alu_w;
@@ -138,6 +159,9 @@ module EX(
 				inst_r <= inst_ex_i;
 				Valid_cpu2cache_r <= Valid_cpu2cache_ex_i;
 				Valid_cpu2dma_r   <= Valid_cpu2dma_ex_i;
+				csr_waddr_ex_r <= csr_waddr_ex_i;
+				csr_we_ex_r <= csr_we_ex_i;
+				csr_rdata_ex_r <= csr_rdata_ex_i;
 			end
 		end
 	end
@@ -155,5 +179,8 @@ module EX(
 	assign alu_o = alu_w;
 	assign Valid_cpu2cache_mem_o = Valid_cpu2cache_r;
 	assign Valid_cpu2dma_mem_o = Valid_cpu2dma_r;
-	
+	assign csr_waddr_mem_o = csr_waddr_ex_r;
+	assign csr_we_mem_o = csr_we_ex_r;
+	assign csr_rdata_mem_o = csr_rdata_ex_r;
+
 endmodule

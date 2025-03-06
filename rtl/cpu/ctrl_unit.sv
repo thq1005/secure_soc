@@ -10,10 +10,11 @@ module ctrl_unit(
 	output logic [1:0] WBSel_o,
 	output logic BrUn_o,
 	output logic Asel_o,
-	//output logic Mul_ext_o
 	/* valid signal when CPU access cache */
 	output logic Valid_cpu2cache_o,
-	output logic Valid_cpu2dma_o
+	output logic Valid_cpu2dma_o,
+	output logic is_mret,
+	output logic csr_we
 	);
 
 	logic [6:0] opcode_r;
@@ -26,18 +27,22 @@ module ctrl_unit(
 	
 	assign RegWEn_o = 		(opcode_r == `OP_Stype) | // S type & B type & DMA_S type
 							(opcode_r == `OP_Btype) |
-							(opcode_r == `OP_DMA_Stype) ? (1'b0) : (1'b1);
+							(opcode_r == `OP_DMA_Stype) |
+							(opcode_r == `OP_Itype_csr && inst_i[11:7] == 0) ? (1'b0) : (1'b1);
 	
 	// 10 instructions R type
 	assign AluSel_o = 		((opcode_r == `OP_Btype) | (opcode_r == `OP_JAL)   | (opcode_r == `OP_Itype_load) |
 							(opcode_r == `OP_Stype)  | (opcode_r == `OP_AUIPC) | (opcode_r == `OP_JALR)       |
-							((opcode_r == `OP_Itype) & (funct3 == 3'b000)))    |
+							((opcode_r == `OP_Itype) & (funct3 == 3'b000)))    | 
+							((opcode_r == `OP_Itype_csr) & (funct3 == 3'b001 | funct3 == 3'b101)) |
 							(opcode_r == `OP_DMA_Stype) ? `ADD :						// in case addi 
-							(opcode_r == `OP_LUI) ? `B : {funct7[5], funct3};
+							(opcode_r == `OP_LUI) ? `B : 
+							((opcode_r == `OP_Itype_csr) & (funct3 == 3'b011 | funct3 == 3'b111)) ? `AND :
+							((opcode_r == `OP_Itype_csr) & (funct3 == 3'b010 | funct3 == 3'b110)) ? `OR : {funct7[5], funct3};
 	
-	assign Bsel_o = (opcode_r == `OP_Rtype) ? 1'b0 : 1'b1;
+	assign Bsel_o = ((opcode_r == `OP_Rtype)|(opcode_r == `OP_Itype_csr)) ? 1'b0 : 1'b1;
 	
-	assign ImmSel_o = 	((opcode_r == `OP_Itype) | (opcode_r == `OP_JALR) | (opcode_r == `OP_Itype_load)) 									? `I_TYPE : 
+	assign ImmSel_o = 	((opcode_r == `OP_Itype) | (opcode_r == `OP_JALR) | (opcode_r == `OP_Itype_load) | (opcode_r == `OP_Itype_csr)) 	? `I_TYPE : 
 					    ((opcode_r == `OP_Stype) | (opcode_r == `OP_DMA_Stype)) 															? `S_TYPE : 
 					    (opcode_r == `OP_Btype)																								? `B_TYPE : 
                         (opcode_r == `OP_JAL)   																							? `J_TYPE : 
@@ -56,10 +61,11 @@ module ctrl_unit(
 						(opcode_r == `OP_JAL)    | 
 						(opcode_r == `OP_AUIPC)) ? 1'b1 : 1'b0;
 						 
-	//assign Mul_ext_o = ((opcode_r == `OP_Rtype) & (funct7[0] == 1'b1)) ? 1'b1 : 1'b0;
-
 	/* valid signal when CPU access cache */
 	assign Valid_cpu2cache_o = ((opcode_r == `OP_Itype_load) | (opcode_r == `OP_Stype)) ? 1'b1 : 1'b0;
 	assign Valid_cpu2dme_o = (opcode_r == `OP_DMA_Stype);
 
+	assign is_mret = ((opcode_r == `OP_Itype_csr) && (inst_i[31:20] == 12'h302));
+
+	assign csr_we  = (opcode_r == `OP_Itype_csr);
 endmodule

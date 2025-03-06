@@ -25,7 +25,7 @@ module ram(								//SDPRAM
 	logic [31:0] imem [512]; //2KB instruction memory
 	
 	initial begin
-		$readmemh("imemfile.mem", imem); 
+		$readmemh("../cons/imemfile.mem", imem); 
 	end
 
 	/* ------------- */
@@ -35,7 +35,7 @@ module ram(								//SDPRAM
 	logic [31:0] dmem [512]; 
 	
 	initial begin
-		$readmemh("dmemfile.mem", dmem); 
+		$readmemh("../cons/dmemfile.mem", dmem); 
 	end
 
 	

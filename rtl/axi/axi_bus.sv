@@ -315,21 +315,21 @@ module axi_bus(
         arsize  = '0;
         arburst = '0;
         araddr  = '0;
-        if (m_awvalid) begin
-            awvalid = m_awvalid;
-            awid    = m_awid;
-            awlen   = m_awlen;
-            awsize  = m_awsize;
-            awburst = m_awburst;
-            awaddr  = m_awaddr;
+        if (m_arvalid) begin
+            arvalid = m_arvalid;
+            arid    = m_arid;
+            arlen   = m_arlen;
+            arsize  = m_arsize;
+            arburst = m_arburst;
+            araddr  = m_araddr;
         end
-        else if (m0_awvalid) begin
-            awvalid = m0_awvalid;
-            awid    = m0_awid;
-            awlen   = m0_awlen;
-            awsize  = m0_awsize;
-            awburst = m0_awburst;
-            awaddr  = m0_awaddr;
+        else if (m0_arvalid) begin
+            arvalid = m0_arvalid;
+            arid    = m0_arid;
+            arlen   = m0_arlen;
+            arsize  = m0_arsize;
+            arburst = m0_arburst;
+            araddr  = m0_araddr;
         end
     end
     
