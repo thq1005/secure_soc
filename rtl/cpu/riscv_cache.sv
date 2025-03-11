@@ -10,10 +10,7 @@ module riscv_cache(
     input logic [`DATA_WIDTH_CACHE-1:0] rdata_i,
     input logic rvalid_i,
     input logic handshaked_i,
-	//to dma
-	output logic [`ADDR_WIDTH-1:0] dma_addr_o,
-	output logic [`DATA_WIDTH-1:0] dma_wdata_o,
-	output logic dma_cs_o
+	input logic dma_intr
 	);
 	
 	logic BrEq_w, BrLt_w;
@@ -55,15 +52,17 @@ module riscv_cache(
 	logic stall_by_dcache_w;
 	logic stall_by_icache_w;
 
-    logic Valid_cpu2dma_ex_w;
-	logic Valid_cpu2dma_mem_w;
+    logic Valid_cpu2aes_ex_w;
+	logic Valid_cpu2aes_mem_w;
 
-    logic [31:0] dmem_addr_o;
-	logic [127:0] dmem_wdata_o;
-	logic dmem_we_o;
-	logic dmem_cs_o;
-	logic [127:0] dmem_rdata_i;
-	logic dmem_rvalid_i;
+	logic [31:0] imm_mem_w;
+
+    logic [31:0] mem_addr_w;
+	logic [127:0] mem_wdata_w;
+	logic mem_we_w;
+	logic mem_cs_w;
+	logic [127:0] dmem_rdata_w;
+	logic dmem_rvalid_w;
 
 	logic [31:0] imem_addr_o;
 	logic [127:0] imem_wdata_o;
@@ -146,7 +145,7 @@ module riscv_cache(
 		.enable_i(~(Stall_EX_w | stall_by_dcache_w  | stall_by_icache_w)),
 		.reset_i(Flush_EX_w),
 		.hit_d_i(hit_d_w),
-		.aes_intr(aes_intr_i),		
+		.dma_intr(dma_intr),		
 		.csr_wdata_i (csr_wdata_w),
 		.csr_waddr_i (csr_waddr_wb_w),
 		.csr_we_i    (csr_we_wb_w),
@@ -166,7 +165,7 @@ module riscv_cache(
 		.inst_ex_o(inst_ex_w),
 		.hit_ex_o(hit_ex_w),
 		.Valid_cpu2cache_ex_o(Valid_cpu2cache_ex_w),
-		.Valid_cpu2dma_ex_o(Valid_cpu2dma_ex_w),
+		.Valid_cpu2aes_ex_o(Valid_cpu2aes_ex_w),
 		.csr_rdata_o (csr_rdata_ex_w),
 		.csr_we_o (csr_we_ex_w),
 		.csr_waddr_o (csr_waddr_ex_w),
@@ -198,6 +197,7 @@ module riscv_cache(
 		.data_wb_i(data_wb_w),
 		.enable_i(~(Stall_MEM_w | stall_by_dcache_w  | stall_by_icache_w )),
 		.reset_i(Flush_MEM_w),
+		.Valid_cpu2aes_ex_i (Valid_cpu2aes_ex_w),
 		.Valid_cpu2cache_ex_i(Valid_cpu2cache_ex_w),
 		.csr_rdata_ex_i(csr_rdata_ex_w),
 		.csr_we_ex_i(csr_we_ex_w),
@@ -215,10 +215,11 @@ module riscv_cache(
 		.inst_mem_o(inst_mem_w),
 		.alu_o(alu_w),
 		.Valid_cpu2cache_mem_o(Valid_cpu2cache_mem_w),
-		.Valid_cpu2dma_mem_o(Valid_cpu2dma_mem_w),
+		.Valid_cpu2aes_mem_o(Valid_cpu2aes_mem_w),
 		.csr_we_mem_o(csr_we_mem_w),
 		.csr_waddr_mem_o(csr_waddr_mem_w),
-		.csr_rdata_mem_o(csr_rdata_mem_w)
+		.csr_rdata_mem_o(csr_rdata_mem_w),
+		.imm_o (imm_mem_w)
 		);
 		
 	MEM MEM(
@@ -250,10 +251,10 @@ module riscv_cache(
 //		.no_acc_o(dcache_no_acc_w),
 //		.no_hit_o(dcache_no_hit_w),
 //		.no_miss_o(dcache_no_miss_w),
-		.mem_addr_o(dmem_addr_o),
-	    .mem_wdata_o(dmem_wdata_o),
-	    .mem_we_o(dmem_we_o),
-	    .mem_cs_o(dmem_cs_o),
+		.addr_o	(mem_addr_o),
+	    .wdata_o(mem_wdata_o),
+	    .we_o	(mem_we_o),
+	    .cs_o	(mem_cs_o),
 	    .mem_rdata_i(dmem_rdata_i),
 	    .mem_rvalid_i(dmem_rvalid_i),
 		.csr_we_wb_o(csr_we_wb_w),
@@ -324,12 +325,12 @@ module riscv_cache(
 		.i_we_i      (imem_we_o),
 		.i_rdata_o   (imem_rdata_i),
 		.i_rvalid_o  (imem_rvalid_i),
-		.d_addr_i    (dmem_addr_o),
-		.d_cs_i      (dmem_cs_o),
-		.d_wdata_i   (dmem_wdata_o),
-		.d_we_i      (dmem_we_o),
-		.d_rdata_o   (dmem_rdata_i),  
-		.d_rvalid_o  (dmem_rvalid_i), 
+		.d_addr_i    (mem_addr_w),
+		.d_cs_i      (mem_cs_w),
+		.d_wdata_i   (mem_wdata_w),
+		.d_we_i      (mem_we_w),
+		.d_rdata_o   (dmem_rdata_w),  
+		.d_rvalid_o  (dmem_rvalid_w), 
 		.addr_o      (addr_o),
 		.wdata_o     (wdata_o),
 		.we_o        (we_o),

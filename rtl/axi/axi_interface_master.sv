@@ -44,12 +44,7 @@ module axi_interface_master(
     input logic cs_i,
     output logic [`DATA_WIDTH_CACHE - 1:0] rdata_o,
     output logic rvalid_o,
-    output logic handshaked_o,
-
-    input logic [`ADDR_WIDTH - 1:0] dma_addr_i,
-    input logic [`DATA_WIDTH - 1:0] dma_wdata_i,
-    input logic dma_cs_i
-
+    output logic handshaked_o
     );
     
     localparam IDLE = 2'd0, WA = 2'd1, W = 2'd2, B = 2'd3, RA = 2'd1, R = 2'd2;       
@@ -134,8 +129,11 @@ module axi_interface_master(
         else if (w_state == IDLE) begin
             w_len_cnt = 0;
         end
+        else if (w_state == WA) begin
+            w_len_cnt = awlen_o;
+        end
         else if (w_state == W) begin
-            if (wvalid_o && wready_i)
+            if (wvalid_o && wready_i && (w_len_cnt != awlen_o) && (~wlast_o))
                 w_len_cnt = w_len_cnt - 1;
         end 
     end
@@ -154,7 +152,7 @@ module axi_interface_master(
     end
 
     always_comb begin
-        if ((w_len_cnt == 0) && cs_i) 
+        if ((w_len_cnt == 0)) 
             wdata_o = wdata_i[31:0];
         else if (w_len_cnt == 3) 
             wdata_o = wdata_i[63:32];
@@ -162,8 +160,6 @@ module axi_interface_master(
             wdata_o = wdata_i[95:64];
         else if (w_len_cnt == 1)
             wdata_o = wdata_i[127:96];
-        else if (dma_cs_i)
-            wdata_o = dma_wdata_i;
     end
     
 
@@ -206,8 +202,6 @@ module axi_interface_master(
         end else if (w_state == IDLE) begin
             if (cs_i)
                 awaddr_o <= addr_i;
-            else if (dma_cs_i)
-                awaddr_o <= dma_addr_i;
             wstrb_o  <= 4'hf;
         end
         else begin
@@ -235,13 +229,16 @@ module axi_interface_master(
     assign rready_o  = (r_state == R);
     assign arvalid_o = (r_state == RA);
     
-    assign awid_o    = (w_state == WA && cs_i)      ? 1 :
-                       (w_state == WA && dma_cs_i)  ? 0 : 0;
+    assign awid_o    =  (w_state == WA && addr_i[19:16] == 4'h0)     ? `ID_CPU2MEM :
+                        (w_state == WA && addr_i[19:16] == 4'h1)     ? `ID_CPU2DMA : 
+                        (w_state == WA && addr_i[19:16] == 4'h2)     ? `ID_CPU2AES : 0;
 
 
-    assign awlen_o   = 3;
+    assign awlen_o   =  (addr_i[19:16] == 4'h0)     ? 3 :
+                        (addr_i[19:16] == 4'h1)     ? 2 : 
+                        (addr_i[19:16] == 4'h2)     ? 0 : 0;
     assign awsize_o  = 2;
-    assign awburst_o = 1;
+    assign awburst_o = (addr_i[19:16] == 4'h2) ? 0 : 1;
     assign awvalid_o = (w_state == WA);
     
     assign wlast_o  = ((w_state == W) && (w_len_cnt == 1));

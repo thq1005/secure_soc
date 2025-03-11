@@ -28,7 +28,8 @@ module dmac_write (
     input  logic [`ID_BITS - 1:0] m_bid,
     input  logic [2:0] m_bresp,
     input  logic m_bvalid,
-    output logic m_bready
+    output logic m_bready,
+    output logic dma_intr
 );
 
     localparam IDLE = 2'd0, WA = 2'd1, W = 2'd2, B = 2'd3;
@@ -109,6 +110,7 @@ module dmac_write (
     assign m_wvalid  = rdata_valid_i;
     assign m_bready  = (w_state == B);
     assign m_wdata   = data_i;
+    assign dma_intr  = (w_state == B && m_bvalid && m_bready);
 endmodule
 
     

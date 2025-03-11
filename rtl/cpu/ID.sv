@@ -10,7 +10,7 @@ module ID(
 	input logic enable_i,
 	input logic reset_i,
 	input logic hit_d_i,
-	input logic aes_intr,		//aes interrupt
+	input logic dma_intr,		//aes interrupt
 	input logic [31:0] csr_wdata_i,
 	input logic [31:0] csr_waddr_i,
 	input logic csr_we_i,
@@ -31,7 +31,7 @@ module ID(
 	output logic hit_ex_o,
 	/* valid signal when CPU access cache */
 	output logic Valid_cpu2cache_ex_o,
-	output logic Valid_cpu2dma_ex_o,
+	output logic Valid_cpu2aes_ex_o,
 	output logic [31:0] csr_rdata_o,  
 	output logic csr_we_o,
 	output logic [31:0] csr_waddr_o,
@@ -57,13 +57,13 @@ module ID(
 	logic [31:0] inst_r;
 	logic hit_r;
 	
-	logic [2:0] ImmSel_w;
+	logic [3:0] ImmSel_w;
 
 	/* valid signal when CPU access cache */
 	logic Valid_cpu2cache_w;
 	logic Valid_cpu2cache_r;
-	logic Valid_cpu2dma_w;
-	logic Valid_cpu2dma_r;
+	logic Valid_cpu2aes_w;
+	logic Valid_cpu2aes_r;
 
 	logic [31:0] csr_rdata_w;
 	logic [31:0] csr_rdata_r;
@@ -103,7 +103,7 @@ module ID(
 		//.Mul_ext_o(Mul_ext_w)
 		/* valid signal when CPU access cache */
 		.Valid_cpu2cache_o(Valid_cpu2cache_w),
-		.Valid_cpu2dma_o (Valid_cpu2dma_w),
+		.Valid_cpu2aes_o (Valid_cpu2aes_w),
 		.is_mret (is_mret),
 		.csr_we (csr_we_w)
 		);
@@ -111,7 +111,7 @@ module ID(
 	csr_regs CSR_Regs (					//31             20 19    15 14    12 11     7 6     0  
 		.clk_i		(clk_i),			//|       csr      |   rs1  | funct3 |   rd   |opcode|  csrrx
 		.rst_ni		(rst_ni),			//|       csr      |   uimm | funct3 |   rd   |opcode|  csrrxi
-		.e_intr		(aes_intr),
+		.e_intr		(dma_intr),
 		.is_mret	(is_mret),
 		.addr_r		({20'h00000,inst_d_i[31:20]}),
 		.addr_w		(csr_waddr_i),		
@@ -143,7 +143,7 @@ module ID(
 			inst_r <= 32'b0;
 			hit_r <= 1'b0;
 			Valid_cpu2cache_r <= 1'b0;
-			Valid_cpu2dma_r <= 1'b0;
+			Valid_cpu2aes_r <= 1'b0;
 			csr_rdata_r <= 32'b0;
 			csr_we_r <= 1'b0;
 			csr_waddr_r <= 32'b0;
@@ -166,7 +166,7 @@ module ID(
 				inst_r <= 32'b0;
 				hit_r <= 1'b0;
 				Valid_cpu2cache_r <= 1'b0;
-				Valid_cpu2dma_r <= 1'b0;
+				Valid_cpu2aes_r <= 1'b0;
 				csr_rdata_r <= 32'b0;
 				csr_we_r <= 1'b0;
 				csr_waddr_r <= 32'b0;				
@@ -188,7 +188,7 @@ module ID(
 				inst_r <= inst_d_i;
 				hit_r <= hit_d_i;
 				Valid_cpu2cache_r <= Valid_cpu2cache_w;
-				Valid_cpu2dma_r <= Valid_cpu2dma_w;
+				Valid_cpu2aes_r <= Valid_cpu2aes_w;
 				csr_rdata_r <= csr_rdata_w;
 				csr_we_r <= csr_we_w;
 				csr_waddr_r <= csr_waddr_w;
@@ -212,7 +212,7 @@ module ID(
 	assign inst_ex_o = inst_r;
 	assign hit_ex_o = hit_r;
 	assign Valid_cpu2cache_ex_o = Valid_cpu2cache_r;
-	assign Valid_cpu2dma_ex_o = Valid_cpu2dma_r;
+	assign Valid_cpu2aes_ex_o = Valid_cpu2aes_r;
 	assign csr_rdata_o = csr_rdata_r;
 	assign csr_we_o    = csr_we_r;
 	assign csr_waddr_o = csr_waddr_r;

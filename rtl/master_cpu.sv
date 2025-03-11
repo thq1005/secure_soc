@@ -36,7 +36,8 @@ module master_cpu(
       input  logic [2:0] m_rresp,
       input  logic m_rvalid,
       input  logic m_rlast,
-      output logic m_rready
+      output logic m_rready,
+      input logic dma_intr
     );
     
     logic [`ADDR_WIDTH-1:0] mem_addr_w;
@@ -101,9 +102,7 @@ module master_cpu(
     .rdata_i        (mem_rdata_w),
     .rvalid_i       (mem_rvalid_w),
     .handshaked_i   (mem_handshaked_w),
-    .dma_addr_o     (dma_addr_w),
-    .dma_wdata_o    (dma_wdata_w),
-    .dma_cs_o       (dma_cs_w)
+    .dma_intr_i     (dma_intr)
     );
     
     

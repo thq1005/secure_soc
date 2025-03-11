@@ -13,7 +13,7 @@
 `define OP_AUIPC 		 7'b0010111
 `define OP_JALR 		 7'b1100111
 // Opcode for AES-128
-`define OP_DMA_Stype     7'b0100111
+`define OP_AES_Stype     7'b0100111
 
 // ALU function decode from funct3 and bit 5 of funct7
 `define ADD  4'b0000
@@ -28,13 +28,26 @@
 `define AND  4'b0111
 `define B	 4'b1111 // in case of grab only immediate value in LUI instruction
 
+//funct 3 for AES
+ `define BLOCK  3'b000
+ `define KEY    3'b001
+ `define START  3'b010
+ `define CONFI  3'b011
+ `define RESULT 3'b001
+
+// for AES
+`define AES_BLOCK_TYPE  4'b0101
+`define AES_KEY_TYPE    4'b0110
+`define AES_CTRL_TYPE   4'b0111
+`define AES_CONFIG_TYPE 4'b1000
+`define AES_RESULT_TYPE 4'b1001
 
 // Immediate generation type 
-`define I_TYPE 3'b000
-`define S_TYPE 3'b001
-`define B_TYPE 3'b010
-`define J_TYPE 3'b011
-`define U_TYPE 3'b100
+`define I_TYPE 4'b000
+`define S_TYPE 4'b001
+`define B_TYPE 4'b010
+`define J_TYPE 4'b011
+`define U_TYPE 4'b100
 
 
 // Control signal (funct3) for Branch Comparator
@@ -84,9 +97,9 @@
 
 //DMA
 `define ADDR_VALID          32'h00010000
-`define ADDR_ADDR_SRC       32'h00010001
-`define ADDR_ADDR_DST       32'h00010005
-`define ADDR_CONFIG_DMA     32'h0001000a
+`define ADDR_ADDR_SRC       32'h00010004
+`define ADDR_ADDR_DST       32'h00010008
+`define ADDR_CONFIG_DMA     32'h0001000c
 `define DMA_BURST_BIT0      11
 `define DMA_BURST_BIT1      12
 `define DMA_LEN_BIT0        0
@@ -95,7 +108,7 @@
 `define DMA_SIZE_BIT2       10
 
 //ADDR MAP
-`define ADDR_DATA           32'h00000000
+`define ADDR_MEM            32'h00000000
 `define ADDR_DMA            32'h00010000
 `define ADDR_AES            32'h00020000
 

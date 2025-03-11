@@ -70,7 +70,9 @@ module dmac (
         input  logic [2:0] m_rresp,
         input  logic m_rvalid,
         input  logic m_rlast,
-        output logic m_rready
+        output logic m_rready,
+        input logic aes_intr,		//aes interrupt
+        output logic dma_intr		//dma interrupt
 );
     logic we_w;
     logic [`ADDR_WIDTH-1:0] waddr_w;
@@ -183,7 +185,8 @@ module dmac (
         .m_bid,
         .m_bresp,
         .m_bvalid,
-        .m_bready
+        .m_bready,
+        .dma_intr (dma_intr)
     );
 
 
@@ -195,7 +198,10 @@ module dmac (
             valid_reg     <= '0;
         end
         else begin
-            valid_reg   <= valid_new;
+            if (aes_intr)
+                valid_reg   <= 1;
+            else    
+                valid_reg   <= valid_new;
             
             if (config_we) 
                 config_reg <= wdata_w[2+`SIZE_BITS+`LEN_BITS-1:0];

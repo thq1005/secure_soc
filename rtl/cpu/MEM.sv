@@ -14,10 +14,11 @@ module MEM(
 	input stall_by_icache_i,
 	/* valid signal when CPU access cache */
 	input logic Valid_cpu2cache_mem_i,
-	input logic Valid_cpu2dma_mem_i,
+	input logic Valid_cpu2aes_mem_i,
 	input logic csr_we_mem_i,
 	input logic [31:0] csr_waddr_mem_i,
 	input logic [31:0] csr_rdata_mem_i,
+	input logic [31:0] imm_mem_i,
 	output logic [31:0] alu_wb_o,
 	output logic [31:0] pc4_wb_o,
 	output logic [31:0] mem_wb_o,
@@ -29,10 +30,10 @@ module MEM(
 //	output logic [31:0] no_acc_o,
 //	output logic [31:0] no_hit_o,
 //	output logic [31:0] no_miss_o,
-	output logic [31:0] mem_addr_o,
-	output logic [127:0] mem_wdata_o,
-	output logic mem_we_o,
-	output logic mem_cs_o,
+	output logic [31:0] addr_o,
+	output logic [127:0] wdata_o,
+	output logic we_o,
+	output logic cs_o,
 	input logic  [127:0] mem_rdata_i,
 	input logic  mem_rvalid_i,
 	output logic csr_we_wb_o,
@@ -41,8 +42,6 @@ module MEM(
 	);
 	
 	logic [31:0] mem_w;
-	logic [31:0] aes_result_w;
-	logic [31:0] aes_result_r;
 	logic [31:0] alu_r, pc4_r, mem_r;
 	logic [1:0] WBSel_r;
 	logic RegWEn_r;
@@ -60,10 +59,17 @@ module MEM(
 
 	cache_data_type memory_data_w;
 
-	assign mem_addr_o  = mem_req_w.addr;
-	assign mem_wdata_o = mem_req_w.data;
-	assign mem_we_o    = mem_req_w.rw;
-	assign mem_cs_o    = mem_req_w.valid;
+	assign addr_o  		= (mem_req_w.valid) 	? mem_req_w.addr :
+						  (Valid_cpu2aes_mem_i && imm_mem_i == `ADDR_CTRL)   ? `ADDR_CTRL : 
+						  (Valid_cpu2aes_mem_i && imm_mem_i == `ADDR_CONFIG) ? `ADDR_CONFIG : 
+						  (Valid_cpu2aes_mem_i && imm_mem_i == `ADDR_KEY0) 	 ? `ADDR_VALID :
+						  (Valid_cpu2aes_mem_i && imm_mem_i == `ADDR_BLOCK0) ? `ADDR_VALID :
+						  (Valid_cpu2aes_mem_i && imm_mem_i == `ADDR_RESULT0)? `ADDR_ADDR_SRC : 32'h0;
+	assign we_o    		= (mem_req_w.valid) ? mem_req_w.rw :
+						  (Valid_cpu2aes_mem_i)   ? 1'b1 : 1'b0;
+	assign wdata_o 		= (mem_req_w.valid) ? mem_req_w.data:
+						  (Valid_cpu2aes_mem_i&& imm_mem_i == `ADDR_RESULT0)  ? {12'h0,12'b011000000011,alu_mem_i,imm_mem_i} : {12'h1,12'b011000000011,alu_mem_i,imm_mem_i};
+	assign cs_o    		= mem_req_w.valid | Valid_cpu2aes_mem_i;
 	assign memory_data_w = mem_rdata_i;
 
 	
