@@ -9,7 +9,8 @@ module aes(
     
     input logic [31:0] addr_i,
     input logic [31:0] wdata_i,
-    output logic [31:0] rdata_o
+    output logic [31:0] rdata_o,
+    output logic aes_intr
     );
     
     logic init_reg;
@@ -129,4 +130,6 @@ always_comb begin
         end
     end
 end
+
+assign aes_intr = valid_reg;
 endmodule

@@ -44,9 +44,6 @@ module master_cpu(
     logic [`DATA_WIDTH_CACHE-1:0] mem_wdata_w, mem_rdata_w;
     logic mem_we_w,mem_cs_w,mem_rvalid_w,mem_handshaked_w;
     
-    logic [`ADDR_WIDTH-1:0] dma_addr_w;
-    logic [`DATA_WIDTH-1:0] dma_wdata_w;
-    logic dma_cs_w;
 
     axi_interface_master m_itf (
     .clk_i        (clk_i),
@@ -86,10 +83,7 @@ module master_cpu(
     .cs_i         (mem_cs_w),
     .rdata_o      (mem_rdata_w),
     .rvalid_o     (mem_rvalid_w),
-    .handshaked_o (mem_handshaked_w),
-    .dma_addr_i   (dma_addr_w),
-    .dma_wdata_i  (dma_wdata_w),
-    .dma_cs_i     (dma_cs_w)
+    .handshaked_o (mem_handshaked_w)
     );
     
     riscv_cache cpu_inst (
@@ -102,7 +96,7 @@ module master_cpu(
     .rdata_i        (mem_rdata_w),
     .rvalid_i       (mem_rvalid_w),
     .handshaked_i   (mem_handshaked_w),
-    .dma_intr_i     (dma_intr)
+    .dma_intr       (dma_intr)
     );
     
     

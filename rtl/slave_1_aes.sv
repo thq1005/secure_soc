@@ -36,7 +36,8 @@ module slave_1_aes(
   output logic [2:0] rresp,
   output logic rvalid,
   output logic rlast,
-  input logic rready
+  input logic rready,
+  output logic aes_intr
 );
     
 logic we_w;
@@ -133,6 +134,7 @@ aes aes_inst(
 .we_i    (a_we),
 .addr_i  (a_addr),
 .wdata_i (a_wdata),
-.rdata_o (a_rdata)
+.rdata_o (a_rdata),
+.aes_intr(aes_intr)
 );
 endmodule

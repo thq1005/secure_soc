@@ -42,12 +42,15 @@ module slave_0_sdram(
 logic we_w;
 logic [`ADDR_WIDTH-1:0] waddr_w;
 logic [`DATA_WIDTH-1:0] wdata_w;
-logic [(`DATA_WIDTH/8)-1:0] strb_w;
 logic re_w;
 logic [`ADDR_WIDTH-1:0] raddr_w;
 logic [`DATA_WIDTH-1:0] rdata_w;
 
-logic r_cs;
+logic cs_w;
+logic wr_w;
+logic [31:0] addr_w;
+logic [31:0] rdata_w;
+logic [31:0] wdata_w;
 
 axi_interface_slave s1_itf (
 .clk_i      (clk_i),
@@ -84,27 +87,22 @@ axi_interface_slave s1_itf (
 .o_we       (we_w),
 .o_waddr    (waddr_w),
 .o_wdata    (wdata_w),
-.o_strb     (strb_w),
+.o_strb     (),
 .o_re       (re_w),
 .o_raddr    (raddr_w),
 .i_rdata    (rdata_w)
 );
 
-always_comb begin
-    r_cs = 0;
-    if (we_w || re_w) 
-        r_cs = 1;
-end
-
+assign cs_w = (we_w || re_w) ? 1 : 0;
+assign wr_w = we_w ? 1 : 0;
+assign addr_w = we_w ? waddr_w : raddr_w;
 
 ram sdram_inst(
 .clk_i    (clk_i),
 .rst_ni   (rst_ni),   
-.cs_i     (r_cs),
-.we_i     (we_w),
-.re_i     (re_w),
-.raddr_i  (raddr_w),
-.waddr_i  (waddr_w),
+.cs_i     (cs_w),
+.wr_i     (we_w),
+.addr_i   (addr_w),
 .wdata_i  (wdata_w),
 .rdata_o  (rdata_w)
 );

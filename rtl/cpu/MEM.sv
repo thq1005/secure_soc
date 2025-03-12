@@ -1,3 +1,4 @@
+`include "../define.sv" 
 module MEM(
 	input logic clk_i,
 	input logic rst_ni,
@@ -49,7 +50,7 @@ module MEM(
 	logic [31:0] inst_r;
 	logic [31:0] csr_waddr_mem_r;
 	logic csr_we_mem_r;
-	logic [31:0] csr_rdata_wb_r;
+	logic [31:0] csr_rdata_mem_r;
 
 	/* valid signal that memory response to cache */
 	cpu_req_type cpu_req_w;
@@ -65,10 +66,10 @@ module MEM(
 						  (Valid_cpu2aes_mem_i && imm_mem_i == `ADDR_KEY0) 	 ? `ADDR_VALID :
 						  (Valid_cpu2aes_mem_i && imm_mem_i == `ADDR_BLOCK0) ? `ADDR_VALID :
 						  (Valid_cpu2aes_mem_i && imm_mem_i == `ADDR_RESULT0)? `ADDR_ADDR_SRC : 32'h0;
-	assign we_o    		= (mem_req_w.valid) ? mem_req_w.rw :
-						  (Valid_cpu2aes_mem_i)   ? 1'b1 : 1'b0;
+	assign we_o    		= (mem_req_w.valid) 	? mem_req_w.rw :
+						  (Valid_cpu2aes_mem_i) ? 1'b1 : 1'b0;
 	assign wdata_o 		= (mem_req_w.valid) ? mem_req_w.data:
-						  (Valid_cpu2aes_mem_i&& imm_mem_i == `ADDR_RESULT0)  ? {12'h0,12'b011000000011,alu_mem_i,imm_mem_i} : {12'h1,12'b011000000011,alu_mem_i,imm_mem_i};
+						  (Valid_cpu2aes_mem_i&& imm_mem_i == `ADDR_RESULT0)  ? {52'h0000000000000,12'b011000000011,alu_mem_i,imm_mem_i} : {52'h0000000000001,12'b011000000011,alu_mem_i,imm_mem_i};
 	assign cs_o    		= mem_req_w.valid | Valid_cpu2aes_mem_i;
 	assign memory_data_w = mem_rdata_i;
 
@@ -98,7 +99,7 @@ module MEM(
 			inst_r <= 32'b0;
 			csr_waddr_mem_r <= 32'b0;
 			csr_we_mem_r <= 1'b0;
-			csr_rdata_wb_r <= 32'b0;
+			csr_rdata_mem_r <= 32'b0;
 		end
 		else if (enable_i) begin
 			if (reset_i) begin
@@ -111,7 +112,7 @@ module MEM(
 				inst_r <= 32'b0;
 				csr_waddr_mem_r <= 32'b0;
 				csr_we_mem_r <= 1'b0;
-				csr_rdata_wb_r <= 32'b0;
+				csr_rdata_mem_r <= 32'b0;
 			end
 			else begin
 				alu_r <= alu_mem_i;
@@ -123,7 +124,7 @@ module MEM(
 				inst_r <= inst_mem_i;
 				csr_waddr_mem_r <= csr_waddr_mem_i;
 				csr_we_mem_r <= csr_we_mem_i;
-				csr_rdata_wb_r <= csr_rdata_mem_i;
+				csr_rdata_mem_r <= csr_rdata_mem_i;
 			end
 		end
 	end
@@ -149,7 +150,7 @@ module MEM(
 	/* control stall for previous stages */
 	assign stall_by_dcache_o = (Valid_cpu2cache_mem_i&(~cpu_result_w.ready)) ? 1'b1 : 1'b0;
 	
-	assign csr_waddr_mem_o = csr_waddr_mem_r;
-	assign csr_we_mem_o = csr_we_mem_r;
-	assign csr_rdata_wb_o = csr_rdata_wb_r;
+	assign csr_waddr_wb_o = csr_waddr_mem_r;
+	assign csr_we_wb_o = csr_we_mem_r;
+	assign csr_rdata_wb_o = csr_rdata_mem_r;
 endmodule

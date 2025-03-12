@@ -73,7 +73,7 @@ module axi_interface_master(
     always_comb begin
         case (w_state)
         IDLE: begin
-            if ((we_i && cs_i)|dma_cs_i)
+            if (we_i && cs_i)
                 w_next_state = WA;
             else 
                 w_next_state = IDLE;
@@ -222,7 +222,7 @@ module axi_interface_master(
         end
     end
       
-    assign arid_o    = 1;
+    assign arid_o    = `ID_CPU2MEM;
     assign arlen_o   = 3;
     assign arsize_o  = 2;
     assign arburst_o = 1;

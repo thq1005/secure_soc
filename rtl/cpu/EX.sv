@@ -46,7 +46,7 @@ module EX(
 	output logic csr_we_mem_o,
 	output logic [31:0] csr_waddr_mem_o,
 	output logic [31:0] csr_rdata_mem_o,
-	output logic [31:0] imm_o,
+	output logic [31:0] imm_o
 	);
 	
 	logic [31:0] alu_w;

@@ -14,7 +14,7 @@ module riscv_cache(
 	);
 	
 	logic BrEq_w, BrLt_w;
-	logic [4:0] rsW_w;
+	//logic [4:0] rsW_w;
 	logic [31:0] alu_mem_w, pc_d_w, inst_d_w, pc4_d_w, data_wb_w;
 	logic hit_d_w;
 	logic [31:0] rs1_ex_w, rs2_ex_w, imm_ex_w, pc_ex_w, pc4_ex_w;
@@ -236,6 +236,7 @@ module riscv_cache(
 		.enable_i(~(Stall_WB_w | stall_by_dcache_w | stall_by_icache_w)),
 		.reset_i(Flush_WB_w),
 		.Valid_cpu2cache_mem_i(Valid_cpu2cache_mem_w),
+		.Valid_cpu2aes_mem_i(Valid_cpu2aes_mem_w),
 		.stall_by_icache_i(stall_by_icache_w),
 		.csr_we_mem_i(csr_we_mem_w),
 		.csr_waddr_mem_i(csr_waddr_mem_w),
@@ -251,15 +252,16 @@ module riscv_cache(
 //		.no_acc_o(dcache_no_acc_w),
 //		.no_hit_o(dcache_no_hit_w),
 //		.no_miss_o(dcache_no_miss_w),
-		.addr_o	(mem_addr_o),
-	    .wdata_o(mem_wdata_o),
-	    .we_o	(mem_we_o),
-	    .cs_o	(mem_cs_o),
-	    .mem_rdata_i(dmem_rdata_i),
-	    .mem_rvalid_i(dmem_rvalid_i),
+		.addr_o	(mem_addr_w),
+	    .wdata_o(mem_wdata_w),
+	    .we_o	(mem_we_w),
+	    .cs_o	(mem_cs_w),
+	    .mem_rdata_i(dmem_rdata_w),
+	    .mem_rvalid_i(dmem_rvalid_w),
 		.csr_we_wb_o(csr_we_wb_w),
 		.csr_waddr_wb_o(csr_waddr_wb_w),	
-		.csr_rdata_wb_o(csr_rdata_wb_w)	
+		.csr_rdata_wb_o(csr_rdata_wb_w),
+		.imm_mem_i (imm_mem_w)
 		);
 		
 	WB WB(

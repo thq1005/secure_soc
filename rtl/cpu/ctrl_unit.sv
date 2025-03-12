@@ -43,7 +43,7 @@ module ctrl_unit(
 	assign Bsel_o = ((opcode_r == `OP_Rtype)|(opcode_r == `OP_Itype_csr)) ? 1'b0 : 1'b1;
 	
 	assign ImmSel_o = 	((opcode_r == `OP_Itype) | (opcode_r == `OP_JALR) | (opcode_r == `OP_Itype_load) | (opcode_r == `OP_Itype_csr)) 	? `I_TYPE : 
-					    ((opcode_r == `OP_Stype) | (opcode_r == `OP_DMA_Stype)) 															? `S_TYPE : 
+					    ((opcode_r == `OP_Stype) | (opcode_r == `OP_AES_Stype)) 															? `S_TYPE : 
 					    (opcode_r == `OP_Btype)																								? `B_TYPE : 
                         (opcode_r == `OP_JAL)   																							? `J_TYPE : 
                     	((opcode_r == `OP_LUI) | (opcode_r == `OP_AUIPC))																	? `U_TYPE : 

@@ -117,4 +117,5 @@
 `define ID_CPU2DMA          1
 `define ID_DMA2MEM          2
 `define ID_DMA2AES          3
+`define ID_CPU2AES          4
 `endif
