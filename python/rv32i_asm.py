@@ -15,8 +15,8 @@ import re
 opcode_table = {
     'add': '0110011', 'sub': '0110011', 'xor': '0110011', 'or': '0110011', 'and': '0110011', 'sll': '0110011', 'srl': '0110011', 'sra': '0110011', 'slt': '0110011', 'sltu': '0110011', # R-type
     'addi': '0010011', 'xori': '0010011', 'andi': '0010011', 'ori': '0010011', 'slli': '0010011', 'srli': '0010011', 'srai': '0010011', 'slti': '0010011', 'sltiu': '0010011', # I-type
-    'lb': '0000011', 'lh': '0000011', 'lw': '0000011', 'lbu': '0000011', 'lhu': '0000011', 'aes_read_result': '0101011', 'aes_read_status': '0101011', # I-type
-    'sb': '0100011', 'sh': '0100011', 'sw': '0100011', 'aes_write_block': '0100111', 'aes_write_key': '0100111', 'aes_write_config': '0100111', 'aes_write_ctrl': '0100111', # S-type
+    'lb': '0000011', 'lh': '0000011', 'lw': '0000011', 'lbu': '0000011', 'lhu': '0000011', # I-type
+    'sb': '0100011', 'sh': '0100011', 'sw': '0100011', 'aes_cfg': '0100111', 'aes_key': '0100111', 'aes_blk': '0100111', 'aes_start': '0100111', 'aes_res' : '0100111', # S-type
     'beq': '1100011', 'bne': '1100011', 'blt': '1100011', 'bge': '1100011', 'bltu': '1100011', 'bgeu': '1100011', # SB-type
     'jalr': '1100111', # I-type
     'jal': '1101111', # UJ-type
@@ -28,8 +28,8 @@ funct3_table = {
     'add': '000', 'sub': '000', 'xor': '100', 'or': '110', 'and': '111', 'sll': '001', 'srl': '101', 'sra': '101', 'slt': '010', 'sltu': '011', # R-type
     'addi': '000', 'xori': '100', 'andi': '111', 'ori': '110', 'slli': '001', 'srli': '101', 'srai': '101', 'slti': '010', 'sltiu': '011', # I-type
     'lb': '000', 'lh': '001', 'lw': '010', 'lbu': '100', 'lhu': '101', # I-type
-    'aes_read_result': '001', 'aes_read_status': '000',
-    'aes_write_block': '000', 'aes_write_key': '001', 'aes_write_ctrl': '010', 'aes_write_config': '011',
+    'aes_cfg': '011', 'aes_start': '010',
+    'aes_block': '000', 'aes_key': '001', 'aes_res': '100',
     'sb': '000', 'sh': '001', 'sw': '010', # S-type
     'beq': '000', 'bne': '001', 'blt': '100', 'bge': '101', 'bltu': '110', 'bgeu': '111', # SB-type
     'jalr': '000', # I-type
@@ -258,17 +258,11 @@ def asm_to_bin(instruction):
 
             imm_bin = imm_to_bin(imm, 20)
             return f"{imm_bin}{rd}{opcode_table[opcode]}"
-        elif opcode in ['aes_read_status', 'aes_read_result']:
-            imm = "000000000000"
-            rd  = reg_table[parts[1][:-1]]
-            rs1 = reg_table[parts[2]]
+        elif opcode in ['aes_cfg', 'aes_key', 'aes_blk', 'aes_start', 'aes_res']:
             funct3 = funct3_table[opcode]
-            return f"{imm}{rs1}{funct3}{rd}{opcode_table[opcode]}"
-        elif opcode in ['aes_write_block', 'aes_write_key', 'aes_write_config', 'aes_write_ctrl']:
-            funct3 = funct3_table[opcode]
-            rs2 = reg_table[parts[1][:-1]]
+            rs2 = "00000"
             imm = "000000000000"
-            rs1 = reg_table[parts[2]]
+            rs1 = reg_table[parts[1]]
             return f"{imm[:7]}{rs2}{rs1}{funct3}{imm[7:]}{opcode_table[opcode]}"
         elif opcode in ['csrrw', 'csrrwi', 'csrrc', 'csrrci', 'csrrs', 'csrrsi']:
             funct3 = funct3_table[opcode]

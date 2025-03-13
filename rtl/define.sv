@@ -33,7 +33,7 @@
  `define KEY    3'b001
  `define START  3'b010
  `define CONFI  3'b011
- `define RESULT 3'b001
+ `define RESULT 3'b100
 
 // for AES
 `define AES_BLOCK_TYPE  4'b0101

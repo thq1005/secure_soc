@@ -23,10 +23,7 @@ module csr_ops (
     localparam MEIE = 11;  //index, corresponds to meie bit of mie_reg
     localparam MEIP = 11;  //index, corresponds to meip bit of mip_reg
 
-    logic timer_intr_flag; //tells coming of local timer interrupt came or not
-    logic exter_intr_flag; //tells coming of local externall interrupt came or not
-
-    logic timer_intr_came; //if mie of mstatus_reg was set, now the interrupt goes to core
+    logic exter_intr_flag; //tells coming of local externall interrupt came or no
     logic exter_intr_came; //if mie of mstatus_reg was set, now the interrupt goes to core
 
     logic [30:0] exp_code;  //exception code

@@ -35,7 +35,7 @@ module csr_regs  (
    logic [`DATA_WIDTH-1:0] mcause_reg;
    logic [`DATA_WIDTH-1:0] mip_reg;
 
-   always_comb begin  //asynchrounus read from CSRs
+   always_comb begin  
       case(addr_r)
          MSTATUS_ADDR : data_o = mstatus_reg; //mstatus
          MIE_ADDR     : data_o = mie_reg;     //mie
@@ -47,7 +47,7 @@ module csr_regs  (
       endcase
    end
 
-    always_ff @ (negedge clk_i) begin  //write at negative edge
+    always_ff @ (negedge clk_i) begin  
         if (~rst_ni) begin
             mstatus_reg <= '0;
             mie_reg     <= '0;
@@ -67,6 +67,18 @@ module csr_regs  (
     end
 
    localparam MEIP = 11; 
+
+   always_ff @(posedge clk_i) begin
+      if (~rst_ni) begin
+         mip_reg <= '0;
+      end
+      if (intr_flag) begin
+         mstatus_reg[MIE] <= 1'b0;
+      end
+      else if (is_mret) begin
+         mstatus_reg[MIE] <= 1'b1;
+      end
+   end
 
    always_ff @(posedge clk_i) begin
       if (~rst_ni) begin
@@ -92,15 +104,8 @@ module csr_regs  (
    always_ff @ (posedge clk_i, posedge e_intr) begin
       if (~rst_ni) 
          mcause_reg <= '0;
-      else if (e_intr) begin
+      else if (e_intr) 
          mcause_reg <= 32'h3;
-      end
-      else if (we && (addr_w == MCAUSE_ADDR)) begin
-         mcause_reg <= data_i;
-      end
-      // else begin
-      //    mcause_reg <= '0;
-      // end
    end
 
 csr_ops i_csr_ops(
