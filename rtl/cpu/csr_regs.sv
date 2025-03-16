@@ -67,6 +67,7 @@ module csr_regs  (
     end
 
    localparam MEIP = 11; 
+   localparam MIE  = 3;
 
    always_ff @(posedge clk_i) begin
       if (~rst_ni) begin
@@ -92,11 +93,11 @@ module csr_regs  (
       end
    end
 
-   always_ff @ (posedge e_intr) begin
+   always_ff @ (posedge e_intr or posedge clk_i) begin
       if (~rst_ni) begin
          mepc_reg <= '0;
       end
-      else begin
+      else if (e_intr) begin
          mepc_reg    <= pc_i;
       end
    end

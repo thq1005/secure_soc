@@ -35,19 +35,12 @@
  `define CONFI  3'b011
  `define RESULT 3'b100
 
-// for AES
-`define AES_BLOCK_TYPE  4'b0101
-`define AES_KEY_TYPE    4'b0110
-`define AES_CTRL_TYPE   4'b0111
-`define AES_CONFIG_TYPE 4'b1000
-`define AES_RESULT_TYPE 4'b1001
-
 // Immediate generation type 
-`define I_TYPE 4'b000
-`define S_TYPE 4'b001
-`define B_TYPE 4'b010
-`define J_TYPE 4'b011
-`define U_TYPE 4'b100
+`define I_TYPE 3'b000
+`define S_TYPE 3'b001
+`define B_TYPE 3'b010
+`define J_TYPE 3'b011
+`define U_TYPE 3'b100
 
 
 // Control signal (funct3) for Branch Comparator

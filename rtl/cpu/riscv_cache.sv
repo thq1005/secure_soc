@@ -218,8 +218,7 @@ module riscv_cache(
 		.Valid_cpu2aes_mem_o(Valid_cpu2aes_mem_w),
 		.csr_we_mem_o(csr_we_mem_w),
 		.csr_waddr_mem_o(csr_waddr_mem_w),
-		.csr_rdata_mem_o(csr_rdata_mem_w),
-		.imm_o (imm_mem_w)
+		.csr_rdata_mem_o(csr_rdata_mem_w)
 		);
 		
 	MEM MEM(
@@ -260,8 +259,7 @@ module riscv_cache(
 	    .mem_rvalid_i(dmem_rvalid_w),
 		.csr_we_wb_o(csr_we_wb_w),
 		.csr_waddr_wb_o(csr_waddr_wb_w),	
-		.csr_rdata_wb_o(csr_rdata_wb_w),
-		.imm_mem_i (imm_mem_w)
+		.csr_rdata_wb_o(csr_rdata_wb_w)
 		);
 		
 	WB WB(

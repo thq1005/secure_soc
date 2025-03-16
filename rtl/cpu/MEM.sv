@@ -19,7 +19,6 @@ module MEM(
 	input logic csr_we_mem_i,
 	input logic [31:0] csr_waddr_mem_i,
 	input logic [31:0] csr_rdata_mem_i,
-	input logic [31:0] imm_mem_i,
 	output logic [31:0] alu_wb_o,
 	output logic [31:0] pc4_wb_o,
 	output logic [31:0] mem_wb_o,
@@ -61,15 +60,16 @@ module MEM(
 	cache_data_type memory_data_w;
 
 	assign addr_o  		= (mem_req_w.valid) 	? mem_req_w.addr :
-						  (Valid_cpu2aes_mem_i && imm_mem_i == `ADDR_CTRL)   ? `ADDR_CTRL : 
-						  (Valid_cpu2aes_mem_i && imm_mem_i == `ADDR_CONFIG) ? `ADDR_CONFIG : 
-						  (Valid_cpu2aes_mem_i && imm_mem_i == `ADDR_KEY0) 	 ? `ADDR_VALID :
-						  (Valid_cpu2aes_mem_i && imm_mem_i == `ADDR_BLOCK0) ? `ADDR_VALID :
-						  (Valid_cpu2aes_mem_i && imm_mem_i == `ADDR_RESULT0)? `ADDR_ADDR_SRC : 32'h0;
+						  (Valid_cpu2aes_mem_i && inst_mem_i[14:12] == `START)  ? `ADDR_CTRL : 
+						  (Valid_cpu2aes_mem_i && inst_mem_i[14:12] == `CONFI) 	? `ADDR_CONFIG : 
+						  (Valid_cpu2aes_mem_i && inst_mem_i[14:12] == `BLOCK) 	? `ADDR_VALID :
+						  (Valid_cpu2aes_mem_i && inst_mem_i[14:12] == `KEY) 	? `ADDR_VALID :
+						  (Valid_cpu2aes_mem_i && inst_mem_i[14:12] == `RESULT)	? `ADDR_ADDR_SRC : 32'h0;
 	assign we_o    		= (mem_req_w.valid) 	? mem_req_w.rw :
 						  (Valid_cpu2aes_mem_i) ? 1'b1 : 1'b0;
 	assign wdata_o 		= (mem_req_w.valid) ? mem_req_w.data:
-						  (Valid_cpu2aes_mem_i&& imm_mem_i == `ADDR_RESULT0)  ? {52'h0000000000000,12'b011000000011,alu_mem_i,imm_mem_i} : {52'h0000000000001,12'b011000000011,alu_mem_i,imm_mem_i};
+						  (Valid_cpu2aes_mem_i && inst_mem_i[14:12] == `RESULT)  ? {52'h0000000000000,12'b011000000011,alu_mem_i,addr_o} : 
+						  (Valid_cpu2aes_mem_i && (inst_mem_i[14:12] == `START | inst_mem_i[14:12] == `CONFI)) ? {96'h0,alu_mem_i} : {52'h0000000000001,12'b011000000011,alu_mem_i,addr_o};
 	assign cs_o    		= mem_req_w.valid | Valid_cpu2aes_mem_i;
 	assign memory_data_w = mem_rdata_i;
 

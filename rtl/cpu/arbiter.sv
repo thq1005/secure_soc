@@ -73,7 +73,7 @@ module arbiter(
             d_rvalid_o  = 0;
         end
         else if (state == MEM) begin       
-            if (d_addr_i[19:16] == 4'h1) begin
+            if (d_addr_i[19:16] == 4'h1 | d_addr_i[19:16] == 4'h2) begin
                 addr_o  = d_addr_i;
             end
             else begin

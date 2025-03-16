@@ -45,8 +45,7 @@ module EX(
 	output logic Valid_cpu2aes_mem_o,
 	output logic csr_we_mem_o,
 	output logic [31:0] csr_waddr_mem_o,
-	output logic [31:0] csr_rdata_mem_o,
-	output logic [31:0] imm_o
+	output logic [31:0] csr_rdata_mem_o
 	);
 	
 	logic [31:0] alu_w;
@@ -68,7 +67,6 @@ module EX(
 	logic [31:0] csr_rdata_ex_r;
 
 	/* valid signal when CPU access cache */
-	logic imm_r;
 	logic Valid_cpu2cache_r;
 	logic Valid_cpu2aes_r;
 
@@ -111,7 +109,9 @@ module EX(
 		.c_o(rs2_haz_w)
 		);
 		
-	assign rs2_csr_w = (alu_csr_sel_i) ? csr_rdata_ex_i : rs2_haz_w;
+	assign rs2_csr_w = 	(alu_csr_sel_i && (inst_ex_i[14:12] == 3'b001 | inst_ex_i[14:12] == 3'b101)) 	? 32'h00000000 :
+						(alu_csr_sel_i) 				? csr_rdata_ex_i : rs2_haz_w ;
+						
 
 	alu ALU_EX(
 		.rs1_i(rs1_haz_w),
@@ -135,7 +135,6 @@ module EX(
 			csr_waddr_ex_r <= 32'b0;
 			csr_we_ex_r <= 1'b0;
 			csr_rdata_ex_r <= 32'b0;
-			imm_r <= 32'b0;
 		end
 		else if (enable_i) begin
 			if (reset_i) begin
@@ -152,7 +151,6 @@ module EX(
 				csr_waddr_ex_r <= 32'b0;
 				csr_we_ex_r <= 1'b0;
 				csr_rdata_ex_r <= 32'b0;
-				imm_r <= 32'b0;
 			end
 			else begin
 				alu_r <= alu_w;
@@ -168,7 +166,6 @@ module EX(
 				csr_waddr_ex_r <= csr_waddr_ex_i;
 				csr_we_ex_r <= csr_we_ex_i;
 				csr_rdata_ex_r <= csr_rdata_ex_i;
-				imm_r <= imm_ex_i;
 			end
 		end
 	end
@@ -189,6 +186,5 @@ module EX(
 	assign csr_waddr_mem_o = csr_waddr_ex_r;
 	assign csr_we_mem_o = csr_we_ex_r;
 	assign csr_rdata_mem_o = csr_rdata_ex_r;
-	assign imm_o = imm_r;
 
 endmodule

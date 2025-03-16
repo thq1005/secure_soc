@@ -57,7 +57,7 @@ module ID(
 	logic [31:0] inst_r;
 	logic hit_r;
 	
-	logic [3:0] ImmSel_w;
+	logic [2:0] ImmSel_w;
 
 	/* valid signal when CPU access cache */
 	logic Valid_cpu2cache_w;

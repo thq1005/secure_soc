@@ -16,12 +16,12 @@ opcode_table = {
     'add': '0110011', 'sub': '0110011', 'xor': '0110011', 'or': '0110011', 'and': '0110011', 'sll': '0110011', 'srl': '0110011', 'sra': '0110011', 'slt': '0110011', 'sltu': '0110011', # R-type
     'addi': '0010011', 'xori': '0010011', 'andi': '0010011', 'ori': '0010011', 'slli': '0010011', 'srli': '0010011', 'srai': '0010011', 'slti': '0010011', 'sltiu': '0010011', # I-type
     'lb': '0000011', 'lh': '0000011', 'lw': '0000011', 'lbu': '0000011', 'lhu': '0000011', # I-type
-    'sb': '0100011', 'sh': '0100011', 'sw': '0100011', 'aes_cfg': '0100111', 'aes_key': '0100111', 'aes_blk': '0100111', 'aes_start': '0100111', 'aes_res' : '0100111', # S-type
+    'sb': '0100011', 'sh': '0100011', 'sw': '0100011', 'aes_cfg': '0100111', 'aes_key': '0100111', 'aes_block': '0100111', 'aes_start': '0100111', 'aes_res' : '0100111', # S-type
     'beq': '1100011', 'bne': '1100011', 'blt': '1100011', 'bge': '1100011', 'bltu': '1100011', 'bgeu': '1100011', # SB-type
     'jalr': '1100111', # I-type
     'jal': '1101111', # UJ-type
     'lui': '0110111', 'auipc': '0010111', # U-type 
-    'csrrs': '1110011' , 'csrrsi': '1110011', 'csrrw': '1110011', 'csrrwi': '1110011', 'csrrc': '1110011', 'csrrci': '1110011' # I-type
+    'csrrs': '1110011' , 'csrrsi': '1110011', 'csrrw': '1110011', 'csrrwi': '1110011', 'csrrc': '1110011', 'csrrci': '1110011', 'mret': '1110011' # I-type
 }
 
 funct3_table = {
@@ -35,7 +35,7 @@ funct3_table = {
     'jalr': '000', # I-type
     'jal': '000', # UJ-type
     'lui': '011', 'auipc': '001', # U-type
-    'csrrw': '001', 'csrrwi': '101', 'csrrs': '010', 'csrrsi': '110', 'csrrc': '011', 'csrrw': '111'  
+    'csrrw': '001', 'csrrwi': '101', 'csrrs': '010', 'csrrsi': '110', 'csrrc': '011', 'csrrci': '111'  
     }
 
 funct7_table = {
@@ -113,7 +113,7 @@ def change_label_to_offset(code):
         if line.endswith(":"):
             continue
         parts = line.split()
-        if parts[0] in ['beq', 'bne', 'blt', 'bge', 'bltu', 'bgeu', 'jal','jalr']:
+        if parts[0] in ['beq', 'bne', 'blt', 'bge', 'bltu', 'bgeu', 'jal','jalr','addi']:
             label = parts[-1]
             if label.isdigit():
                 continue
@@ -258,18 +258,24 @@ def asm_to_bin(instruction):
 
             imm_bin = imm_to_bin(imm, 20)
             return f"{imm_bin}{rd}{opcode_table[opcode]}"
-        elif opcode in ['aes_cfg', 'aes_key', 'aes_blk', 'aes_start', 'aes_res']:
+        elif opcode in ['aes_cfg', 'aes_key', 'aes_block', 'aes_start', 'aes_res']:
             funct3 = funct3_table[opcode]
             rs2 = "00000"
             imm = "000000000000"
-            rs1 = reg_table[parts[1]]
+            if (len(parts) != 1):
+                rs1 = reg_table[parts[1]]
+            else:  
+                rs1 = "00000"
             return f"{imm[:7]}{rs2}{rs1}{funct3}{imm[7:]}{opcode_table[opcode]}"
-        elif opcode in ['csrrw', 'csrrwi', 'csrrc', 'csrrci', 'csrrs', 'csrrsi']:
-            funct3 = funct3_table[opcode]
-            rs1 = reg_table[parts[3]]
-            rd  = reg_table[parts[-1]]
-            imm = csr_table[parts[2][:-1]]
-            return f"{imm}{rs1}{funct3}{rd}{opcode_table[opcode]}"
+        elif opcode in ['csrrw', 'csrrwi', 'csrrc', 'csrrci', 'csrrs', 'csrrsi', 'mret']:
+            if (opcode != 'mret'):
+                funct3 = funct3_table[opcode]
+                rs1 = reg_table[parts[3]]
+                rd  = reg_table[parts[1][:-1]]
+                imm = csr_table[parts[2][:-1]]
+                return f"{imm}{rs1}{funct3}{rd}{opcode_table[opcode]}"
+            else:
+                return f"00110000001000000000000001110011"
     else:
         raise ValueError(f"Unknown opcode: {opcode}")
 
