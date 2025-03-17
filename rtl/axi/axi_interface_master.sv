@@ -43,8 +43,7 @@ module axi_interface_master(
     input logic we_i,
     input logic cs_i,
     output logic [`DATA_WIDTH_CACHE - 1:0] rdata_o,
-    output logic rvalid_o,
-    output logic handshaked_o
+    output logic rvalid_o
     );
     
     localparam IDLE = 2'd0, WA = 2'd1, W = 2'd2, B = 2'd3, RA = 2'd1, R = 2'd2;       
@@ -56,6 +55,31 @@ module axi_interface_master(
     logic [1:0] w_len_cnt;
     logic [1:0] r_len_cnt;
         
+    logic [`ADDR_WIDTH-1:0] addr_w;
+    logic we_w;
+    logic cs_w;
+    logic [`DATA_WIDTH_CACHE-1:0] wdata_w;
+    logic [`DATA_WIDTH_CACHE-1:0] wdata_r;
+
+    fifo #(.DATA_W(1+1+`ADDR_WIDTH+`DATA_WIDTH_CACHE),
+    .DEPTH(4)) fifo_for_w_channel  (
+    .clk_i,
+    .rst_ni,
+    .we_i (awready && awvalid),
+    .re_i (handshaked),
+    .wdata_i ({addr_i,we_i,cs_i,wdata_i}),
+    .rdata_o ({addr_w,we_w,cs_w,wdata_w}),
+    .full  (),
+    .empty ()
+);    
+
+    always_ff @(posedge clk_i) begin
+        if (~rst_ni)
+            wdata_r <= 0;
+        else if (w_next_state == W)
+            wdata_r <= wdata_w; 
+    end
+
     always_ff @(posedge clk_i) begin
         if(~rst_ni) 
             w_state <= 0;
@@ -73,7 +97,7 @@ module axi_interface_master(
     always_comb begin
         case (w_state)
         IDLE: begin
-            if (we_i && cs_i)
+            if (we_w && cs_w)
                 w_next_state = WA;
             else 
                 w_next_state = IDLE;
@@ -133,7 +157,7 @@ module axi_interface_master(
             w_len_cnt = awlen_o;
         end
         else if (w_state == W) begin
-            if (wvalid_o && wready_i && (w_len_cnt != awlen_o) && (~wlast_o))
+            if (wvalid_o && wready_i  && (~wlast_o))
                 w_len_cnt = w_len_cnt - 1;
         end 
     end
@@ -153,13 +177,13 @@ module axi_interface_master(
 
     always_comb begin
         if ((w_len_cnt == 0)) 
-            wdata_o = wdata_i[31:0];
+            wdata_o = wdata_r[31:0];
         else if (w_len_cnt == 3) 
-            wdata_o = wdata_i[63:32];
+            wdata_o = wdata_r[63:32];
         else if (w_len_cnt == 2) 
-            wdata_o = wdata_i[95:64];
+            wdata_o = wdata_r[95:64];
         else if (w_len_cnt == 1)
-            wdata_o = wdata_i[127:96];
+            wdata_o = wdata_r[127:96];
     end
     
 
@@ -182,8 +206,6 @@ module axi_interface_master(
         end
     end
     
-    assign handshaked_o = (r_state == R)?1:0;
-    
     always_ff @(posedge clk_i) begin
         if (!rst_ni) begin
             rvalid_o = 0;
@@ -200,8 +222,8 @@ module axi_interface_master(
             awaddr_o <= 0;
             wstrb_o <= 0;
         end else if (w_state == IDLE) begin
-            if (cs_i)
-                awaddr_o <= addr_i;
+            if (cs_w)
+                awaddr_o <= addr_w;
             wstrb_o  <= 4'hf;
         end
         else begin
@@ -229,16 +251,16 @@ module axi_interface_master(
     assign rready_o  = (r_state == R);
     assign arvalid_o = (r_state == RA);
     
-    assign awid_o    =  (w_state == WA && addr_i[19:16] == 4'h0)     ? `ID_CPU2MEM :
-                        (w_state == WA && addr_i[19:16] == 4'h1)     ? `ID_CPU2DMA : 
-                        (w_state == WA && addr_i[19:16] == 4'h2)     ? `ID_CPU2AES : 0;
+    assign awid_o    =  (w_state == WA && addr_w[19:16] == 4'h0)     ? `ID_CPU2MEM :
+                        (w_state == WA && addr_w[19:16] == 4'h1)     ? `ID_CPU2DMA : 
+                        (w_state == WA && addr_w[19:16] == 4'h2)     ? `ID_CPU2AES : 0;
 
 
-    assign awlen_o   =  (addr_i[19:16] == 4'h0)     ? 3 :
-                        (addr_i[19:16] == 4'h1)     ? 2 : 
-                        (addr_i[19:16] == 4'h2)     ? 0 : 0;
+    assign awlen_o   =  (addr_w[19:16] == 4'h0)     ? 3 :
+                        (addr_w[19:16] == 4'h1)     ? 2 : 
+                        (addr_w[19:16] == 4'h2)     ? 0 : 0;
     assign awsize_o  = 2;
-    assign awburst_o = (addr_i[19:16] == 4'h2) ? 0 : 1;
+    assign awburst_o = (addr_w[19:16] == 4'h2) ? 0 : 1;
     assign awvalid_o = (w_state == WA);
     
     assign wlast_o  = ((w_state == W) && (w_len_cnt == 1));

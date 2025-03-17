@@ -62,7 +62,7 @@
 `define ADDR_WIDTH     32
 
 //AXI4
-`define ID_BITS   8
+`define ID_BITS   3
 `define LEN_BITS  8
 `define SIZE_BITS 3
 `define RESP_OKAY 0
@@ -70,23 +70,39 @@
 //AES-128
 `define AES_ROUND           10
 `define KEY_WIDTH           128
-`define ADDR_CTRL           32'h00020008
-`define CTRL_INIT_BIT       0
-`define CTRL_NEXT_BIT       1
-`define ADDR_STATUS         32'h00020009
-`define STATUS_READY_BIT    0
-`define STATUS_VALID_BIT    1
-`define ADDR_CONFIG         32'h0002000a
-`define CTRL_ENCDEC_BIT     0
-`define ADDR_KEY0           32'h00020010
-`define ADDR_KEY3           32'h00020013
-`define ADDR_BLOCK0         32'h00020014
-`define ADDR_BLOCK3         32'h00020017
-`define ADDR_RESULT0        32'h00020030
-`define ADDR_RESULT3        32'h00020033
-
-//Asyn AXI to AXI bridge
-`define FIFO_DEPTH               8
+`define ADDR_CTRL           32'h00020000
+`define CTRL_ON0_BIT        0
+`define CTRL_ON1_BIT        1
+`define CTRL_ON2_BIT        2
+`define CTRL_ON3_BIT        3
+`define ADDR_STATUS         32'h00020001
+`define STATUS_READY0_BIT   0
+`define STATUS_VALID0_BIT   1
+`define STATUS_READY1_BIT   2
+`define STATUS_VALID1_BIT   3
+`define STATUS_READY2_BIT   4
+`define STATUS_VALID2_BIT   5
+`define STATUS_READY3_BIT   6
+`define STATUS_VALID3_BIT   7
+`define ADDR_CONFIG         32'h00020002
+`define CTRL_ENCDEC0_BIT    0
+`define CTRL_ENCDEC1_BIT    1
+`define CTRL_ENCDEC2_BIT    2
+`define CTRL_ENCDEC3_BIT    3
+`define ADDR_START          32'h00020003
+`define START_BIT           0
+`define ADDR_KEY0           32'h00020004
+`define ADDR_KEY1           32'h00020014
+`define ADDR_KEY2           32'h00020024
+`define ADDR_KEY3           32'h00020034
+`define ADDR_BLOCK0         32'h00020044
+`define ADDR_BLOCK1         32'h00020054
+`define ADDR_BLOCK2         32'h00020064
+`define ADDR_BLOCK3         32'h00020074
+`define ADDR_RESULT0        32'h00020084
+`define ADDR_RESULT1        32'h00020094
+`define ADDR_RESULT2        32'h000200a4
+`define ADDR_RESULT3        32'h000200b4
 
 //DMA
 `define ADDR_VALID          32'h00010000

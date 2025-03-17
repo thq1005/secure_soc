@@ -5,8 +5,7 @@ module aes_core(
         input logic rst_ni,
         
         input logic encdec_i,
-        input logic init_i,
-        input logic next_i,
+        input logic on_i,
         output logic ready_o,
         
         input logic [127:0] key_i,
@@ -31,6 +30,7 @@ logic         ready_reg;
 logic         ready_new;
 logic         ready_we;
 logic         init_state;
+
 
 logic [127 : 0] round_key;
 logic           key_ready;
@@ -109,6 +109,7 @@ always_ff @(posedge clk_i) begin
             
         if (aes_core_ctrl_we)
             aes_core_ctrl_reg <= aes_core_ctrl_new;
+
     end 
 end
 
@@ -116,8 +117,7 @@ always_comb begin
     if(init_state)
         muxed_sboxw = keymem_sboxw;
     else
-        muxed_sboxw = enc_sboxw;
-        
+        muxed_sboxw = enc_sboxw;        
 end
 
 ///////////////////////////////////////////
@@ -154,10 +154,11 @@ always_comb begin
     result_valid_we  = 1'b0;
     aes_core_ctrl_new = CTRL_IDLE;
     aes_core_ctrl_we  = 1'b0;
-    
+    next_new = 1'b0;
+
     case (aes_core_ctrl_reg)
     CTRL_IDLE: begin
-        if (init_i) begin
+        if (on_i) begin
             init_state = 1'b1;
             ready_new  = 1'b0;
             ready_we   = 1'b1;
@@ -166,24 +167,14 @@ always_comb begin
             aes_core_ctrl_new = CTRL_INIT;
             aes_core_ctrl_we  = 1'b1;
         end
-        else if (next_i) begin
-            init_state       = 1'b0;
-            ready_new        = 1'b0;
-            ready_we         = 1'b1;
-            result_valid_new = 1'b0;
-            result_valid_we  = 1'b1;
-            aes_core_ctrl_new= CTRL_NEXT;
-            aes_core_ctrl_we = 1'b1;
-        end
     end
     
     CTRL_INIT: begin
         init_state = 1'b1;
         if (key_ready) begin
-            ready_new         = 1'b1;
-            ready_we          = 1'b1;
-            aes_core_ctrl_new = CTRL_IDLE;
-            aes_core_ctrl_we  = 1'b1;
+            init_state       = 1'b0;
+            aes_core_ctrl_new= CTRL_NEXT;
+            aes_core_ctrl_we = 1'b1;
         end
             
     end

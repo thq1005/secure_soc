@@ -257,7 +257,8 @@ module axi_bus(
             handshaked = awready && awvalid;
     end
 
-    fifo fifo_for_w_channel (
+    fifo #(.DATA_W(3), 
+           .DEPTH(4)) fifo_for_w_channel  (
         .clk_i,
         .rst_ni,
         .we_i (awready && awvalid),

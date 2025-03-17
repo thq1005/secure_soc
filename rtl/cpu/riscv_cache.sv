@@ -9,7 +9,6 @@ module riscv_cache(
     output logic cs_o,
     input logic [`DATA_WIDTH_CACHE-1:0] rdata_i,
     input logic rvalid_i,
-    input logic handshaked_i,
 	input logic dma_intr
 	);
 	
@@ -336,8 +335,7 @@ module riscv_cache(
 		.we_o        (we_o),
 		.cs_o        (cs_o),
 		.rdata_i     (rdata_i),
-		.rvalid_i    (rvalid_i),
-		.handshaked_i(handshaked_i)
+		.rvalid_i    (rvalid_i)
     );
 endmodule
 
