@@ -129,14 +129,14 @@ always_comb begin
     dec_next = 1'b0;
     if (encdec_i) begin
         //encipher
-        enc_next        = next_i;
+        enc_next        = on_i;
         muxed_round_nr  = enc_round_nr;
         muxed_new_block = enc_new_block;
         muxed_ready     = enc_ready;
     end
     else begin
         //decipher
-        dec_next        = next_i;
+        dec_next        = on_i;
         muxed_round_nr  = dec_round_nr;
         muxed_new_block = dec_new_block;
         muxed_ready     = dec_ready;
@@ -154,7 +154,6 @@ always_comb begin
     result_valid_we  = 1'b0;
     aes_core_ctrl_new = CTRL_IDLE;
     aes_core_ctrl_we  = 1'b0;
-    next_new = 1'b0;
 
     case (aes_core_ctrl_reg)
     CTRL_IDLE: begin

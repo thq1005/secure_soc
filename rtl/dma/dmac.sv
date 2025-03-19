@@ -74,25 +74,65 @@ module dmac (
         input logic aes_intr,		//aes interrupt
         output logic dma_intr		//dma interrupt
 );
-    logic we_w;
-    logic [`ADDR_WIDTH-1:0] waddr_w;
-    logic [`DATA_WIDTH-1:0] wdata_w;
-    logic [(`DATA_WIDTH/8)-1:0] strb_w;
-    logic rdata_valid_w;
-    logic [`DATA_WIDTH-1:0] data_w;
+     // | burst | size | len |
+     // 12    11 10   8 7    0
 
+    // FIFO signals
+    logic fifo_push, fifo_pop;
+    logic fifo_full, fifo_empty;
+    logic [`ADDR_WIDTH-1:0] fifo_src_addr, fifo_dst_addr;
+    logic [2+`SIZE_BITS+`LEN_BITS-1:0] fifo_config;
+    logic fifo_mode;
 
-    logic [`ADDR_WIDTH-1:0] src_addr_reg;
-    logic src_addr_we;
-    
-    logic [`ADDR_WIDTH-1:0] dst_addr_reg;
-    logic dst_addr_we;
+    // Current request signals
+    logic [`ADDR_WIDTH-1:0] current_src_addr, current_dst_addr;
+    logic [2+`SIZE_BITS+`LEN_BITS-1:0] current_config;
+    logic current_mode;
+    logic current_valid;
 
-    logic [2+`SIZE_BITS+`LEN_BITS-1:0] config_reg; // | burst | size | len |
-    logic config_we;                               // 12    11 10   8 7    0
+    fifo #(
+        .DATA_W (`ADDR_WIDTH+`ADDR_WIDTH+2+`SIZE_BITS+`LEN_BITS),
+        .DEPTH  (4)) fifo_inst (
+        .clk_i  (clk_i),
+        .rst_ni (rst_ni),
+        .we_i   (fifo_push),
+        .re_i   (fifo_pop),
+        .full   (fifo_full),
+        .empty  (fifo_empty),
+        .wdata_i({fifo_src_addr, fifo_dst_addr, fifo_config, fifo_mode}),
+        .rdata_o({current_src_addr, current_dst_addr, current_config, current_mode})
+    );
 
-    logic valid_reg;   
-    logic valid_new;
+    always_comb begin
+        fifo_push = 1'b0;
+        if (we_w) begin
+            if (waddr_w == `ADDR_VALID && wdata_w[0] && !fifo_full) begin
+                fifo_push = 1'b1;
+            end
+        end
+    end
+
+    always_ff @(posedge clk_i) begin
+        if (!rst_ni) begin
+            current_src_addr <= '0;
+            current_dst_addr <= '0;
+            current_config   <= '0;
+            current_mode     <= '0;
+            current_valid    <= 1'b0;
+        end else if (!current_valid && !fifo_empty) begin
+            // Fetch the next request from the FIFO
+            current_src_addr <= fifo_src_addr;
+            current_dst_addr <= fifo_dst_addr;
+            current_config   <= fifo_config;
+            current_mode     <= fifo_mode;
+            current_valid    <= 1'b1;
+            fifo_pop         <= 1'b1;
+        end else if (dma_intr_w) begin
+            // Clear the current request when completed
+            current_valid <= 1'b0;
+            fifo_pop      <= 1'b0;
+        end
+    end
 
     axi_interface_slave s_itf (
         .clk_i      (clk_i),
@@ -138,11 +178,11 @@ module dmac (
     dmac_read read_inst (
         .clk_i,
         .rst_ni,
-        .valid_i    (valid_reg),
-        .src_addr_i (src_addr_reg),
-        .len_i      (config_reg[`DMA_LEN_BIT7:`DMA_LEN_BIT0]),
-        .size_i     (config_reg[`DMA_SIZE_BIT2:`DMA_SIZE_BIT0]),
-        .burst_i    (config_reg[`DMA_BURST_BIT1:`DMA_BURST_BIT0]),
+        .valid_i    (current_valid && (current_mode == 1'b0)),
+        .src_addr_i (current_src_addr),
+        .len_i      (current_config[`DMA_LEN_BIT7:`DMA_LEN_BIT0]),
+        .size_i     (current_config[`DMA_SIZE_BIT2:`DMA_SIZE_BIT0]),
+        .burst_i    (current_config[`DMA_BURST_BIT1:`DMA_BURST_BIT0]),
         .rdata_valid_o (rdata_valid_w),
         .data_o     (data_w),
         .m_arid,
@@ -160,14 +200,16 @@ module dmac (
         .m_rready
     );
 
+    logic dma_intr_w;
+
     dmac_write write_inst (
         .clk_i,
         .rst_ni,
-        .valid_i    (valid_reg),
-        .dst_addr_i (dst_addr_reg),
-        .len_i      (config_reg[`DMA_LEN_BIT7:`DMA_LEN_BIT0]),
-        .size_i     (config_reg[`DMA_SIZE_BIT2:`DMA_SIZE_BIT0]),
-        .burst_i    (config_reg[`DMA_BURST_BIT1:`DMA_BURST_BIT0]),
+        .valid_i    (current_valid && (current_mode == 1'b1)),
+        .dst_addr_i (current_dst_addr),
+        .len_i      (current_config[`DMA_LEN_BIT7:`DMA_LEN_BIT0]),
+        .size_i     (current_config[`DMA_SIZE_BIT2:`DMA_SIZE_BIT0]),
+        .burst_i    (current_config[`DMA_BURST_BIT1:`DMA_BURST_BIT0]),
         .rdata_valid_i (rdata_valid_w),
         .data_i     (data_w),
         .m_awid,
@@ -186,39 +228,34 @@ module dmac (
         .m_bresp,
         .m_bvalid,
         .m_bready,
-        .dma_intr (dma_intr)
+        .dma_intr (dma_intr_w)
     );
 
 
     always_ff @(posedge clk_i) begin
         if (!rst_ni) begin            
-            src_addr_reg  <= '0;
-            dst_addr_reg  <= '0;
-            config_reg    <= '0; 
+            fifo_src_addr  <= '0;
+            fifo_dst_addr  <= '0;
+            fifo_config    <= '0; 
             valid_reg     <= '0;
         end
-        else begin
-            if (aes_intr)
-                valid_reg   <= 1;
-            else    
-                valid_reg   <= valid_new;
-            
-            if (config_we) 
-                config_reg <= wdata_w[2+`SIZE_BITS+`LEN_BITS-1:0];
-                
+        else begin           
+            if (config_we) begin
+                fifo_config <= wdata_w[2+`SIZE_BITS+`LEN_BITS-1:0];
+                fifo_mode   <= wdata_w[`DMA_MODE_BIT];
+            end   
             if (src_addr_we)
-                src_addr_reg <= wdata_w;
+                fifo_src_addr <= wdata_w;
             
             if (dst_addr_we)
-                dst_addr_reg <= wdata_w;
+                fifo_dst_addr <= wdata_w;
         end
     end 
 
     always_comb begin
         config_we   = 1'b0;
         src_addr_we = 1'b0;
-        dst_addr_we = 1'b0;
-        valid_new   = 1'h0;  
+        dst_addr_we = 1'b0;  
         if (we_w) begin
             if (waddr_w == `ADDR_ADDR_SRC)
                 src_addr_we = 1'b1;
@@ -228,10 +265,9 @@ module dmac (
     
             if (waddr_w == `ADDR_CONFIG) 
                 config_we = 1'b1;
-            
-            if (waddr_w == `ADDR_VALID)
-                valid_new = wdata_w[0];
         end
     end
+
+    assign dma_intr = (current_mode == 1'b1) && (dma_intr_w);
 
 endmodule

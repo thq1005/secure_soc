@@ -3,15 +3,15 @@
 package cache_def;
     // data structure for cache tag and data
     //cache         |       tag       |  index  | offset |
-    //              31               6 5       4 3       0 
-    parameter TAGMSB = 31; // tag msb
-    parameter TAGLSB = 6; // tag lsb : 4 bits offset (2 bit byte offset, 2 bit for 4 word), 2 bit index
-    parameter INDEX = 2; // No of block bits
-    parameter DEPTH = 4; // No of blocks
-    parameter WAYS = 8; // No of ways
-    parameter DATA_WIDTH = 128; // No bits of cache line data
-    parameter INDEX_WAY = 3; // No bit of way address
-    parameter NO_TAG_TYPE = 2+(TAGMSB-TAGLSB+1); // number bits of cache tag type, include 1 valid bit, 1 dirty bit, tag bits
+    //              31               8 7       4 3       0 
+    parameter TAGMSB = 31;       // tag msb
+    parameter TAGLSB = 8;        // tag lsb : 4 bits offset (2 bit byte offset, 2 bit for 4 word), 2 bit index
+    parameter INDEX  = 4;        // No of set bits
+    parameter DEPTH  = 16;        // No of sets
+    parameter WAYS   = 4;        // No of ways
+    parameter DATA_WIDTH  = 128; // No bits of cache line data
+    parameter INDEX_WAY   = 2;   // No bit of way address
+    parameter NO_TAG_TYPE = 2 + (TAGMSB-TAGLSB+1); // number bits of cache tag type, include 1 valid bit, 1 dirty bit, tag bits
 
     // data structure for cache tag
     typedef struct packed {

@@ -76,9 +76,9 @@ module i_cache(
         .data_req_o(data_req),
         .cpu_res_o(cpu_res_o),
         .mem_req_o(mem_req_o),
-//        .no_acc_o(no_acc_o),
-//        .no_hit_o(no_hit_o),
-//        .no_miss_o(no_miss_o),
+//      .no_acc_o(no_acc_o),
+//      .no_hit_o(no_hit_o),
+//      .no_miss_o(no_miss_o),
         .lru_valid_o(lru_valid),
         .accessing_o(accessing_o)
     );

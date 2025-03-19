@@ -115,6 +115,7 @@
 `define DMA_LEN_BIT7        7
 `define DMA_SIZE_BIT0       8
 `define DMA_SIZE_BIT2       10
+`define DMA_MODE_BIT        13
 
 //ADDR MAP
 `define ADDR_MEM            32'h00000000
