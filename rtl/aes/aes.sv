@@ -18,11 +18,6 @@ module aes(
     logic start_reg;
     logic start_new;
 
-    logic [3:0] init_reg ;
-    logic [3:0] init_w;
-    
-    logic [3:0] next_reg ;
-    logic [3:0] next_w;
     
     logic [3:0] encdec_reg ;
     logic config_we;
@@ -49,8 +44,6 @@ module aes(
     logic [31:0] tmp_read_data;
     
     logic core_encdec;
-    logic core_init;
-    logic core_next;
     logic [127:0] core_key;
     logic [127:0] core_block;
     logic [127:0] core_result;

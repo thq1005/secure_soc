@@ -88,6 +88,13 @@ module riscv_cache(
 	logic [31:0] csr_rdata_wb_w;
 
 	logic [31:0] csr_wdata_w;
+
+	logic [31:0] aes_status_w;
+	logic stall_by_aes_w;
+
+	logic aes_load_ex_w;
+	logic aes_load_mem_w;
+
 //	/* evaluation */
 //	logic [31:0] icache_no_acc_w, icache_no_hit_w, icache_no_miss_w, dcache_no_acc_w, dcache_no_hit_w, dcache_no_miss_w;
 //	//logic [31:0] no_command_w;
@@ -105,8 +112,8 @@ module riscv_cache(
 		.rst_ni(rst_ni),
 		.hit_i(hit_w),
 		.predicted_pc_i(predicted_pc_w),
-		.enable_pc_i(~(Stall_IF_w | stall_by_dcache_w | stall_by_icache_w)),
-		.enable_i(~(Stall_ID_w | stall_by_dcache_w  | stall_by_icache_w)),
+		.enable_pc_i(~(Stall_IF_w | stall_by_dcache_w | stall_by_icache_w | stall_by_aes_w)),
+		.enable_i   (~(Stall_ID_w | stall_by_dcache_w | stall_by_icache_w | stall_by_aes_w)),
 		.reset_i(Flush_ID_w),
 		.mispredicted_pc_i(pc4_ex_w),
 		.wrong_predicted_i(wrong_predicted_w),
@@ -141,7 +148,7 @@ module riscv_cache(
 		.pc4_d_i(pc4_d_w),
 		.RegWEn_i(RegWEn_wb_w),
 		.rsW_i(rsW_wb_w),
-		.enable_i(~(Stall_EX_w | stall_by_dcache_w  | stall_by_icache_w)),
+		.enable_i(~(Stall_EX_w | stall_by_dcache_w  | stall_by_icache_w | stall_by_aes_w)),
 		.reset_i(Flush_EX_w),
 		.hit_d_i(hit_d_w),
 		.dma_intr(dma_intr),		
@@ -171,7 +178,8 @@ module riscv_cache(
 		.alu_csr_sel_o (alu_csr_sel_w),
 		.pc_intr_o (csr_pc_w),
 		.intr_flag (intr_flag),
-		.is_mret   (is_mret)
+		.is_mret   (is_mret),
+		.aes_load_ex_o (aes_load_ex_w)
 		);
 		
 	EX EX(
@@ -194,7 +202,7 @@ module riscv_cache(
 		.Bsel_haz_i(Bsel_haz_w),
 		.inst_ex_i(inst_ex_w),
 		.data_wb_i(data_wb_w),
-		.enable_i(~(Stall_MEM_w | stall_by_dcache_w  | stall_by_icache_w )),
+		.enable_i(~(Stall_MEM_w | stall_by_dcache_w  | stall_by_icache_w | stall_by_aes_w)),
 		.reset_i(Flush_MEM_w),
 		.Valid_cpu2aes_ex_i (Valid_cpu2aes_ex_w),
 		.Valid_cpu2cache_ex_i(Valid_cpu2cache_ex_w),
@@ -202,6 +210,7 @@ module riscv_cache(
 		.csr_we_ex_i(csr_we_ex_w),
 		.csr_waddr_ex_i(csr_waddr_ex_w),
 		.alu_csr_sel_i(alu_csr_sel_w),
+		.aes_load_ex_i(aes_load_ex_w),
 		.alu_mem_o(alu_mem_w),
 		.rs2_mem_o(rs2_mem_w),
 		.pc4_mem_o(pc4_mem_w),
@@ -217,7 +226,8 @@ module riscv_cache(
 		.Valid_cpu2aes_mem_o(Valid_cpu2aes_mem_w),
 		.csr_we_mem_o(csr_we_mem_w),
 		.csr_waddr_mem_o(csr_waddr_mem_w),
-		.csr_rdata_mem_o(csr_rdata_mem_w)
+		.csr_rdata_mem_o(csr_rdata_mem_w),
+		.aes_load_mem_o(aes_load_mem_w)
 		);
 		
 	MEM MEM(
@@ -231,7 +241,7 @@ module riscv_cache(
 		.RegWEn_mem_i(RegWEn_mem_w),
 		.rsW_mem_i(rsW_mem_w),
 		.inst_mem_i(inst_mem_w),
-		.enable_i(~(Stall_WB_w | stall_by_dcache_w | stall_by_icache_w)),
+		.enable_i(~(Stall_WB_w | stall_by_dcache_w | stall_by_icache_w| stall_by_aes_w)),
 		.reset_i(Flush_WB_w),
 		.Valid_cpu2cache_mem_i(Valid_cpu2cache_mem_w),
 		.Valid_cpu2aes_mem_i(Valid_cpu2aes_mem_w),
@@ -239,6 +249,7 @@ module riscv_cache(
 		.csr_we_mem_i(csr_we_mem_w),
 		.csr_waddr_mem_i(csr_waddr_mem_w),
 		.csr_rdata_mem_i(csr_rdata_mem_w),
+		.aes_load_mem_i(aes_load_mem_w),
 		.alu_wb_o(alu_wb_w),
 		.pc4_wb_o(pc4_wb_w),
 		.mem_wb_o(mem_wb_w),
@@ -258,7 +269,8 @@ module riscv_cache(
 	    .mem_rvalid_i(dmem_rvalid_w),
 		.csr_we_wb_o(csr_we_wb_w),
 		.csr_waddr_wb_o(csr_waddr_wb_w),	
-		.csr_rdata_wb_o(csr_rdata_wb_w)
+		.csr_rdata_wb_o(csr_rdata_wb_w),
+		.stall_by_aes_o(stall_by_aes_w)
 		);
 		
 	WB WB(
@@ -308,8 +320,8 @@ module riscv_cache(
 		.alu_i		(alu_w),
 		.pc_i		(pc_bp_w),
 		.pc_ex_i	(pc_ex_w),
-		.hit_ex_i(hit_ex_w),
-		.hit_o(hit_w),
+		.hit_ex_i	(hit_ex_w),
+		.hit_o		(hit_w),
 		.predicted_pc_o(predicted_pc_w),
 		.wrong_predicted_o(wrong_predicted_w),
 		.alu_pc_o(alu_pc_w)
@@ -325,7 +337,7 @@ module riscv_cache(
 		.i_rdata_o   (imem_rdata_i),
 		.i_rvalid_o  (imem_rvalid_i),
 		.d_addr_i    (mem_addr_w),
-		.d_cs_i      (mem_cs_w),
+		.d_cs_i      (mem_cs_w && ~stall_by_icache_w),
 		.d_wdata_i   (mem_wdata_w),
 		.d_we_i      (mem_we_w),
 		.d_rdata_o   (dmem_rdata_w),  
@@ -333,7 +345,7 @@ module riscv_cache(
 		.addr_o      (addr_o),
 		.wdata_o     (wdata_o),
 		.we_o        (we_o),
-		.cs_o        (cs_o),
+		.cs_o        (cs_o ),
 		.rdata_i     (rdata_i),
 		.rvalid_i    (rvalid_i)
     );

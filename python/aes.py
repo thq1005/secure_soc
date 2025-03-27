@@ -901,4 +901,3 @@ if __name__=="__main__":
     print
     my_aes = AES()
     my_aes.test_aes()
-    sys.exit(0)

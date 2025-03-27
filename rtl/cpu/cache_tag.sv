@@ -52,29 +52,17 @@ module cache_tag(
         if (cpu_address_i[TAGMSB:TAGLSB] == tag_mem[tag_req_i.index[INDEX-1:0]][1].tag) pre_hit[1] = 1'b1;
         if (cpu_address_i[TAGMSB:TAGLSB] == tag_mem[tag_req_i.index[INDEX-1:0]][2].tag) pre_hit[2] = 1'b1;
         if (cpu_address_i[TAGMSB:TAGLSB] == tag_mem[tag_req_i.index[INDEX-1:0]][3].tag) pre_hit[3] = 1'b1;
-        if (cpu_address_i[TAGMSB:TAGLSB] == tag_mem[tag_req_i.index[INDEX-1:0]][4].tag) pre_hit[4] = 1'b1;
-        if (cpu_address_i[TAGMSB:TAGLSB] == tag_mem[tag_req_i.index[INDEX-1:0]][5].tag) pre_hit[5] = 1'b1;
-        if (cpu_address_i[TAGMSB:TAGLSB] == tag_mem[tag_req_i.index[INDEX-1:0]][6].tag) pre_hit[6] = 1'b1;
-        if (cpu_address_i[TAGMSB:TAGLSB] == tag_mem[tag_req_i.index[INDEX-1:0]][7].tag) pre_hit[7] = 1'b1;
 
         hit[0] = (tag_mem[tag_req_i.index[INDEX-1:0]][0].valid) & pre_hit[0];
         hit[1] = (tag_mem[tag_req_i.index[INDEX-1:0]][1].valid) & pre_hit[1];
         hit[2] = (tag_mem[tag_req_i.index[INDEX-1:0]][2].valid) & pre_hit[2];
         hit[3] = (tag_mem[tag_req_i.index[INDEX-1:0]][3].valid) & pre_hit[3];
-        hit[4] = (tag_mem[tag_req_i.index[INDEX-1:0]][4].valid) & pre_hit[4];
-        hit[5] = (tag_mem[tag_req_i.index[INDEX-1:0]][5].valid) & pre_hit[5];
-        hit[6] = (tag_mem[tag_req_i.index[INDEX-1:0]][6].valid) & pre_hit[6];
-        hit[7] = (tag_mem[tag_req_i.index[INDEX-1:0]][7].valid) & pre_hit[7];
 
-        priority case ({hit[7], hit[6], hit[5], hit[4], hit[3], hit[2], hit[1], hit[0]})
-            8'b10000000: begin address_way_w = 3'b111; tag_read_w = tag_mem[tag_req_i.index[INDEX-1:0]][7]; end
-            8'b01000000: begin address_way_w = 3'b110; tag_read_w = tag_mem[tag_req_i.index[INDEX-1:0]][6]; end
-            8'b00100000: begin address_way_w = 3'b101; tag_read_w = tag_mem[tag_req_i.index[INDEX-1:0]][5]; end
-            8'b00010000: begin address_way_w = 3'b100; tag_read_w = tag_mem[tag_req_i.index[INDEX-1:0]][4]; end
-            8'b00001000: begin address_way_w = 3'b011; tag_read_w = tag_mem[tag_req_i.index[INDEX-1:0]][3]; end
-            8'b00000100: begin address_way_w = 3'b010; tag_read_w = tag_mem[tag_req_i.index[INDEX-1:0]][2]; end
-            8'b00000010: begin address_way_w = 3'b001; tag_read_w = tag_mem[tag_req_i.index[INDEX-1:0]][1]; end
-            8'b00000001: begin address_way_w = 3'b000; tag_read_w = tag_mem[tag_req_i.index[INDEX-1:0]][0]; end
+        priority case ({hit[3], hit[2], hit[1], hit[0]})
+            4'b1000: begin address_way_w = 2'b11; tag_read_w = tag_mem[tag_req_i.index[INDEX-1:0]][3]; end
+            4'b0100: begin address_way_w = 2'b10; tag_read_w = tag_mem[tag_req_i.index[INDEX-1:0]][2]; end
+            4'b0010: begin address_way_w = 2'b01; tag_read_w = tag_mem[tag_req_i.index[INDEX-1:0]][1]; end
+            4'b0001: begin address_way_w = 2'b00; tag_read_w = tag_mem[tag_req_i.index[INDEX-1:0]][0]; end
             default: begin address_way_w = address_way_i; tag_read_w = tag_mem[tag_req_i.index[INDEX-1:0]][address_way_i]; end
         endcase
     end
@@ -85,11 +73,7 @@ module cache_tag(
     assign full_o = tag_mem[tag_req_i.index[INDEX-1:0]][0].valid &
                     tag_mem[tag_req_i.index[INDEX-1:0]][1].valid &
                     tag_mem[tag_req_i.index[INDEX-1:0]][2].valid &
-                    tag_mem[tag_req_i.index[INDEX-1:0]][3].valid &
-                    tag_mem[tag_req_i.index[INDEX-1:0]][4].valid &
-                    tag_mem[tag_req_i.index[INDEX-1:0]][5].valid &
-                    tag_mem[tag_req_i.index[INDEX-1:0]][6].valid &
-                    tag_mem[tag_req_i.index[INDEX-1:0]][7].valid;
+                    tag_mem[tag_req_i.index[INDEX-1:0]][3].valid;
 
     // always_comb begin
         // if (~tag_mem[tag_req_i.index[INDEX-1:0]][0].valid) address_temp = 3'b000;
@@ -109,7 +93,7 @@ module cache_tag(
     // end
 
     //assign way_w = (full_w) ? address_way_i : address_temp;
-    assign way_w = (hit[7] | hit[6] | hit[5] | hit[4] | hit[3] | hit[2] | hit[1] | hit[0]) ? address_way_w : address_way_i;
+    assign way_w = (hit[3] | hit[2] | hit[1] | hit[0]) ? address_way_w : address_way_i;
 
     assign address_way_o = (tag_req_i.we) ? way_w : address_way_w;
 

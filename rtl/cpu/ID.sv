@@ -39,7 +39,8 @@ module ID(
 
 	output logic [31:0] pc_intr_o,
 	output logic intr_flag,
-	output logic is_mret
+	output logic is_mret,
+	output logic aes_load_ex_o
 	);
 	
 	logic [31:0] rs1_w, rs2_w, imm_w;
@@ -71,6 +72,9 @@ module ID(
 	logic csr_we_r;
 	logic [31:0] csr_waddr_w;
 	logic [31:0] csr_waddr_r;
+
+	logic aes_load_w;
+	logic aes_load_r;
 
 	regfile RF_ID(
 		.dataW_i(data_wb_i),
@@ -105,7 +109,8 @@ module ID(
 		.Valid_cpu2cache_o(Valid_cpu2cache_w),
 		.Valid_cpu2aes_o (Valid_cpu2aes_w),
 		.is_mret (is_mret),
-		.csr_we (csr_we_w)
+		.csr_we (csr_we_w),
+		.aes_load (aes_load_w)
 		);
 		
 	csr_regs CSR_Regs (					//31             20 19    15 14    12 11     7 6     0  
@@ -147,6 +152,7 @@ module ID(
 			csr_rdata_r <= 32'b0;
 			csr_we_r <= 1'b0;
 			csr_waddr_r <= 32'b0;
+			aes_load_r <= 1'b0;
 		end
 		else if (enable_i) begin 
 			if (reset_i) begin
@@ -169,7 +175,8 @@ module ID(
 				Valid_cpu2aes_r <= 1'b0;
 				csr_rdata_r <= 32'b0;
 				csr_we_r <= 1'b0;
-				csr_waddr_r <= 32'b0;				
+				csr_waddr_r <= 32'b0;
+				aes_load_r <= 1'b0;				
 			end
 			else begin
 				rs1_r <= rs1_w;
@@ -192,6 +199,7 @@ module ID(
 				csr_rdata_r <= csr_rdata_w;
 				csr_we_r <= csr_we_w;
 				csr_waddr_r <= csr_waddr_w;
+				aes_load_r <= aes_load_w;
 			end
 		end
 	end
@@ -217,4 +225,5 @@ module ID(
 	assign csr_we_o    = csr_we_r;
 	assign csr_waddr_o = csr_waddr_r;
 	assign alu_csr_sel_o = csr_we_r;
+	assign aes_load_ex_o = aes_load_r;
 endmodule

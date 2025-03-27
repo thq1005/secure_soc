@@ -88,11 +88,36 @@ module dmac (
     logic [`ADDR_WIDTH-1:0] current_src_addr, current_dst_addr;
     logic [2+`SIZE_BITS+`LEN_BITS-1:0] current_config;
     logic current_mode;
-    logic current_valid;
+    logic src_addr_we;
+    logic dst_addr_we;
+    logic config_we;
+
+    logic ready_to_pop;
+    logic run;
+
+    logic [1:0] r_nstate;
+    logic [1:0] w_nstate;
+
+    logic we_w;
+    logic [`ADDR_WIDTH-1:0] waddr_w;
+    logic [`DATA_WIDTH-1:0] wdata_w;
+
+    logic dma_intr_w;
+
+    always_comb begin
+        if (fifo_pop) 
+            ready_to_pop <= 1'b0;
+        else if (r_nstate == 2'b00) 
+            ready_to_pop <= 1'b1;
+        else 
+            ready_to_pop <= 1'b0;
+    end
+
+    assign run = (fifo_pop && ~current_mode) | (fifo_pop && current_mode && aes_intr);
 
     fifo #(
-        .DATA_W (`ADDR_WIDTH+`ADDR_WIDTH+2+`SIZE_BITS+`LEN_BITS),
-        .DEPTH  (4)) fifo_inst (
+        .DATA_W (`ADDR_WIDTH+`ADDR_WIDTH+2+`SIZE_BITS+`LEN_BITS+1),
+        .DEPTH  (4)) fifo_request_inst (
         .clk_i  (clk_i),
         .rst_ni (rst_ni),
         .we_i   (fifo_push),
@@ -113,26 +138,15 @@ module dmac (
     end
 
     always_ff @(posedge clk_i) begin
-        if (!rst_ni) begin
-            current_src_addr <= '0;
-            current_dst_addr <= '0;
-            current_config   <= '0;
-            current_mode     <= '0;
-            current_valid    <= 1'b0;
-        end else if (!current_valid && !fifo_empty) begin
-            // Fetch the next request from the FIFO
-            current_src_addr <= fifo_src_addr;
-            current_dst_addr <= fifo_dst_addr;
-            current_config   <= fifo_config;
-            current_mode     <= fifo_mode;
-            current_valid    <= 1'b1;
+        if (!rst_ni) 
+            fifo_pop         <= 1'b0;
+        else if (~fifo_empty && ready_to_pop) 
             fifo_pop         <= 1'b1;
-        end else if (dma_intr_w) begin
-            // Clear the current request when completed
-            current_valid <= 1'b0;
-            fifo_pop      <= 1'b0;
-        end
+        else if (fifo_pop)
+            fifo_pop         <= 1'b0;
     end
+
+    
 
     axi_interface_slave s_itf (
         .clk_i      (clk_i),
@@ -169,16 +183,19 @@ module dmac (
         .o_we       (we_w),
         .o_waddr    (waddr_w),
         .o_wdata    (wdata_w),
-        .o_strb     (strb_w),
+        .o_strb     (),
         .o_re       (),
         .o_raddr    (),
         .i_rdata    ()
         );
 
+    logic [511:0] data_w;
+    logic rdata_valid_w;
+
     dmac_read read_inst (
         .clk_i,
         .rst_ni,
-        .valid_i    (current_valid && (current_mode == 1'b0)),
+        .valid_i    (run),
         .src_addr_i (current_src_addr),
         .len_i      (current_config[`DMA_LEN_BIT7:`DMA_LEN_BIT0]),
         .size_i     (current_config[`DMA_SIZE_BIT2:`DMA_SIZE_BIT0]),
@@ -197,21 +214,79 @@ module dmac (
         .m_rresp,
         .m_rvalid,
         .m_rlast,
-        .m_rready
+        .m_rready,
+        .r_nstate
     );
 
-    logic dma_intr_w;
+    logic [2+`SIZE_BITS+`LEN_BITS-1:0] write_config;
+    logic [2+`SIZE_BITS+`LEN_BITS-1:0] w_fifo_config; 
+    logic [`ADDR_WIDTH-1:0] r_dst_addr;
+    logic [`ADDR_WIDTH-1:0] write_dst_addr;
+    logic [511:0] write_data;
+    logic f_write_push;
+    logic f_write_pop;
+    logic f_write_full;
+    logic f_write_empty;
+    logic ready_fw_pop;
+
+    always_ff @(posedge clk_i) begin
+        if (~rst_ni)
+            r_dst_addr <= '0;
+        else if (run)
+            r_dst_addr <= current_dst_addr;
+    end
+
+    always_comb begin
+        if (f_write_pop) 
+            ready_fw_pop <= 1'b0;
+        else if (w_nstate == 2'b00) 
+            ready_fw_pop <= 1'b1;
+        else 
+            ready_fw_pop <= 1'b0;
+    end
+
+    assign w_fifo_config = {m_arburst,m_arsize,m_arlen};
+    
+    always_comb begin
+        f_write_push = 1'b0;
+        if (rdata_valid_w) begin
+            if (!f_write_full) begin
+                f_write_push = 1'b1;
+            end
+        end
+    end
+
+    always_ff @(posedge clk_i) begin
+        if (!rst_ni) 
+            f_write_pop       <= 1'b0;
+        else if (~f_write_empty && ready_fw_pop) 
+            f_write_pop       <= 1'b1;
+        else if (f_write_pop)
+            f_write_pop       <= 1'b0;
+    end
+
+    fifo #(
+        .DATA_W (`ADDR_WIDTH+2+`SIZE_BITS+`LEN_BITS+512),
+        .DEPTH  (4)) fifo_write_inst (
+        .clk_i  (clk_i),
+        .rst_ni (rst_ni),
+        .we_i   (f_write_push),
+        .re_i   (f_write_pop),
+        .full   (f_write_full),
+        .empty  (f_write_empty),
+        .wdata_i({r_dst_addr, w_fifo_config, data_w}),
+        .rdata_o({write_dst_addr, write_config, write_data})
+    );
 
     dmac_write write_inst (
         .clk_i,
         .rst_ni,
-        .valid_i    (current_valid && (current_mode == 1'b1)),
-        .dst_addr_i (current_dst_addr),
-        .len_i      (current_config[`DMA_LEN_BIT7:`DMA_LEN_BIT0]),
-        .size_i     (current_config[`DMA_SIZE_BIT2:`DMA_SIZE_BIT0]),
-        .burst_i    (current_config[`DMA_BURST_BIT1:`DMA_BURST_BIT0]),
-        .rdata_valid_i (rdata_valid_w),
-        .data_i     (data_w),
+        .valid_i    (f_write_pop),
+        .dst_addr_i (write_dst_addr),
+        .len_i      (write_config[`DMA_LEN_BIT7:`DMA_LEN_BIT0]),
+        .size_i     (write_config[`DMA_SIZE_BIT2:`DMA_SIZE_BIT0]),
+        .burst_i    (write_config[`DMA_BURST_BIT1:`DMA_BURST_BIT0]),
+        .data_i     (write_data),
         .m_awid,
         .m_awaddr,
         .m_awlen,
@@ -228,6 +303,7 @@ module dmac (
         .m_bresp,
         .m_bvalid,
         .m_bready,
+        .w_nstate,
         .dma_intr (dma_intr_w)
     );
 
@@ -237,7 +313,7 @@ module dmac (
             fifo_src_addr  <= '0;
             fifo_dst_addr  <= '0;
             fifo_config    <= '0; 
-            valid_reg     <= '0;
+            fifo_mode <= 0;
         end
         else begin           
             if (config_we) begin
@@ -245,10 +321,15 @@ module dmac (
                 fifo_mode   <= wdata_w[`DMA_MODE_BIT];
             end   
             if (src_addr_we)
-                fifo_src_addr <= wdata_w;
-            
+                if (wdata_w[19:16]==0)
+                    fifo_src_addr <= wdata_w + 32'h00000800;
+                else 
+                    fifo_src_addr <= wdata_w;
             if (dst_addr_we)
-                fifo_dst_addr <= wdata_w;
+                if (wdata_w[19:16]==0)
+                    fifo_dst_addr <= wdata_w + 32'h00000800;
+                else 
+                    fifo_dst_addr <= wdata_w;
         end
     end 
 
@@ -263,7 +344,7 @@ module dmac (
             if (waddr_w == `ADDR_ADDR_DST) 
                 dst_addr_we = 1'b1;
     
-            if (waddr_w == `ADDR_CONFIG) 
+            if (waddr_w == `ADDR_CONFIG_DMA) 
                 config_we = 1'b1;
         end
     end

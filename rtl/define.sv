@@ -14,6 +14,7 @@
 `define OP_JALR 		 7'b1100111
 // Opcode for AES-128
 `define OP_AES_Stype     7'b0100111
+`define OP_AES_Itype     7'b0001011
 
 // ALU function decode from funct3 and bit 5 of funct7
 `define ADD  4'b0000
@@ -34,6 +35,8 @@
  `define START  3'b010
  `define CONFI  3'b011
  `define RESULT 3'b100
+ `define CTRL   3'b101
+ `define STATUS 3'b000
 
 // Immediate generation type 
 `define I_TYPE 3'b000
@@ -76,14 +79,8 @@
 `define CTRL_ON2_BIT        2
 `define CTRL_ON3_BIT        3
 `define ADDR_STATUS         32'h00020001
-`define STATUS_READY0_BIT   0
-`define STATUS_VALID0_BIT   1
-`define STATUS_READY1_BIT   2
-`define STATUS_VALID1_BIT   3
-`define STATUS_READY2_BIT   4
-`define STATUS_VALID2_BIT   5
-`define STATUS_READY3_BIT   6
-`define STATUS_VALID3_BIT   7
+`define STATUS_READY_BIT   0
+`define STATUS_VALID_BIT   1
 `define ADDR_CONFIG         32'h00020002
 `define CTRL_ENCDEC0_BIT    0
 `define CTRL_ENCDEC1_BIT    1
@@ -105,10 +102,10 @@
 `define ADDR_RESULT3        32'h000200b4
 
 //DMA
-`define ADDR_VALID          32'h00010000
-`define ADDR_ADDR_SRC       32'h00010004
-`define ADDR_ADDR_DST       32'h00010008
-`define ADDR_CONFIG_DMA     32'h0001000c
+`define ADDR_VALID          32'h0001000c
+`define ADDR_ADDR_SRC       32'h00010000
+`define ADDR_ADDR_DST       32'h00010004
+`define ADDR_CONFIG_DMA     32'h00010008
 `define DMA_BURST_BIT0      11
 `define DMA_BURST_BIT1      12
 `define DMA_LEN_BIT0        0

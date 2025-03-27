@@ -16,14 +16,17 @@ _start:
     csrrw x0, mtvec, x3
 
     # Step 4: Start AES processing using DMA
-    addi x1, x0, 1
+    addi x1, x0, 15
     aes_cfg x1
-    addi x1,x0, 16
-    aes_key x1
+    aes_ctrl x1
     addi x1, x0, 0
-    aes_block x1
-    addi x1, x0, 32
-    aes_res x1
+    addi x2, x0, 3
+    aes_block x1, x2
+    addi x1,x1, 64
+    aes_key x1, x2
+    addi x1, x1, 64
+    aes_res x1, x2
+    aes_status x2
     aes_start
 main_loop:
     jal x0, main_loop 

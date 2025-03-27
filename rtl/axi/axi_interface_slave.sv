@@ -58,7 +58,7 @@ logic [`LEN_BITS-1:0]  m_awlen;
 logic [`ID_BITS-1:0]   m_awid; 
 logic axi_awready;
 logic axi_wready;
-logic axi_bid;
+logic [`ID_BITS-1:0] axi_bid;
 logic axi_bvalid;
 logic r_bvalid;
 logic [`ADDR_WIDTH-1:0] waddr;
@@ -172,7 +172,7 @@ logic [`ADDR_WIDTH-1:0] next_rd_addr;
 logic axi_arready;
 logic [`LEN_BITS-1:0] axi_rlen;
 logic axi_rvalid;
-logic axi_rid;
+logic [`ID_BITS-1:0] axi_rid;
 logic axi_rlast;
 logic [`DATA_WIDTH-1:0] axi_rdata;
 always_ff @(posedge clk_i) begin

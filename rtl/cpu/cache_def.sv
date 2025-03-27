@@ -5,7 +5,7 @@ package cache_def;
     //cache         |       tag       |  index  | offset |
     //              31               8 7       4 3       0 
     parameter TAGMSB = 31;       // tag msb
-    parameter TAGLSB = 8;        // tag lsb : 4 bits offset (2 bit byte offset, 2 bit for 4 word), 2 bit index
+    parameter TAGLSB = 8;        // tag lsb : 4 bits offset (2 bit byte offset, 2 bit for 4 word), 4 bit index
     parameter INDEX  = 4;        // No of set bits
     parameter DEPTH  = 16;        // No of sets
     parameter WAYS   = 4;        // No of ways

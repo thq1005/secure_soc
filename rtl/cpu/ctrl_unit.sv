@@ -5,7 +5,7 @@ module ctrl_unit(
 	output logic RegWEn_o,
 	output logic [3:0] AluSel_o, // same as AluOp
 	output logic Bsel_o,
-	output logic [3:0] ImmSel_o,
+	output logic [2:0] ImmSel_o,
 	output logic MemRW_o,
 	output logic [1:0] WBSel_o,
 	output logic BrUn_o,
@@ -14,7 +14,8 @@ module ctrl_unit(
 	output logic Valid_cpu2cache_o,
 	output logic Valid_cpu2aes_o,
 	output logic is_mret,
-	output logic csr_we
+	output logic csr_we,
+	output logic aes_load
 	);
 
 	logic [6:0] opcode_r;
@@ -35,14 +36,14 @@ module ctrl_unit(
 							(opcode_r == `OP_Stype)  | (opcode_r == `OP_AUIPC) | (opcode_r == `OP_JALR)       |
 							((opcode_r == `OP_Itype) & (funct3 == 3'b000)))    | 
 							((opcode_r == `OP_Itype_csr) & (funct3 == 3'b001 | funct3 == 3'b101)) |
-							(opcode_r == `OP_AES_Stype) ? `ADD :						// in case addi 
+							(opcode_r == `OP_AES_Stype) | (opcode_r == `OP_AES_Itype) ? `ADD :						// in case addi 
 							(opcode_r == `OP_LUI) ? `B : 
 							((opcode_r == `OP_Itype_csr) & (funct3 == 3'b011 | funct3 == 3'b111)) ? `AND :
 							((opcode_r == `OP_Itype_csr) & (funct3 == 3'b010 | funct3 == 3'b110)) ? `OR : {funct7[5], funct3};
 	
 	assign Bsel_o = ((opcode_r == `OP_Rtype)|(opcode_r == `OP_Itype_csr)) ? 1'b0 : 1'b1;
 	
-	assign ImmSel_o = 	((opcode_r == `OP_Itype) | (opcode_r == `OP_JALR) | (opcode_r == `OP_Itype_load) | (opcode_r == `OP_Itype_csr)) 	? `I_TYPE : 
+	assign ImmSel_o = 	((opcode_r == `OP_Itype) | (opcode_r == `OP_JALR) | (opcode_r == `OP_Itype_load) | (opcode_r == `OP_Itype_csr) | (opcode_r == `OP_AES_Itype)) 	? `I_TYPE : 
 					    ((opcode_r == `OP_Stype) | (opcode_r == `OP_AES_Stype)) 															? `S_TYPE : 
 					    (opcode_r == `OP_Btype)																								? `B_TYPE : 
                         (opcode_r == `OP_JAL)   																							? `J_TYPE : 
@@ -50,8 +51,9 @@ module ctrl_unit(
 
 	assign MemRW_o = ((opcode_r == `OP_Stype)) ? 1'b1 : 1'b0;
 	
-	assign WBSel_o = 	(opcode_r == `OP_Itype_load) 					 ? 2'b00 : 
-						((opcode_r == `OP_JAL) | (opcode_r == `OP_JALR)) ? 2'b10 : 2'b01;
+	assign WBSel_o = 	(opcode_r == `OP_Itype_load)								? 2'b00 : 
+						((opcode_r == `OP_JAL) | (opcode_r == `OP_JALR)) 			? 2'b10 : 
+						(opcode_r == `OP_Itype_csr) 								? 2'b11	: 2'b01;
 	
 	assign BrUn_o = ((funct3 == `BLTU) | (funct3 == `BGEU)) ? 1'b1 : 1'b0;
 	
@@ -63,9 +65,11 @@ module ctrl_unit(
 						 
 	/* valid signal when CPU access cache */
 	assign Valid_cpu2cache_o = ((opcode_r == `OP_Itype_load) | (opcode_r == `OP_Stype)) ? 1'b1 : 1'b0;
-	assign Valid_cpu2aes_o = (opcode_r == `OP_AES_Stype);
+	assign Valid_cpu2aes_o   = (opcode_r == `OP_AES_Stype | opcode_r == `OP_AES_Itype) ? 1'b1 : 1'b0;
 
 	assign is_mret = ((opcode_r == `OP_Itype_csr) && (inst_i[31:20] == 12'h302));
 
 	assign csr_we  = (opcode_r == `OP_Itype_csr);
+
+	assign aes_load = (opcode_r == `OP_AES_Itype);
 endmodule

@@ -248,7 +248,7 @@ module axi_bus(
  
     assign awready = (awid == `ID_CPU2MEM | awid == `ID_DMA2MEM) ? s0_awready :
                      (awid == `ID_CPU2DMA) ? s_awready :
-                     (awid == `ID_DMA2AES) ? s1_awready : 0;
+                     (awid == `ID_DMA2AES | awid == `ID_CPU2AES) ?  s1_awready : 0;
 
     always_ff @(posedge clk_i) begin
         if (~rst_ni) 
@@ -270,13 +270,13 @@ module axi_bus(
     );
 
     always_comb begin
-        if (wid == `ID_CPU2MEM || wid == `ID_CPU2DMA) begin
+        if (wid == `ID_CPU2MEM | wid == `ID_CPU2DMA | wid == `ID_CPU2AES) begin
             wvalid = m0_wvalid;
             wlast  = m0_wlast;
             wstrb  = m0_wstrb;
             wdata  = m0_wdata;
         end
-        else if (wid == `ID_DMA2MEM || wid == `ID_DMA2AES) begin
+        else if (wid == `ID_DMA2MEM | wid == `ID_DMA2AES) begin
             wvalid = m_wvalid;
             wlast  = m_wlast;
             wstrb  = m_wstrb;
@@ -286,7 +286,7 @@ module axi_bus(
 
     assign wready = (wid == `ID_CPU2MEM | wid == `ID_DMA2MEM) ? s0_wready :
                     (wid == `ID_CPU2DMA) ? s_wready :
-                    (wid == `ID_DMA2AES) ? s1_wready : 0;
+                    (wid == `ID_DMA2AES | wid == `ID_CPU2AES) ? s1_wready : 0;
 
     always_comb begin
         bid     = '0;
@@ -308,6 +308,9 @@ module axi_bus(
             bvalid = s1_bvalid;
         end
     end
+
+    assign bready = (bid == `ID_CPU2MEM | bid == `ID_CPU2DMA | bid == `ID_CPU2AES) ? m0_bready:
+                    (bid == `ID_DMA2MEM | bid == `ID_DMA2AES) ? m_bready : 0;
 
     always_comb begin
         arvalid = '0;
@@ -336,7 +339,7 @@ module axi_bus(
     
     assign arready = (arid == `ID_CPU2MEM | arid == `ID_DMA2MEM) ? s0_arready :
                      (arid == `ID_CPU2DMA) ? s_arready :
-                     (arid == `ID_DMA2AES) ? s1_arready : 0;    
+                     (arid == `ID_DMA2AES | arid == `ID_CPU2AES) ? s1_arready : 0;    
 
     always_comb begin
         rid = '0;
@@ -364,17 +367,17 @@ module axi_bus(
                     (rid == `ID_DMA2MEM | rid == `ID_DMA2AES) ? m_rready: 0;
 
     //master0
-    assign m0_awready = (awid == `ID_CPU2MEM || awid == `ID_CPU2DMA) ? awready : 0;
-    assign m0_wready  = (wid == `ID_CPU2MEM || wid == `ID_CPU2DMA) ? wready : 0;
+    assign m0_awready = (awid == `ID_CPU2MEM || awid == `ID_CPU2DMA || awid == `ID_CPU2AES) ? awready : 0;
+    assign m0_wready  = (wid == `ID_CPU2MEM || wid == `ID_CPU2DMA || wid == `ID_CPU2AES) ? wready : 0;
     assign m0_bid     = bid;
     assign m0_bresp   = bresp;
-    assign m0_bvalid  = (bid == `ID_CPU2MEM || bid == `ID_CPU2DMA) ? bvalid : 0;
-    assign m0_arready = (arid == `ID_CPU2MEM) ? arready : 0;
+    assign m0_bvalid  = (bid == `ID_CPU2MEM || bid == `ID_CPU2DMA || bid == `ID_CPU2AES) ? bvalid : 0;
+    assign m0_arready = (arid == `ID_CPU2MEM || arid == `ID_CPU2AES) ? arready : 0;
     assign m0_rid     = rid;
     assign m0_rresp   = rresp;
     assign m0_rdata   = rdata;
     assign m0_rlast   = rlast;
-    assign m0_rvalid  = (rid == `ID_CPU2MEM) ? rvalid : 0;
+    assign m0_rvalid  = (rid == `ID_CPU2MEM || rid == `ID_CPU2AES) ? rvalid : 0;
     //dma master
     assign m_awready  = (awid == `ID_DMA2MEM || awid == `ID_DMA2AES) ? awready : 0;
     assign m_wready   = (wid == `ID_DMA2MEM || wid == `ID_DMA2AES) ? wready : 0;
@@ -412,19 +415,19 @@ module axi_bus(
     assign s1_awlen   = awlen;
     assign s1_awsize  = awsize;
     assign s1_awburst = awburst;
-    assign s1_awvalid = (awid == `ID_DMA2AES) ? awvalid : 0;
+    assign s1_awvalid = (awid == `ID_DMA2AES || awid == `ID_CPU2AES) ? awvalid : 0;
     assign s1_wdata   = wdata;
     assign s1_wstrb   = wstrb;
-    assign s1_wvalid  = (wid == `ID_DMA2AES) ? wready : 0;
+    assign s1_wvalid  = (wid == `ID_DMA2AES  || wid == `ID_CPU2AES) ? wready : 0;
     assign s1_wlast   = wlast;
-    assign s1_bready  = (bid == `ID_DMA2AES) ? bready : 0;
+    assign s1_bready  = (bid == `ID_DMA2AES  || bid == `ID_CPU2AES) ? bready : 0;
     assign s1_arid    = arid;
     assign s1_araddr  = araddr;
     assign s1_arlen   = arlen;
     assign s1_arburst = arburst;
     assign s1_arsize  = arsize;
-    assign s1_arvalid = (arid == `ID_DMA2AES) ? arvalid : 0;
-    assign s1_rready  = (rid == `ID_DMA2AES) ? rready : 0;
+    assign s1_arvalid = (arid == `ID_DMA2AES || arid == `ID_CPU2AES) ? arvalid : 0;
+    assign s1_rready  = (rid == `ID_DMA2AES  || rid == `ID_CPU2AES) ? rready : 0;
     //dma
     assign s_awid    = awid;
     assign s_awaddr  = awaddr;

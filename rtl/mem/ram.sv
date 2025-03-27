@@ -42,8 +42,6 @@ module ram(								//SDRAM
 	assign temp = (addr_i > 511) ? 1 : 0; 
 	always_ff @(posedge clk_i) begin
 	    if (!rst_ni) begin
-	       	for (int i = 0;i < 512; i++)
-	           	dmem[i] = '0;
 	    end
 		else if (cs_i) begin 
             if (~wr_i) begin

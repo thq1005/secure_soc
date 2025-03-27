@@ -54,29 +54,65 @@ module axi_interface_master(
 
     logic [1:0] w_len_cnt;
     logic [1:0] r_len_cnt;
-        
+    logic [1:0] w_cnt;
+
     logic [`ADDR_WIDTH-1:0] addr_w;
     logic we_w;
     logic cs_w;
     logic [`DATA_WIDTH_CACHE-1:0] wdata_w;
     logic [`DATA_WIDTH_CACHE-1:0] wdata_r;
 
-    fifo #(.DATA_W(1+1+`ADDR_WIDTH+`DATA_WIDTH_CACHE),
+    logic fifo_push;
+    logic fifo_pop;
+    logic ready_to_pop;
+    logic fifo_empty;
+    logic fifo_full;
+
+
+    fifo #(.DATA_W(`ADDR_WIDTH+`DATA_WIDTH_CACHE),
     .DEPTH(4)) fifo_for_w_channel  (
     .clk_i,
     .rst_ni,
-    .we_i (awready && awvalid),
-    .re_i (handshaked),
-    .wdata_i ({addr_i,we_i,cs_i,wdata_i}),
-    .rdata_o ({addr_w,we_w,cs_w,wdata_w}),
-    .full  (),
-    .empty ()
-);    
+    .we_i (fifo_push),
+    .re_i (fifo_pop),
+    .wdata_i ({addr_i,wdata_i}),
+    .rdata_o ({addr_w,wdata_w}),
+    .full  (fifo_full),
+    .empty (fifo_empty)
+    );    
+
+    always_ff @(posedge clk_i) begin
+        if (!rst_ni) 
+            fifo_pop         <= 1'b0;
+        else if (~fifo_empty && ready_to_pop) 
+            fifo_pop         <= 1'b1;
+        else if (fifo_pop)
+            fifo_pop         <= 1'b0;
+    end
+
+    always_comb begin
+        fifo_push = 1'b0;
+        if (cs_i) begin
+            if (we_i && ~fifo_full) begin
+                fifo_push = 1'b1;
+            end
+        end
+    end    
+
+    always_comb begin
+        if (fifo_pop) begin
+            ready_to_pop = 1'b0;
+        end
+        else if (~awvalid_o & w_next_state == IDLE)
+            ready_to_pop = 1'b1;
+        else
+            ready_to_pop = 1'b0;
+    end
 
     always_ff @(posedge clk_i) begin
         if (~rst_ni)
             wdata_r <= 0;
-        else if (w_next_state == W)
+        else if (fifo_pop)
             wdata_r <= wdata_w; 
     end
 
@@ -94,10 +130,22 @@ module axi_interface_master(
             r_state <= r_next_state; 
     end         
 
+    always_ff @(posedge clk_i) begin
+        if (!rst_ni) begin
+            w_cnt = 0;
+        end
+        else if (w_cnt == w_len_cnt) begin
+            w_cnt = 0;
+        end
+        else if (wvalid_o && wready_i) begin
+            w_cnt = w_cnt + 1;
+        end 
+    end
+
     always_comb begin
         case (w_state)
         IDLE: begin
-            if (we_w && cs_w)
+            if (fifo_pop)
                 w_next_state = WA;
             else 
                 w_next_state = IDLE;
@@ -150,16 +198,9 @@ module axi_interface_master(
         if (!rst_ni) begin
             w_len_cnt = 0;
         end
-        else if (w_state == IDLE) begin
-            w_len_cnt = 0;
-        end
         else if (w_state == WA) begin
             w_len_cnt = awlen_o;
         end
-        else if (w_state == W) begin
-            if (wvalid_o && wready_i  && (~wlast_o))
-                w_len_cnt = w_len_cnt - 1;
-        end 
     end
     
     always_ff @(posedge clk_i) begin
@@ -175,18 +216,8 @@ module axi_interface_master(
         end 
     end
 
-    always_comb begin
-        if ((w_len_cnt == 0)) 
-            wdata_o = wdata_r[31:0];
-        else if (w_len_cnt == 3) 
-            wdata_o = wdata_r[63:32];
-        else if (w_len_cnt == 2) 
-            wdata_o = wdata_r[95:64];
-        else if (w_len_cnt == 1)
-            wdata_o = wdata_r[127:96];
-    end
+    assign wdata_o = wdata_r[(w_cnt)*32 +: 32];
     
-
 
     always_ff @(posedge clk_i) begin
         if (!rst_ni) 
@@ -222,7 +253,7 @@ module axi_interface_master(
             awaddr_o <= 0;
             wstrb_o <= 0;
         end else if (w_state == IDLE) begin
-            if (cs_w)
+            if (fifo_pop)
                 awaddr_o <= addr_w;
             wstrb_o  <= 4'hf;
         end
@@ -244,26 +275,26 @@ module axi_interface_master(
         end
     end
       
-    assign arid_o    = `ID_CPU2MEM;
-    assign arlen_o   = 3;
+    assign arid_o    = (araddr_o[19:16] == 4'h2) ? `ID_CPU2AES : `ID_CPU2MEM;
+    assign arlen_o   = (araddr_o[19:16] == 4'h2) ? 0 : 3;
     assign arsize_o  = 2;
-    assign arburst_o = 1;
+    assign arburst_o = (araddr_o[19:16] == 4'h2) ? 0 : 1;
     assign rready_o  = (r_state == R);
     assign arvalid_o = (r_state == RA);
     
-    assign awid_o    =  (w_state == WA && addr_w[19:16] == 4'h0)     ? `ID_CPU2MEM :
-                        (w_state == WA && addr_w[19:16] == 4'h1)     ? `ID_CPU2DMA : 
-                        (w_state == WA && addr_w[19:16] == 4'h2)     ? `ID_CPU2AES : 0;
+    assign awid_o    =  (w_state == WA && awaddr_o[19:16] == 4'h0)     ? `ID_CPU2MEM :
+                        (w_state == WA && awaddr_o[19:16] == 4'h1)     ? `ID_CPU2DMA : 
+                        (w_state == WA && awaddr_o[19:16] == 4'h2)     ? `ID_CPU2AES : 0;
 
 
-    assign awlen_o   =  (addr_w[19:16] == 4'h0)     ? 3 :
-                        (addr_w[19:16] == 4'h1)     ? 2 : 
-                        (addr_w[19:16] == 4'h2)     ? 0 : 0;
+    assign awlen_o   =  (awaddr_o[19:16] == 4'h0)     ? 3 :
+                        (awaddr_o[19:16] == 4'h1)     ? 3 : 
+                        (awaddr_o[19:16] == 4'h2)     ? 0 : 0;
     assign awsize_o  = 2;
-    assign awburst_o = (addr_w[19:16] == 4'h2) ? 0 : 1;
+    assign awburst_o = (awaddr_o[19:16] == 4'h2) ? 0 : 1;
     assign awvalid_o = (w_state == WA);
     
-    assign wlast_o  = ((w_state == W) && (w_len_cnt == 1));
+    assign wlast_o  = (w_cnt == w_len_cnt & w_state == W);
     assign wvalid_o = (w_state == W);
     assign bready_o = (w_state == B);
                  

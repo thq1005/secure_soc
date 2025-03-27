@@ -28,6 +28,7 @@ module EX(
 	input logic csr_we_ex_i,
 	input logic [31:0] csr_waddr_ex_i,
 	input logic alu_csr_sel_i,
+	input logic aes_load_ex_i,
 
 	output logic [31:0] alu_mem_o,
 	output logic [31:0] rs2_mem_o,
@@ -45,7 +46,8 @@ module EX(
 	output logic Valid_cpu2aes_mem_o,
 	output logic csr_we_mem_o,
 	output logic [31:0] csr_waddr_mem_o,
-	output logic [31:0] csr_rdata_mem_o
+	output logic [31:0] csr_rdata_mem_o,
+	output logic aes_load_mem_o
 	);
 	
 	logic [31:0] alu_w;
@@ -63,6 +65,7 @@ module EX(
 	logic [31:0] csr_waddr_ex_r;
 	logic csr_we_ex_r;
 
+	logic aes_load_ex_r;
 
 	logic [31:0] csr_rdata_ex_r;
 
@@ -135,6 +138,7 @@ module EX(
 			csr_waddr_ex_r <= 32'b0;
 			csr_we_ex_r <= 1'b0;
 			csr_rdata_ex_r <= 32'b0;
+			aes_load_ex_r <= 1'b0;
 		end
 		else if (enable_i) begin
 			if (reset_i) begin
@@ -151,6 +155,7 @@ module EX(
 				csr_waddr_ex_r <= 32'b0;
 				csr_we_ex_r <= 1'b0;
 				csr_rdata_ex_r <= 32'b0;
+				aes_load_ex_r <= 1'b0;
 			end
 			else begin
 				alu_r <= alu_w;
@@ -166,6 +171,7 @@ module EX(
 				csr_waddr_ex_r <= csr_waddr_ex_i;
 				csr_we_ex_r <= csr_we_ex_i;
 				csr_rdata_ex_r <= csr_rdata_ex_i;
+				aes_load_ex_r <= aes_load_ex_i;
 			end
 		end
 	end
@@ -186,5 +192,6 @@ module EX(
 	assign csr_waddr_mem_o = csr_waddr_ex_r;
 	assign csr_we_mem_o = csr_we_ex_r;
 	assign csr_rdata_mem_o = csr_rdata_ex_r;
+	assign aes_load_mem_o = aes_load_ex_r;
 
 endmodule

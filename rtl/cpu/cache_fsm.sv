@@ -284,7 +284,7 @@ module cache_fsm(
             WRITE_BACK: begin
                 accessing_o = 1'b1;
 
-                v_mem_req.valid = '1; // fixing
+                v_mem_req.valid = '0; // fixing
                 v_mem_req.rw = '1;
 
                 /* logic for fixing bottom lines code situation */
