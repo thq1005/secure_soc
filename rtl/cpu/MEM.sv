@@ -111,11 +111,16 @@ module MEM(
 						  (Valid_cpu2aes_mem_i && inst_mem_i[14:12] == `RESULT)	? `ADDR_ADDR_SRC : 
 						  (Valid_cpu2aes_mem_i && inst_mem_i[14:12] == `START)	? `ADDR_START : 	
 						  (Valid_cpu2aes_mem_i && inst_mem_i[14:12] == `STATUS && aes_load_mem_i) 	? `ADDR_STATUS : 32'h0;
+
 	assign we_o    		= (mem_req_w.valid) 	? mem_req_w.rw :
 						  (Valid_cpu2aes_mem_i && ~aes_load_mem_i) ? 1'b1 : 1'b0;
+
 	assign wdata_o 		= (mem_req_w.valid) ? mem_req_w.data:
-						  (Valid_cpu2aes_mem_i && (inst_mem_i[14:12] == `START | inst_mem_i[14:12] == `CONFI | inst_mem_i[14:12] == `CTRL)) ? {96'h0,alu_mem_i} : {32'h00000001,config_dma,dst_addr_dma,src_addr_dma};
+						  (Valid_cpu2aes_mem_i && inst_mem_i[14:12] == `START) ? 128'h1 :
+						  (Valid_cpu2aes_mem_i && (inst_mem_i[14:12] == `CONFI | inst_mem_i[14:12] == `CTRL)) ? {96'h0,alu_mem_i} : {32'h00000001,config_dma,dst_addr_dma,src_addr_dma};
+
 	assign cs_o    		= mem_req_w.valid | Valid_cpu2aes_mem_i;
+	
 	assign memory_data_w = mem_rdata_i;
 
 	

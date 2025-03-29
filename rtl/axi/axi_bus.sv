@@ -257,18 +257,36 @@ module axi_bus(
             handshaked = awready && awvalid;
     end
 
+    logic fifo_full, fifo_empty;
+
+    logic ready_to_write;
+    logic fifo_pop;
+
+    always_ff @(posedge clk_i) begin
+        if (~rst_ni)
+            ready_to_write = 1;
+        else if (handshaked && ready_to_write)
+            ready_to_write = 0;
+        else if (wlast && wready && wvalid) 
+            ready_to_write = 1;
+    end
+
+    assign fifo_pop = ~fifo_empty & ready_to_write;
+
+
     fifo #(.DATA_W(3), 
-           .DEPTH(4)) fifo_for_w_channel  (
+        .DEPTH(4)) fifo_for_w_channel  (
         .clk_i,
         .rst_ni,
-        .we_i (awready && awvalid),
-        .re_i (handshaked),
+        .we_i (awready && awvalid && ~fifo_full),
+        .re_i (ready_to_write),
         .wdata_i (awid),
         .rdata_o (wid),
-        .full  (),
-        .empty ()
+        .full  (fifo_full),
+        .empty (fifo_empty)
     );
 
+    
     always_comb begin
         if (wid == `ID_CPU2MEM | wid == `ID_CPU2DMA | wid == `ID_CPU2AES) begin
             wvalid = m0_wvalid;

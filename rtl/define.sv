@@ -88,18 +88,18 @@
 `define CTRL_ENCDEC3_BIT    3
 `define ADDR_START          32'h00020003
 `define START_BIT           0
-`define ADDR_KEY0           32'h00020004
-`define ADDR_KEY1           32'h00020014
-`define ADDR_KEY2           32'h00020024
-`define ADDR_KEY3           32'h00020034
-`define ADDR_BLOCK0         32'h00020044
-`define ADDR_BLOCK1         32'h00020054
-`define ADDR_BLOCK2         32'h00020064
-`define ADDR_BLOCK3         32'h00020074
+`define ADDR_BLOCK0         32'h00020004
+`define ADDR_BLOCK1         32'h00020014
+`define ADDR_BLOCK2         32'h00020024
+`define ADDR_BLOCK3         32'h00020034
+`define ADDR_KEY0           32'h00020044
+`define ADDR_KEY1           32'h00020054
+`define ADDR_KEY2           32'h00020064
+`define ADDR_KEY3           32'h00020074
 `define ADDR_RESULT0        32'h00020084
 `define ADDR_RESULT1        32'h00020094
 `define ADDR_RESULT2        32'h000200a4
-`define ADDR_RESULT3        32'h000200b4
+`define ADDR_RESULT3        32'h000200b4 
 
 //DMA
 `define ADDR_VALID          32'h0001000c

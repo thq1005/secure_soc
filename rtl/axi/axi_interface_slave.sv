@@ -110,12 +110,12 @@ axi_addr get_next_wr_addr (.i_last_addr (waddr),
 
 always_ff @(posedge clk_i) begin
     if (m_awready) begin
-        waddr <= awaddr;
-        wburst <= awburst;
-        wsize <= awsize;
-        wlen <= awlen;
+        waddr <= m_awaddr;
+        wburst <= m_awburst;
+        wsize <= m_awsize;
+        wlen <= m_awlen;
     end else if (wvalid) 
-        waddr <= next_wr_addr;
+        waddr <= next_wr_addr;  
 end
 
 

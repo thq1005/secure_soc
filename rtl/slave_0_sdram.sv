@@ -49,8 +49,6 @@ logic [`DATA_WIDTH-1:0] rdata_w;
 logic cs_w;
 logic wr_w;
 logic [31:0] addr_w;
-logic [31:0] rdata_w;
-logic [31:0] wdata_w;
 
 axi_interface_slave s1_itf (
 .clk_i      (clk_i),

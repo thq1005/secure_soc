@@ -4,7 +4,7 @@ module aes_sbox(
     output logic [31:0] out    
 );
 
-logic [7:0] sbox [255];
+logic [7:0] sbox [0:255];
 
 assign out[31:24] = sbox[in[31:24]];
 assign out[23:16] = sbox[in[23:16]];

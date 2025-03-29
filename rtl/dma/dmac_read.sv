@@ -116,6 +116,18 @@ module dmac_read (
         end
     end
 
+    always_ff @(posedge clk_i) begin
+        if (!rst_ni) 
+            rdata_valid_o <= 0;
+        else if (r_state == R) begin
+            if (m_rvalid && m_rready && m_rlast) begin
+                rdata_valid_o <= 1;
+            end
+        end
+        else 
+            rdata_valid_o <= 0;
+    end
+
     assign m_arid    = (araddr_r[19:16] == 4'h0) ? `ID_DMA2MEM:
                        (araddr_r[19:16] == 4'h2) ? `ID_DMA2AES: 0;
     assign m_arlen   = arlen_r;
@@ -123,8 +135,7 @@ module dmac_read (
     assign m_arburst = arburst_r;
     assign m_rready  = (r_state == R);
     assign m_arvalid = (r_state == RA);
-    assign data_o    = {rdata_r[15], rdata_r[14], rdata_r[13], rdata_r[12], rdata_r[12], rdata_r[10], rdata_r[9], rdata_r[8], rdata_r[7], rdata_r[6], rdata_r[5], rdata_r[4], rdata_r[3], rdata_r[2], rdata_r[1], rdata_r[0]};
-    assign rdata_valid_o = (rdata_cnt == arlen_r && r_state == R);
+    assign data_o    = {rdata_r[15], rdata_r[14], rdata_r[13], rdata_r[12], rdata_r[11], rdata_r[10], rdata_r[9], rdata_r[8], rdata_r[7], rdata_r[6], rdata_r[5], rdata_r[4], rdata_r[3], rdata_r[2], rdata_r[1], rdata_r[0]};
     assign r_nstate = r_next_state;
 endmodule
 

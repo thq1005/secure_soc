@@ -24,7 +24,6 @@ logic         aes_core_ctrl_we;
 
 logic         result_valid_reg;
 logic         result_valid_new;
-logic         result_valid_we;
 
 logic         ready_reg;
 logic         ready_new;
@@ -78,7 +77,7 @@ aes_decipher_block dec_block (.clk_i        (clk_i),
 aes_key_mem keymem (.clk_i        (clk_i),
                     .rst_ni       (rst_ni),
                     .key_i        (key_i),
-                    .init_i       (init_i),
+                    .init_i       (on_i),
                     .round_i      (muxed_round_nr),
                     .round_key_o  (round_key),
                     .ready_o      (key_ready),
@@ -101,8 +100,7 @@ always_ff @(posedge clk_i) begin
         aes_core_ctrl_reg <= CTRL_IDLE;
     end
     else begin
-        if (result_valid_we)
-            result_valid_reg <= result_valid_new;
+        result_valid_reg <= result_valid_new;
             
         if (ready_we)
             ready_reg <= ready_new;
@@ -129,14 +127,14 @@ always_comb begin
     dec_next = 1'b0;
     if (encdec_i) begin
         //encipher
-        enc_next        = on_i;
+        enc_next        = next_r;
         muxed_round_nr  = enc_round_nr;
         muxed_new_block = enc_new_block;
         muxed_ready     = enc_ready;
     end
     else begin
         //decipher
-        dec_next        = on_i;
+        dec_next        = next_r;
         muxed_round_nr  = dec_round_nr;
         muxed_new_block = dec_new_block;
         muxed_ready     = dec_ready;
@@ -144,16 +142,25 @@ always_comb begin
 end
     
 ///////////////////////////////////////////
+logic next_w;
+logic next_r;
 
+always_ff @(posedge clk_i) begin
+    if (~rst_ni) begin
+        next_r <= 1'b0;
+    end 
+    else 
+        next_r <= next_w;
+end
 
 always_comb begin
     init_state = 1'b0;
     ready_new  = 1'b0;
     ready_we   = 1'b0;
     result_valid_new = 1'b0;
-    result_valid_we  = 1'b0;
     aes_core_ctrl_new = CTRL_IDLE;
     aes_core_ctrl_we  = 1'b0;
+    next_w = 1'b0;
 
     case (aes_core_ctrl_reg)
     CTRL_IDLE: begin
@@ -161,21 +168,26 @@ always_comb begin
             init_state = 1'b1;
             ready_new  = 1'b0;
             ready_we   = 1'b1;
-            result_valid_new = 1'b0;
-            result_valid_we  = 1'b1;
             aes_core_ctrl_new = CTRL_INIT;
             aes_core_ctrl_we  = 1'b1;
+        end
+        else if (next_r) begin
+            init_state       = 1'b0;
+            ready_new        = 1'b0;
+            ready_we         = 1'b1;
+            result_valid_new = 1'b0;
+            aes_core_ctrl_new= CTRL_NEXT;
+            aes_core_ctrl_we = 1'b1;
         end
     end
     
     CTRL_INIT: begin
         init_state = 1'b1;
         if (key_ready) begin
-            init_state       = 1'b0;
-            aes_core_ctrl_new= CTRL_NEXT;
+            aes_core_ctrl_new= CTRL_IDLE;
             aes_core_ctrl_we = 1'b1;
+            next_w = 1'b1;
         end
-            
     end
     
     CTRL_NEXT: begin
@@ -184,7 +196,6 @@ always_comb begin
             ready_new = 1'b1;
             ready_we  = 1'b1;
             result_valid_new = 1'b1;
-            result_valid_we  = 1'b1;
             aes_core_ctrl_new = CTRL_IDLE;
             aes_core_ctrl_we  = 1'b1;
         end
