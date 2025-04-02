@@ -381,7 +381,7 @@ module axi_bus(
         end
     end
 
-    assign rready = (rid == `ID_CPU2MEM) ? m0_rready:
+    assign rready = (rid == `ID_CPU2MEM | rid == `ID_CPU2AES) ? m0_rready:
                     (rid == `ID_DMA2MEM | rid == `ID_DMA2AES) ? m_rready: 0;
 
     //master0

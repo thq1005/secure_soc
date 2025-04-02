@@ -54,6 +54,8 @@ logic [31 : 0]  keymem_sboxw;
 logic [31 : 0]   muxed_sboxw;
 logic [31 : 0]  new_sboxw;
 
+logic next_w;
+logic next_r;
 aes_encipher_block enc_block (.clk_i        (clk_i),
                               .rst_ni       (rst_ni),
                               .next_i       (enc_next),
@@ -142,8 +144,7 @@ always_comb begin
 end
     
 ///////////////////////////////////////////
-logic next_w;
-logic next_r;
+
 
 always_ff @(posedge clk_i) begin
     if (~rst_ni) begin

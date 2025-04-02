@@ -1,34 +1,27 @@
+`include "../define.sv"
+
 `ifndef cache_def
 `define cache_def
 package cache_def;
     // data structure for cache tag and data
     //cache         |       tag       |  index  | offset |
     //              31               8 7       4 3       0 
-    parameter TAGMSB = 31;       // tag msb
-    parameter TAGLSB = 8;        // tag lsb : 4 bits offset (2 bit byte offset, 2 bit for 4 word), 4 bit index
-    parameter INDEX  = 4;        // No of set bits
-    parameter DEPTH  = 16;        // No of sets
-    parameter WAYS   = 4;        // No of ways
-    parameter DATA_WIDTH  = 128; // No bits of cache line data
-    parameter INDEX_WAY   = 2;   // No bit of way address
-    parameter NO_TAG_TYPE = 2 + (TAGMSB-TAGLSB+1); // number bits of cache tag type, include 1 valid bit, 1 dirty bit, tag bits
-
     // data structure for cache tag
     typedef struct packed {
         logic valid; // valid bit
         logic dirty; // dirty bit
-        logic [TAGMSB:TAGLSB] tag; // tag bits
+        logic [`TAGMSB:`TAGLSB] tag; // tag bits
     } cache_tag_type;
 
     // data structure for cache memory request 
     typedef struct {
-        logic [INDEX-1:0] index;
+        logic [`INDEX-1:0] index;
         logic we; // write enable
     } cache_req_type;
 
     // 128-bit cache line data
     //typedef logic [127:0] cache_data_type;
-    typedef logic [DATA_WIDTH-1:0] cache_data_type;
+    typedef logic [`DATA_WIDTH_CACHE-1:0] cache_data_type;
 
     //--------------------------
     // data structures for CPU <=> Cache constroller interface

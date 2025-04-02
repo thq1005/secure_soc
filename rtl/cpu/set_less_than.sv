@@ -1,3 +1,4 @@
+`include "../define.sv"
 module set_less_than(
 	input logic [31:0] rs1_i, rs2_i,
 	output logic [31:0] rd_o

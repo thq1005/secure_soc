@@ -1,3 +1,4 @@
+`include "../define.sv"
 module regfile( // Register file
 	input logic [31:0] dataW_i,
 	input logic [4:0] rsW_i, rs1_i, rs2_i,

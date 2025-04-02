@@ -37,7 +37,8 @@ module slave_1_aes(
   output logic rvalid,
   output logic rlast,
   input logic rready,
-  output logic aes_intr
+  output logic aes_irq,
+  input logic aes_clear_irq
 );
     
 logic we_w;
@@ -122,9 +123,11 @@ end
 
 always_ff @(posedge clk_i) begin
     if (!rst_ni)
-        rdata_r = 0;
-    else 
-        rdata_r = a_rdata;
+        rdata_r <= 0;
+    else if (re_w)
+        rdata_r <= a_rdata;
+    else
+        rdata_r <= rdata_r;
 end
 
 aes aes_inst(
@@ -135,6 +138,8 @@ aes aes_inst(
 .addr_i  (a_addr),
 .wdata_i (a_wdata),
 .rdata_o (a_rdata),
-.aes_intr(aes_intr)
+.aes_irq (aes_irq),
+.aes_clear_irq (aes_clear_irq)
 );
+
 endmodule

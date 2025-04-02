@@ -1,3 +1,4 @@
+`include "../define.sv"
 `define OP_Btype 		 7'b1100011
 `define OP_JAL 		 7'b1101111
 `define OP_JALR 		 7'b1100111
@@ -20,6 +21,7 @@ module Branch_predictor(
 	input logic [31:0] pc_i,
 	input logic [31:0] pc_ex_i,
 	input logic hit_ex_i,
+	input logic enable_i,
 	output logic hit_o,
 	output logic [31:0] predicted_pc_o,
 	output logic [1:0] wrong_predicted_o,
@@ -174,7 +176,7 @@ module Branch_predictor(
 			predicted_2bit[30] <= ST;
 			predicted_2bit[31] <= ST;
 		end
-		else begin
+		else if (enable_i) begin
 			BTB_r[index_w] <= BTB_temp_r;
 			predicted_2bit[index_w] <= predicted_2bit_temp;
 		end

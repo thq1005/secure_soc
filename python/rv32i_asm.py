@@ -113,7 +113,7 @@ def change_label_to_offset(code):
         if line.endswith(":"):
             continue
         parts = line.split()
-        if parts[0] in ['beq', 'bne', 'blt', 'bge', 'bltu', 'bgeu', 'jal','jalr','addi']:
+        if parts[0] in ['beq', 'bne', 'blt', 'bge', 'bltu', 'bgeu', 'jal','jalr']:
             label = parts[-1]
             if label.isdigit():
                 continue
@@ -121,7 +121,12 @@ def change_label_to_offset(code):
             target_address = list_addr[label + ":"]
             offset = (target_address - current_address)
             code[i] = ' '.join(parts[:-1]) + f" {offset}"
-
+        elif parts[0] in ['addi', 'xori', 'andi', 'ori', 'slti', 'sltiu', 'slli', 'srli', 'srai']:
+            label = parts[-1]
+            if label.isdigit():
+                continue
+            l_address = list_addr[label + ":"]
+            code[i] = ' '.join(parts[:-1]) + f" {l_address}"
     return code
 
 # Pre-process: "Clean" the assembly code

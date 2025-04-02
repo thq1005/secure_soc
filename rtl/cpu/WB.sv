@@ -1,3 +1,4 @@
+`include "../define.sv"
 module WB(
 	input logic clk_i,
 	input logic rst_ni,

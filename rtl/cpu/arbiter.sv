@@ -36,12 +36,12 @@ module arbiter(
         if (state == I_CACHE)
         begin
             i_cs_r = 0;
-            d_cs_r = d_cs_i;
+            d_cs_r = (~i_cs_i & d_cs_i);
         end
         else if (state == MEM)
         begin
-            i_cs_r = i_cs_i;
-            d_cs_r = 0;
+            i_cs_r = 0;
+            d_cs_r = (d_we_i);
         end
         else
         begin
@@ -55,7 +55,7 @@ module arbiter(
         case (state)
             IDLE: begin
                 if (i_cs_i) next_state = I_CACHE;
-                else if ((~i_cs_i) & d_cs_i & ~d_we_i) next_state = MEM;
+                else if (d_cs_i & ~d_we_i) next_state = MEM;
             end
             I_CACHE: begin
                 if ((~i_cs_i & ~d_cs_i) | (~i_cs_i & d_cs_i & d_we_i)) next_state = IDLE;
@@ -101,7 +101,7 @@ module arbiter(
     
     assign cs_o     = i_cs_r | d_cs_r;
     assign addr_o   = (i_cs_i) ? i_addr_i : 
-                      (d_cs_i & d_addr_i[19:16] == 4'h0) ? {d_addr_i[31:4], 4'b0} + 32'h00000800 : d_addr_i;
+                      (d_cs_i & (d_addr_i[19:16] == 4'h0)) ? {d_addr_i[31:4], 4'b0} + 32'h00000800 : d_addr_i;
     assign wdata_o  = d_wdata_i;
     assign we_o     = i_cs_i ? 0 : 
                       (d_cs_i & d_we_i) ? 1 : 0;

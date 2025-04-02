@@ -1,3 +1,4 @@
+`include "../define.sv"
 module full_subtractor(
 	input logic a_i, b_i, c_i,
 	output logic d_o, b_o

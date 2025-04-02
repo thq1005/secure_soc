@@ -1,3 +1,4 @@
+`include "../define.sv"
 module mux3to1_32bit(
 	input logic [31:0] a_i, b_i, c_i,
 	input logic [1:0] se_i,

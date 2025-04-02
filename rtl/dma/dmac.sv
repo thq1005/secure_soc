@@ -71,8 +71,10 @@ module dmac (
         input  logic m_rvalid,
         input  logic m_rlast,
         output logic m_rready,
-        input logic aes_intr,		//aes interrupt
-        output logic dma_intr		//dma interrupt
+        input logic aes_irq,        //aes interrupt
+        output logic aes_clear_irq,	
+        output logic dma_irq,		//dma interrupt
+        input logic dma_clear_irq
 );
      // | burst | size | len |
      // 12    11 10   8 7    0
@@ -103,7 +105,8 @@ module dmac (
     logic [`DATA_WIDTH-1:0] wdata_w;
 
     logic dma_intr_w;
-
+    logic mode_r;
+    
     always_comb begin
         if (fifo_pop) 
             ready_to_pop <= 1'b0;
@@ -113,7 +116,20 @@ module dmac (
             ready_to_pop <= 1'b0;
     end
 
-    assign run = (fifo_pop && ~current_mode) | (fifo_pop && current_mode && aes_intr);
+    assign run = (fifo_pop && ~current_mode) | (mode_r && aes_irq);
+
+    
+    always_ff @(posedge clk_i) begin
+        if (~rst_ni) begin
+            mode_r <= 0;
+        end
+        else if (fifo_pop)
+            mode_r <= current_mode;
+        else if (aes_irq)
+            mode_r <= 0;
+        else
+            mode_r <= mode_r;
+    end
 
     fifo #(
         .DATA_W (`ADDR_WIDTH+`ADDR_WIDTH+2+`SIZE_BITS+`LEN_BITS+1),
@@ -196,6 +212,7 @@ module dmac (
         .clk_i,
         .rst_ni,
         .valid_i    (run),
+        .write_rq   (fifo_pop),
         .src_addr_i (current_src_addr),
         .len_i      (current_config[`DMA_LEN_BIT7:`DMA_LEN_BIT0]),
         .size_i     (current_config[`DMA_SIZE_BIT2:`DMA_SIZE_BIT0]),
@@ -232,7 +249,7 @@ module dmac (
     always_ff @(posedge clk_i) begin
         if (~rst_ni)
             r_dst_addr <= '0;
-        else if (run)
+        else if (fifo_pop)
             r_dst_addr <= current_dst_addr;
     end
 
@@ -349,6 +366,18 @@ module dmac (
         end
     end
 
-    assign dma_intr = (current_mode == 1'b1) && (dma_intr_w);
+    always_ff @(posedge clk_i) begin
+        if(~rst_ni) begin
+            dma_irq <= 1'b0;
+        end
+        else if (dma_intr_w && (m_awid == 2)) begin
+            dma_irq <= 1'b1;
+        end
+        else if (dma_clear_irq) begin
+            dma_irq <= 1'b0;
+        end
+    end
+
+    assign aes_clear_irq = aes_irq && dma_irq;
 
 endmodule

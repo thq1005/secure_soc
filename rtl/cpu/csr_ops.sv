@@ -1,4 +1,3 @@
-
 `include "../define.sv"
 //this module is used to generate interrupt signal
 //csr operations
@@ -14,7 +13,7 @@ module csr_ops (
 
     input  logic                   is_mret,
     output logic                   intr_flag,       //will remain high in the while interrupt is being serviced
-    output logic [`DATA_WIDTH-1:0] where_to_go      //where we will go when interrupt comes, PC out
+    output logic [`ADDR_WIDTH-1:0] where_to_go      //where we will go when interrupt comes, PC out
 
 
 );

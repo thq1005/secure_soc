@@ -1,3 +1,4 @@
+`include "../define.sv"
 module imem( // A read-only memory for fetching instructions
 	input logic [31:0] addr_i,
 	input logic rst_ni,

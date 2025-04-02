@@ -1,6 +1,15 @@
 `ifndef DEFINE_sv
 `define DEFINE_sv
 
+//cache define
+`define TAGMSB          31       
+`define TAGLSB          8        
+`define INDEX           4        
+`define DEPTH           16       
+`define WAYS            4        
+`define INDEX_WAY       2   
+`define NO_TAG_TYPE     24
+
 // Opcode of all types in RISC-V
 `define OP_Rtype 		 7'b0110011
 `define OP_Itype 		 7'b0010011

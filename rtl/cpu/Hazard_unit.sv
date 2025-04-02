@@ -1,3 +1,4 @@
+`include "../define.sv"
 `define OP_Itype_load 7'b0000011
 
 module Hazard_unit(

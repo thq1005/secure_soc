@@ -1,3 +1,4 @@
+`include "../define.sv"
 module brcomp(
 	input logic [31:0] rs1_i, rs2_i,
 	input logic BrUn_i,

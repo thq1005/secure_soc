@@ -1,3 +1,4 @@
+`include "../define.sv"
 module full_adder(
 	input logic a_i, b_i, c_i,
 	output logic s_o, c_o

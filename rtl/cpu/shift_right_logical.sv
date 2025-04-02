@@ -1,3 +1,4 @@
+`include "../define.sv"
 module shift_right_logical(
 	input logic [31:0] rs1_i, rs2_i, // rs2_i only has 5 bit length
 	output logic [31:0] rd_o

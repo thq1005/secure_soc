@@ -10,7 +10,8 @@ module aes(
     input logic [31:0] addr_i,
     input logic [31:0] wdata_i,
     output logic [31:0] rdata_o,
-    output logic aes_intr
+    output logic aes_irq,
+    input logic aes_clear_irq
     );
     logic [3:0] on_reg;
     logic on_we;
@@ -235,7 +236,7 @@ always_ff @(posedge clk_i) begin
 end
 
 logic valid_w;
-assign valid_w = (valid0_reg == on_reg[0] && valid1_reg == on_reg[1] && valid2_reg == on_reg[2] && valid3_reg == on_reg[3]);
+assign valid_w = (valid0_reg == on_reg[0] && valid1_reg == on_reg[1] && valid2_reg == on_reg[2] && valid3_reg == on_reg[3] &&(valid1_reg | valid2_reg | valid3_reg | valid0_reg));
 
 always_comb begin
     start_new   = 1'b0;
@@ -278,14 +279,46 @@ always_comb begin
         else begin
             if (addr_i == `ADDR_STATUS)
                 tmp_read_data = {30'h0, valid_w, ready_reg};
-            if ((addr_i >= `ADDR_RESULT0) && (addr_i <= `ADDR_RESULT1))
-                tmp_read_data = result0_reg[(3 - (addr_i - `ADDR_RESULT0)) * 32 +: 32];
-            else if ((addr_i >= `ADDR_RESULT1) && (addr_i <= `ADDR_RESULT2))
-                tmp_read_data = result1_reg[(3 - (addr_i - `ADDR_RESULT1)) * 32 +: 32];
-            else if ((addr_i >= `ADDR_RESULT2) && (addr_i <= `ADDR_RESULT3))
-                tmp_read_data = result2_reg[(3 - (addr_i - `ADDR_RESULT2)) * 32 +: 32];
-            else if ((addr_i >= `ADDR_RESULT3))
-                tmp_read_data = result3_reg[(3 - (addr_i - `ADDR_RESULT3)) * 32 +: 32];
+            if ((addr_i >= `ADDR_RESULT0) && (addr_i < `ADDR_RESULT1)) begin
+                if (addr_i[3:2]==2'b01)
+                    tmp_read_data = result0_reg[127:96];
+                else if (addr_i[3:2]==2'b10)
+                    tmp_read_data = result0_reg[95:64];
+                else if (addr_i[3:2]==2'b11)
+                    tmp_read_data = result0_reg[63:32];
+                else if (addr_i[3:2]==2'b00)
+                    tmp_read_data = result0_reg[31:0];
+            end
+            else if ((addr_i >= `ADDR_RESULT1) && (addr_i < `ADDR_RESULT2)) begin
+                if (addr_i[3:2]==2'b01)
+                    tmp_read_data = result1_reg[127:96];
+                else if (addr_i[3:2]==2'b10)
+                    tmp_read_data = result1_reg[95:64];
+                else if (addr_i[3:2]==2'b11)
+                    tmp_read_data = result1_reg[63:32];
+                else if (addr_i[3:2]==2'b00)
+                    tmp_read_data = result1_reg[31:0];
+            end
+            else if ((addr_i >= `ADDR_RESULT2) && (addr_i < `ADDR_RESULT3)) begin
+                if (addr_i[3:2]==2'b01)
+                    tmp_read_data = result2_reg[127:96];
+                else if (addr_i[3:2]==2'b10)
+                    tmp_read_data = result2_reg[95:64];
+                else if (addr_i[3:2]==2'b11)
+                    tmp_read_data = result2_reg[63:32];
+                else if (addr_i[3:2]==2'b00)
+                    tmp_read_data = result2_reg[31:0];
+            end
+            else if ((addr_i >= `ADDR_RESULT3)) begin
+                if (addr_i[3:2]==2'b01)
+                    tmp_read_data = result3_reg[127:96];
+                else if (addr_i[3:2]==2'b10)
+                    tmp_read_data = result3_reg[95:64];
+                else if (addr_i[3:2]==2'b11)
+                    tmp_read_data = result3_reg[63:32];
+                else if (addr_i[3:2]==2'b00)
+                    tmp_read_data = result3_reg[31:0];
+            end
         end
     end
 end
@@ -301,10 +334,10 @@ always_ff @(posedge clk_i) begin
     else if (valid_w) begin
         intr_reg <= 1'b1;
     end
-    else begin
+    else if (aes_clear_irq) begin
         intr_reg <= 1'b0;
     end
 end
 
-assign aes_intr = 0;
+assign aes_irq = intr_reg;
 endmodule

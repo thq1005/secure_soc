@@ -10,6 +10,7 @@ module dmac_read (
     input [1:0]             burst_i,
     output logic rdata_valid_o,
     output logic [511:0] data_o, 
+    input write_rq,
     //AR channel
     output logic [`ID_BITS - 1:0]       m_arid,
     output logic [`ADDR_WIDTH - 1:0]    m_araddr,
@@ -45,7 +46,7 @@ module dmac_read (
             arlen_r  <= '0;
             arsize_r <= '0;
             arburst_r <= '0;
-        end else if (valid_i) begin
+        end else if (write_rq) begin
             araddr_r <= src_addr_i;
             arlen_r  <= len_i;
             arsize_r <= size_i;

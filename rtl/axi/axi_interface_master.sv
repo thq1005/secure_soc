@@ -49,8 +49,10 @@ module axi_interface_master(
     localparam IDLE = 2'd0, WA = 2'd1, W = 2'd2, B = 2'd3, RA = 2'd1, R = 2'd2;       
 
 
-    logic [3:0] w_state, w_next_state;
-    logic [3:0] r_state, r_next_state;
+    logic [3:0] w_state;
+    logic [3:0] w_next_state;
+    logic [3:0] r_state;
+    logic [3:0] r_next_state;
 
     logic [1:0] w_len_cnt;
     logic [1:0] r_len_cnt;
@@ -168,6 +170,7 @@ module axi_interface_master(
             else 
                 w_next_state = B;
         end
+        default: ;
         endcase
     end    
 
@@ -241,7 +244,7 @@ module axi_interface_master(
         if (!rst_ni) begin
             rvalid_o = 0;
         end 
-        else if (rlast_i && rvalid_i) 
+        else if (rlast_i && rvalid_i && rready_o) 
             rvalid_o = 1;
         else 
             rvalid_o = 0;

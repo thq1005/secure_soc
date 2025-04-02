@@ -1,3 +1,4 @@
+`include "../define.sv"
 module subtractor_32bit(
 	input logic [31:0] a_i, b_i,
 	//input logic c_i,

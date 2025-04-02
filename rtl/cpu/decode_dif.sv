@@ -1,3 +1,4 @@
+`include "../define.sv"
 // this module will decode the value of N to N value of 1
 
 module decode_dif(

@@ -49,15 +49,12 @@ module csr_regs  (
 
     always_ff @ (negedge clk_i) begin  
         if (~rst_ni) begin
-            mstatus_reg <= '0;
             mie_reg     <= '0;
             mtvec_reg   <= '0;
         end
 
         else if (we) begin
             case(addr_w)
-               MSTATUS_ADDR : 
-                  mstatus_reg <= data_i;
                MIE_ADDR     :
                   mie_reg     <= data_i;  
                MTVEC_ADDR   : 
@@ -71,9 +68,11 @@ module csr_regs  (
 
    always_ff @(posedge clk_i) begin
       if (~rst_ni) begin
-         mip_reg <= '0;
+         mstatus_reg <= '0;
       end
-      if (intr_flag) begin
+      else if (addr_w == MSTATUS_ADDR)
+         mstatus_reg <= data_i;
+      else if (intr_flag) begin
          mstatus_reg[MIE] <= 1'b0;
       end
       else if (is_mret) begin
@@ -106,7 +105,7 @@ module csr_regs  (
       if (~rst_ni) 
          mcause_reg <= '0;
       else if (e_intr) 
-         mcause_reg <= 32'h3;
+         mcause_reg <= 32'h8000000b;
    end
 
 csr_ops i_csr_ops(

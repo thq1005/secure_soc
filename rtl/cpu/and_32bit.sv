@@ -1,3 +1,4 @@
+`include "../define.sv"
 module and_32bit(
 	input logic [31:0] a_i, b_i,
 	output logic [31:0] c_o

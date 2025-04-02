@@ -9,7 +9,8 @@ module riscv_cache(
     output logic cs_o,
     input logic [`DATA_WIDTH_CACHE-1:0] rdata_i,
     input logic rvalid_i,
-	input logic dma_intr
+	input logic dma_intr,
+	output logic dma_clear_intr
 	);
 	
 	logic BrEq_w, BrLt_w;
@@ -179,7 +180,8 @@ module riscv_cache(
 		.pc_intr_o (csr_pc_w),
 		.intr_flag (intr_flag),
 		.is_mret   (is_mret),
-		.aes_load_ex_o (aes_load_ex_w)
+		.aes_load_ex_o (aes_load_ex_w),
+		.dma_clear_intr (dma_clear_intr)
 		);
 		
 	EX EX(
@@ -324,7 +326,8 @@ module riscv_cache(
 		.hit_o		(hit_w),
 		.predicted_pc_o(predicted_pc_w),
 		.wrong_predicted_o(wrong_predicted_w),
-		.alu_pc_o(alu_pc_w)
+		.alu_pc_o(alu_pc_w),
+		.enable_i (~(Stall_WB_w | stall_by_dcache_w | stall_by_icache_w| stall_by_aes_w))
 		);
 		
 	arbiter arbiter_inst (
@@ -337,7 +340,7 @@ module riscv_cache(
 		.i_rdata_o   (imem_rdata_i),
 		.i_rvalid_o  (imem_rvalid_i),
 		.d_addr_i    (mem_addr_w),
-		.d_cs_i      (mem_cs_w && ~stall_by_icache_w),
+		.d_cs_i      (mem_cs_w),
 		.d_wdata_i   (mem_wdata_w),
 		.d_we_i      (mem_we_w),
 		.d_rdata_o   (dmem_rdata_w),  

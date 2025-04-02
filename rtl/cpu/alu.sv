@@ -1,3 +1,4 @@
+`include "../define.sv"
 
 // ALU function decode from funct3 and bit 5 of funct7
 `define ADD  4'b0000

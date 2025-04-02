@@ -1,3 +1,4 @@
+`include "../define.sv"
 module ID(
 	input logic clk_i,
 	input logic rst_ni,
@@ -11,6 +12,7 @@ module ID(
 	input logic reset_i,
 	input logic hit_d_i,
 	input logic dma_intr,		//aes interrupt
+	output logic dma_clear_intr,
 	input logic [31:0] csr_wdata_i,
 	input logic [31:0] csr_waddr_i,
 	input logic csr_we_i,
@@ -116,7 +118,7 @@ module ID(
 	csr_regs CSR_Regs (					//31             20 19    15 14    12 11     7 6     0  
 		.clk_i		(clk_i),			//|       csr      |   rs1  | funct3 |   rd   |opcode|  csrrx
 		.rst_ni		(rst_ni),			//|       csr      |   uimm | funct3 |   rd   |opcode|  csrrxi
-		.e_intr		(dma_intr),
+		.e_intr		(dma_intr & dma_clear_intr),
 		.is_mret	(is_mret),
 		.addr_r		({20'h00000,inst_d_i[31:20]}),
 		.addr_w		(csr_waddr_i),		
@@ -176,7 +178,7 @@ module ID(
 				csr_rdata_r <= 32'b0;
 				csr_we_r <= 1'b0;
 				csr_waddr_r <= 32'b0;
-				aes_load_r <= 1'b0;				
+				aes_load_r <= 1'b0;		
 			end
 			else begin
 				rs1_r <= rs1_w;
@@ -226,4 +228,13 @@ module ID(
 	assign csr_waddr_o = csr_waddr_r;
 	assign alu_csr_sel_o = csr_we_r;
 	assign aes_load_ex_o = aes_load_r;
+
+	always_ff @(posedge clk_i) begin
+		if (~rst_ni)
+			dma_clear_intr <= 0;
+		else if (dma_intr)
+			dma_clear_intr <= 1;
+		else 
+			dma_clear_intr <= 0;
+	end
 endmodule

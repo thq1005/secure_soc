@@ -183,8 +183,10 @@ module top(
     logic s_rlast;
     logic s_rready;
 
-    logic dma_intr;
-    logic aes_intr;
+    logic dma_irq;
+    logic dma_clear_irq;
+    logic aes_irq;
+    logic aes_clear_irq;
 
     master_cpu m_inst (
         .clk_i        (ACLK_1),
@@ -218,7 +220,8 @@ module top(
         .m_rvalid     (m0_rvalid),
         .m_rlast      (m0_rlast),
         .m_rready     (m0_rready),
-        .dma_intr     (dma_intr)
+        .dma_irq      (dma_irq),
+        .dma_clear_irq(dma_clear_irq)
         );
         
     dmac dma (
@@ -282,8 +285,10 @@ module top(
         .m_rvalid   (m_rvalid),
         .m_rlast    (m_rlast),
         .m_rready   (m_rready),
-        .dma_intr   (dma_intr),
-        .aes_intr   (aes_intr)
+        .dma_irq    (dma_irq),
+        .dma_clear_irq (dma_clear_irq),
+        .aes_irq   ( aes_irq),
+        .aes_clear_irq (aes_clear_irq)
     );
     
     slave_0_sdram s0_inst (
@@ -352,7 +357,8 @@ module top(
         .rvalid     (s1_rvalid),
         .rlast      (s1_rlast),
         .rready     (s1_rready),
-        .aes_intr   (aes_intr)
+        .aes_irq    (aes_irq),
+        .aes_clear_irq (aes_clear_irq)
     );    
 
 

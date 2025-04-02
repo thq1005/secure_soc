@@ -1,3 +1,4 @@
+`include "../define.sv"
 /* cache finite state machine */
 module icache_controller(
     input logic clk_i,
@@ -138,10 +139,10 @@ module icache_controller(
         tag_req.we = '0;
 
         /* direct map index for tag */
-        tag_req.index = cpu_req_i.addr[INDEX+3:4];
+        tag_req.index = cpu_req_i.addr[`INDEX+3:4];
 
         /* direct map index for cache data */
-        data_req.index = cpu_req_i.addr[INDEX+3:4];
+        data_req.index = cpu_req_i.addr[`INDEX+3:4];
 
         /* modify correct word (32-bit) based on address */
         data_write = data_read;
@@ -191,7 +192,7 @@ module icache_controller(
             end
             COMPARE_TAG: begin
                 /* cache hit (tag match and cache entry is valid) */
-                if (cpu_req_i.addr[TAGMSB:TAGLSB] == tag_read.tag && tag_read.valid) begin
+                if (cpu_req_i.addr[`TAGMSB:`TAGLSB] == tag_read.tag && tag_read.valid) begin
                     v_cpu_res.ready = '1;
 
                     /* write hit */
@@ -218,7 +219,7 @@ module icache_controller(
                     /* generate new tag */
                     tag_req.we = '1;
                     tag_write.valid = '1;
-                    tag_write.tag = cpu_req_i.addr[TAGMSB:TAGLSB];
+                    tag_write.tag = cpu_req_i.addr[`TAGMSB:`TAGLSB];
                     tag_write.dirty = cpu_req_i.rw;
 
                     /* generate memory request on miss */
@@ -227,7 +228,7 @@ module icache_controller(
                     if (cpu_req_i.rw == 1'b1 && full_w == 1'b1 && tag_read.dirty == 1'b1) begin
                         /* miss with dirty line */
                         /* write back address */
-                        v_mem_req.addr = {tag_read.tag, cpu_req_i.addr[TAGLSB-1:0]};
+                        v_mem_req.addr = {tag_read.tag, cpu_req_i.addr[`TAGLSB-1:0]};
                         v_mem_req.rw = '1;
 
                         /* wait till write is completed */

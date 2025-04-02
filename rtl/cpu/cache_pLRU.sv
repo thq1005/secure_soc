@@ -1,17 +1,18 @@
+`include "../define.sv"
 import cache_def::*;
 
 module cache_pLRU(
     input logic clk_i,
     input logic rst_ni,
     input logic valid_i,
-    input logic [INDEX-1:0] index_i,
-    input logic [INDEX_WAY-1:0] address_i,
-    output logic [INDEX_WAY-1:0] address_o
+    input logic [`INDEX-1:0] index_i,
+    input logic [`INDEX_WAY-1:0] address_i,
+    output logic [`INDEX_WAY-1:0] address_o
 );
 
     logic L0, L1, L2;
     logic L1_w,  L2_w,  L3_w,  L4_w,  L5_w,  L6_w; // signal notices that a node need to change
-    logic [INDEX_WAY-1:0] pLRU;
+    logic [`INDEX_WAY-1:0] pLRU;
 
    
     cache_pLRU_node NODE_L0(
@@ -63,18 +64,18 @@ module cache_pLRU_node(
     input logic clk_i,
     input logic rst_ni,
     input logic valid_i,
-    input logic [INDEX-1:0] index_i,
+    input logic [`INDEX-1:0] index_i,
     input logic value_i,
     output logic load_left_o,
     output logic load_right_o,
     output logic load_o
 );
 
-    logic [DEPTH-1:0] L_r;
+    logic [`DEPTH-1:0] L_r;
 
     always_ff @(posedge clk_i) begin
         if (~rst_ni) begin
-            L_r <= {DEPTH{1'b0}};
+            L_r <= {`DEPTH{1'b0}};
         end
         else if (valid_i) begin
             L_r[index_i] <= value_i;

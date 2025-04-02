@@ -1,3 +1,4 @@
+`include "../define.sv"
 module mux2to1_32bit(
 	input logic [31:0] a_i, b_i,
 	input logic se_i, // select se_i=0->c_o=a_i, se_i=1->c_o=b_i

@@ -1,3 +1,4 @@
+`include "../define.sv"
 import cache_def::*;
 module IF(
 	input logic clk_i,
@@ -62,14 +63,14 @@ module IF(
 		);
 		
 	mux3to1_32bit MUX3_IF(
-		.a_i(PC_mux_w), 
+		.a_i(PC_mux1_w), 
 		.b_i(mispredicted_pc_i), 
 		.c_i(alu_pc_i),
 		.se_i(wrong_predicted_i),
-		.r_o(PC_mux1_w)
+		.r_o(PC_mux2_w)
 		);
 	
-	assign PC_mux2_w = (intr_flag | is_mret) ? csr_pc_i : PC_mux1_w;
+	assign PC_mux1_w = (intr_flag | is_mret) ? csr_pc_i : PC_mux_w;
 
 	pc PC_IF(
 		.data_i(PC_mux2_w),

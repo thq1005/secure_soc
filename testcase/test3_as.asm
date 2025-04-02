@@ -13,6 +13,8 @@ _start:
 
     # Step 3: Set the machine trap vector to our interrupt handler
     addi x3, x0, interrupt_handler
+    slli x3, x3, 2
+    addi x3, x3, 1
     csrrw x0, mtvec, x3
 
     # Step 4: Start AES processing using DMA
@@ -22,7 +24,7 @@ _start:
     addi x1, x0, 0
     addi x2, x0, 3
     aes_block x1, x2
-    addi x1,x1, 64
+    addi x1,x1, 64   
     aes_key x1, x2
     addi x1, x1, 64
     aes_res x1, x2
@@ -30,6 +32,8 @@ _start:
     aes_start
 main_loop:
     jal x0, main_loop 
+done:
+    jal x0, done
 
 # ---------------------
 # Interrupt Service Routine (ISR)
@@ -37,15 +41,17 @@ main_loop:
 interrupt_handler:
     csrrw x1, mcause, x0
     addi x2, x0, 11                     # DMA Interrupt ID (Assumed)
-    beq x2, x1, dma_interrupt_handler   # Branch if it's a DMA interrupt
+    lui x3, 0x80000
+    add x3, x2, x3
+    beq x3, x1, dma_interrupt_handler   # Branch if it's a DMA interrupt
     mret  
 
 # ---------------------
 # DMA Interrupt Handler
 # ---------------------
 dma_interrupt_handler:
-    lw x1, 32(x0)  
-    lw x2, 36(x0)  
-    lw x3, 40(x0)  
-    lw x4, 44(x0)  
+    lw x1, 128(x0)  
+    lw x2, 132(x0)  
+    lw x3, 136(x0)  
+    lw x4, 140(x0)  
     mret

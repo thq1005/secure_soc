@@ -1,3 +1,4 @@
+`include "../define.sv"
 module pc( // Program Counter
 	input logic [31:0] data_i,
 	//input logic WE_i, // Write Enable
