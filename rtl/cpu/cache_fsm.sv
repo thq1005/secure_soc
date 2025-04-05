@@ -301,6 +301,8 @@ module cache_fsm(
                 //     vstate = ALLOCATE;
                 // end
             end
+            default: 
+                vstate = IDLE;
         endcase
     end
 

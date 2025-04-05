@@ -6,7 +6,6 @@ module arbiter(
     //icache
     input  logic [`ADDR_WIDTH-1:0] i_addr_i,
     input  logic i_cs_i,
-    input  logic [`DATA_WIDTH_CACHE-1:0] i_wdata_i,
     input  logic i_we_i,
     output logic [`DATA_WIDTH_CACHE-1:0] i_rdata_o,
     output logic i_rvalid_o,

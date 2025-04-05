@@ -278,6 +278,7 @@ module icache_controller(
                     vstate = ALLOCATE;
                 end
             end
+            default: vstate = IDLE;
         endcase
     end
 

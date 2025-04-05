@@ -21,21 +21,6 @@ module dmac (
         output logic [2:0] s_bresp,
         output logic s_bvalid,
         input s_bready,
-        //AR channel
-        input [`ID_BITS - 1:0] s_arid,
-        input [`ADDR_WIDTH - 1:0] s_araddr,
-        input [`LEN_BITS - 1:0] s_arlen,
-        input [1:0] s_arburst,
-        input [`SIZE_BITS - 1:0] s_arsize,
-        input s_arvalid,
-        output logic s_arready,
-        //R channel
-        output logic [`ID_BITS - 1:0] s_rid,
-        output logic [`DATA_WIDTH - 1:0] s_rdata,
-        output logic [2:0] s_rresp,
-        output logic s_rvalid,
-        output logic s_rlast,
-        input s_rready,
 
         //AW channel
         output logic [`ID_BITS - 1:0] m_awid,
@@ -164,7 +149,7 @@ module dmac (
 
     
 
-    axi_interface_slave s_itf (
+    axi_interface_slave_write s_itf (
         .clk_i      (clk_i),
         .rst_ni     (rst_ni),
         .awid       (s_awid),
@@ -183,26 +168,10 @@ module dmac (
         .bresp      (s_bresp),
         .bvalid     (s_bvalid),
         .bready     (s_bready),
-        .arid       (s_arid),
-        .araddr     (s_araddr),
-        .arlen      (s_arlen),
-        .arburst    (s_arburst),
-        .arsize     (s_arsize),
-        .arvalid    (s_arvalid),
-        .arready    (s_arready),
-        .rid        (s_rid),
-        .rdata      (s_rdata),
-        .rresp      (s_rresp),
-        .rvalid     (s_rvalid),
-        .rlast      (s_rlast),
-        .rready     (s_rready),
         .o_we       (we_w),
         .o_waddr    (waddr_w),
         .o_wdata    (wdata_w),
-        .o_strb     (),
-        .o_re       (),
-        .o_raddr    (),
-        .i_rdata    ()
+        .o_strb     ()
         );
 
     logic [511:0] data_w;

@@ -99,6 +99,7 @@ module dmac_write (
             else 
                 w_next_state = B;
         end
+        default: w_next_state = IDLE;
         endcase
     end   
 
@@ -125,11 +126,11 @@ module dmac_write (
     assign m_wstrb   = 4'hf;
     assign m_awid    =  (awaddr_r[19:16] == 4'h0) ? `ID_DMA2MEM:
                         (awaddr_r[19:16] == 4'h2) ? `ID_DMA2AES: 0;
+
     assign m_awlen   = awlen_r;
     assign m_awsize  = awsize_r;
     assign m_awburst = awburst_r;
     assign m_awvalid = (w_state == WA);
-
     assign m_wlast   = ((w_state == W) && (wdata_cnt == awlen_r));
     assign m_wvalid  = (w_state == W);
     assign m_bready  = (w_state == B);

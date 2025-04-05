@@ -2,7 +2,6 @@
 module axi_addr(
     input logic [`ADDR_WIDTH-1:0] i_last_addr,
     input logic [`SIZE_BITS-1 :0] i_size,
-    input logic [`LEN_BITS-1:0] i_len,
     input logic [1:0] i_burst,
     output logic [`ADDR_WIDTH-1:0] o_next_addr
     );

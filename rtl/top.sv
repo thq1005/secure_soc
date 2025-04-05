@@ -1,9 +1,7 @@
 `include "define.sv" 
 module top(
     input logic ACLK_1,
-    input logic ARESETn_1,
-    input logic ACLK_2,
-    input logic ARESETn_2
+    input logic ARESETn_1
     );
     
     
@@ -167,21 +165,7 @@ module top(
     logic [2:0] s_bresp;
     logic s_bvalid;
     logic s_bready;
-    //AR channel
-    logic [`ID_BITS - 1:0] s_arid;
-    logic [`ADDR_WIDTH - 1:0] s_araddr;
-    logic [`LEN_BITS - 1:0] s_arlen;
-    logic [1:0] s_arburst;
-    logic [`SIZE_BITS - 1:0] s_arsize;
-    logic s_arvalid;
-    logic s_arready;
-    //R channel
-    logic [`ID_BITS - 1:0] s_rid;
-    logic [`DATA_WIDTH - 1:0] s_rdata;
-    logic [2:0] s_rresp;
-    logic s_rvalid;
-    logic s_rlast;
-    logic s_rready;
+
 
     logic dma_irq;
     logic dma_clear_irq;
@@ -243,19 +227,6 @@ module top(
         .s_bresp    (s_bresp),
         .s_bvalid   (s_bvalid),
         .s_bready   (s_bready),
-        .s_arid     (s_arid),
-        .s_araddr   (s_araddr),
-        .s_arlen    (s_arlen),
-        .s_arburst  (s_arburst),
-        .s_arsize   (s_arsize),
-        .s_arvalid  (s_arvalid),
-        .s_arready  (s_arready),
-        .s_rid      (s_rid),
-        .s_rdata    (s_rdata),
-        .s_rresp    (s_rresp),
-        .s_rvalid   (s_rvalid),
-        .s_rlast    (s_rlast),
-        .s_rready   (s_rready),
         .m_awid     (m_awid),
         .m_awaddr   (m_awaddr),
         .m_awlen    (m_awlen),
@@ -502,20 +473,7 @@ module top(
         .s_bid        (s_bid),
         .s_bresp      (s_bresp),
         .s_bvalid     (s_bvalid),
-        .s_bready     (s_bready),
-        .s_arid       (s_arid),
-        .s_araddr     (s_araddr),
-        .s_arlen      (s_arlen),
-        .s_arburst    (s_arburst),
-        .s_arsize     (s_arsize),
-        .s_arvalid    (s_arvalid),
-        .s_arready    (s_arready),
-        .s_rid        (s_rid),
-        .s_rdata      (s_rdata),
-        .s_rresp      (s_rresp),
-        .s_rvalid     (s_rvalid),
-        .s_rlast      (s_rlast),
-        .s_rready     (s_rready)
+        .s_bready     (s_bready)
     );
     
 endmodule

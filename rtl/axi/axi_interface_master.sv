@@ -170,7 +170,7 @@ module axi_interface_master(
             else 
                 w_next_state = B;
         end
-        default: ;
+        default: w_next_state = IDLE;
         endcase
     end    
 
@@ -194,6 +194,7 @@ module axi_interface_master(
             else 
                 r_next_state = R;
         end
+        default: r_next_state = IDLE;
         endcase
     end    
     

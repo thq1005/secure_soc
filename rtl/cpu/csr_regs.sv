@@ -26,7 +26,8 @@ module csr_regs  (
    parameter [`ADDR_WIDTH-1:0] MEPC_ADDR    = 32'h00000341;
    parameter [`ADDR_WIDTH-1:0] MCAUSE_ADDR  = 32'h00000342;
    parameter [`ADDR_WIDTH-1:0] MIP_ADDR     = 32'h00000344;
-
+   localparam MEIP = 11; 
+   localparam MIE  = 3;
    //internal registers of CSR register file
    logic [`DATA_WIDTH-1:0] mstatus_reg;
    logic [`DATA_WIDTH-1:0] mie_reg;
@@ -47,31 +48,22 @@ module csr_regs  (
       endcase
    end
 
-    always_ff @ (negedge clk_i) begin  
-        if (~rst_ni) begin
-            mie_reg     <= '0;
-            mtvec_reg   <= '0;
-        end
-
-        else if (we) begin
-            case(addr_w)
-               MIE_ADDR     :
-                  mie_reg     <= data_i;  
-               MTVEC_ADDR   : 
-                  mtvec_reg   <= data_i;   
-            endcase
-        end
-    end
-
-   localparam MEIP = 11; 
-   localparam MIE  = 3;
-
-   always_ff @(posedge clk_i) begin
+   always_ff @ (posedge clk_i) begin  
       if (~rst_ni) begin
+         mie_reg     <= '0;
+         mtvec_reg   <= '0;
          mstatus_reg <= '0;
       end
-      else if (addr_w == MSTATUS_ADDR)
-         mstatus_reg <= data_i;
+      else if (we) begin
+         case(addr_w)
+            MSTATUS_ADDR :
+               mstatus_reg <= data_i;
+            MIE_ADDR     :
+               mie_reg     <= data_i;  
+            MTVEC_ADDR   : 
+               mtvec_reg   <= data_i;   
+         endcase
+      end
       else if (intr_flag) begin
          mstatus_reg[MIE] <= 1'b0;
       end
@@ -80,7 +72,8 @@ module csr_regs  (
       end
    end
 
-   always_ff @(posedge clk_i) begin
+
+   always_ff @(posedge clk_i or posedge e_intr) begin
       if (~rst_ni) begin
          mip_reg <= '0;
       end
@@ -92,7 +85,7 @@ module csr_regs  (
       end
    end
 
-   always_ff @ (posedge e_intr or posedge clk_i) begin
+   always_ff @ (posedge clk_i or posedge e_intr) begin
       if (~rst_ni) begin
          mepc_reg <= '0;
       end
@@ -101,7 +94,7 @@ module csr_regs  (
       end
    end
      
-   always_ff @ (posedge clk_i, posedge e_intr) begin
+   always_ff @ (posedge clk_i or posedge e_intr) begin
       if (~rst_ni) 
          mcause_reg <= '0;
       else if (e_intr) 

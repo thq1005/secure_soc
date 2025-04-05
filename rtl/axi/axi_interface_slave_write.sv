@@ -1,6 +1,6 @@
 `include "../define.sv"
 
-module axi_interface_slave (
+module axi_interface_slave_write (
   input logic clk_i,
   input logic rst_ni,
   // AXI interface
@@ -23,29 +23,11 @@ module axi_interface_slave (
   output logic [2:0] bresp,
   output logic bvalid,
   input logic bready,
-  //AR channel
-  input logic [`ID_BITS - 1:0] arid,
-  input logic [`ADDR_WIDTH - 1:0] araddr,
-  input logic [`LEN_BITS - 1:0] arlen,
-  input logic [1:0] arburst,
-  input logic [`SIZE_BITS - 1:0] arsize,
-  input logic arvalid,
-  output logic arready,
-  //R channel
-  output logic [`ID_BITS - 1:0] rid,
-  output logic [`DATA_WIDTH - 1:0] rdata,
-  output logic [2:0] rresp,
-  output logic rvalid,
-  output logic rlast,
-  input logic rready,
   //output to core
   output logic o_we,
   output logic [`ADDR_WIDTH-1:0] o_waddr,
   output logic [`DATA_WIDTH-1:0] o_wdata,
-  output logic [(`DATA_WIDTH/8)-1:0] o_strb,
-  output logic o_re,
-  output logic [`ADDR_WIDTH-1:0] o_raddr,
-  input logic [`DATA_WIDTH-1:0] i_rdata
+  output logic [(`DATA_WIDTH/8)-1:0] o_strb
 );
 
 
@@ -160,106 +142,4 @@ assign wready = axi_wready;
 assign bvalid = axi_bvalid;
 assign bid    = axi_bid;
 assign bresp  = `RESP_OKAY;
-
-//read
-logic [`ADDR_WIDTH-1:0] raddr;
-logic [1:0] rburst;
-logic [`SIZE_BITS-1:0] rsize;
-logic [`LEN_BITS-1:0] rlen;
-logic [`ID_BITS-1:0] r_rid;
-logic [`ADDR_WIDTH-1:0] next_rd_addr;
-logic axi_arready;
-logic [`LEN_BITS-1:0] axi_rlen;
-logic axi_rvalid;
-logic [`ID_BITS-1:0] axi_rid;
-logic axi_rlast;
-logic [`DATA_WIDTH-1:0] axi_rdata;
-always_ff @(posedge clk_i) begin
-    if (!rst_ni) 
-        axi_arready <= 1;
-    else if (arvalid && arready)
-        axi_arready <= (arlen == 0)&&o_re;
-    else if (!rvalid || rready) begin
-        if ((!axi_arready) && rvalid)
-            axi_arready <= (axi_rlen <= 2);
-    end
-end
-
-always_ff @(posedge clk_i) begin
-    if (!rst_ni) begin
-        axi_rlen <= 0;
-    end
-    else if (arvalid && arready) 
-        axi_rlen <= (arlen+1) + ((rvalid && !rready) ? 1:0);
-    else if (rready && rvalid)
-        axi_rlen <= axi_rlen - 1;
-end
-
-always_ff @(posedge clk_i) begin
-    if (o_re)
-        raddr <= next_rd_addr;
-    else if (arready) 
-        raddr <= araddr;
-end
-
-always_ff @(posedge clk_i) begin
-    if (arready) begin
-        rburst <= arburst;
-        rsize  <= arsize;
-        rlen   <= arlen;
-        r_rid  <= arid;
-    end
-end
-
-axi_addr get_next_rd_addr (.i_last_addr ((arready)?araddr:raddr),
-                           .i_size      ((arready)?arsize:rsize),
-                           .i_burst     ((arready)?arburst:rburst),
-                           .o_next_addr (next_rd_addr));
-
-always_comb begin 
-    o_re = (arvalid || !arready);
-    if (rvalid && !rready)
-        o_re = 0;
-    o_raddr = (arready) ? araddr : raddr;
-end
-
-always_ff @(posedge clk_i) begin
-    if (!rst_ni) 
-        axi_rvalid <= 0 ;
-    else if (o_re) 
-        axi_rvalid <= 1;
-    else if (rready) 
-        axi_rvalid <= 0;
-end
-
-always_ff @(posedge clk_i) begin
-    if (!rvalid || rready) begin
-        if (arvalid && arready) 
-            axi_rid <= arid;
-        else 
-            axi_rid <= r_rid;
-    end
-end
-
-always_ff @(posedge clk_i) begin
-    if (!rvalid || rready) begin
-        if (arvalid && arready)
-            axi_rlast <= (arlen == 0);
-        else if (rvalid) 
-            axi_rlast <= (axi_rlen == 2);
-        else 
-            axi_rlast <= (axi_rlen == 1);
-    end     
-end
-
-always_comb begin
-    axi_rdata = i_rdata;
-end
-
-assign arready = axi_arready;
-assign rvalid  = axi_rvalid;
-assign rid     = axi_rid;
-assign rdata   = axi_rdata;
-assign rresp   = 0;
-assign rlast   = axi_rlast;
 endmodule

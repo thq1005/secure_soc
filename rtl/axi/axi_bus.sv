@@ -131,21 +131,6 @@ module axi_bus(
     input  logic [2:0] s_bresp,
     input  logic s_bvalid,
     output logic s_bready,
-    //AR channel
-    output logic [`ID_BITS - 1:0] s_arid,
-    output logic [`ADDR_WIDTH - 1:0] s_araddr,
-    output logic [`LEN_BITS - 1:0] s_arlen,
-    output logic [1:0] s_arburst,
-    output logic [`SIZE_BITS - 1:0] s_arsize,
-    output logic s_arvalid,
-    input  logic s_arready,
-    //R channel
-    input  logic [`ID_BITS - 1:0] s_rid,
-    input  logic [`DATA_WIDTH - 1:0] s_rdata,
-    input  logic [2:0] s_rresp,
-    input  logic s_rvalid,
-    input  logic s_rlast,
-    output logic s_rready,
 
     //AW channel
     input  logic [`ID_BITS - 1:0] m_awid,
@@ -288,6 +273,10 @@ module axi_bus(
 
     
     always_comb begin
+        wvalid = 0;
+        wlast  = 0;
+        wstrb  = 0;
+        wdata  = 0;
         if (wid == `ID_CPU2MEM | wid == `ID_CPU2DMA | wid == `ID_CPU2AES) begin
             wvalid = m0_wvalid;
             wlast  = m0_wlast;
@@ -356,7 +345,6 @@ module axi_bus(
     end
     
     assign arready = (arid == `ID_CPU2MEM | arid == `ID_DMA2MEM) ? s0_arready :
-                     (arid == `ID_CPU2DMA) ? s_arready :
                      (arid == `ID_DMA2AES | arid == `ID_CPU2AES) ? s1_arready : 0;    
 
     always_comb begin

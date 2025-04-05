@@ -86,6 +86,7 @@ module dmac_read (
             else 
                 r_next_state = R;
         end
+        default: r_next_state = IDLE;
         endcase
     end    
              

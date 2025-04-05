@@ -335,7 +335,6 @@ module riscv_cache(
 		.rst_ni      (rst_ni),
 		.i_addr_i    (imem_addr_o),
 		.i_cs_i      (imem_cs_o),
-		.i_wdata_i   (imem_wdata_o),
 		.i_we_i      (imem_we_o),
 		.i_rdata_o   (imem_rdata_i),
 		.i_rvalid_o  (imem_rvalid_i),

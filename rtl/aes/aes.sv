@@ -69,21 +69,32 @@ end
 
 always_comb begin
     case (state)
-    3'b000: if (start_reg) begin
+    3'b000: 
+    if (start_reg) 
         next_state = 3'b001;
-    end
-    3'b001: if ((valid0_reg && on_reg[0]) | ~on_reg[0]) begin
-        next_state = 3'b010;
-    end 
-    3'b010: if ((valid1_reg && on_reg[1]) | ~on_reg[1]) begin
-        next_state = 3'b011;
-    end
-    3'b011: if ((valid2_reg && on_reg[2]) | ~on_reg[2]) begin
-        next_state = 3'b100;
-    end
-    3'b100: if ((valid3_reg && on_reg[3]) | ~on_reg[3]) begin
+    else 
         next_state = 3'b000;
-    end
+    
+    3'b001: 
+    if ((valid0_reg && on_reg[0]) | ~on_reg[0])
+        next_state = 3'b010;
+    else 
+        next_state = 3'b001;
+    3'b010: 
+    if ((valid1_reg && on_reg[1]) | ~on_reg[1])
+        next_state = 3'b011;
+    else
+        next_state = 3'b010;
+    3'b011: 
+    if ((valid2_reg && on_reg[2]) | ~on_reg[2])
+        next_state = 3'b100;
+    else 
+        next_state = 3'b011;
+    3'b100: 
+    if ((valid3_reg && on_reg[3]) | ~on_reg[3]) 
+        next_state = 3'b000;
+    else 
+        next_state = 3'b100;
     default: next_state = 3'b000;
     endcase
 end

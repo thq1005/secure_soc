@@ -1,7 +1,7 @@
 
 module aes_sbox(
     input logic [31:0] in,
-    output logic [31:0] out    
+    output logic [31:0] out   
 );
 
 logic [7:0] sbox [0:255];
