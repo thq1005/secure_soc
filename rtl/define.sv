@@ -127,6 +127,7 @@
 `define ADDR_MEM            32'h00000000
 `define ADDR_DMA            32'h00010000
 `define ADDR_AES            32'h00020000
+`define ADDR_ONCHIP         32'h00030000
 
 //id
 `define ID_CPU2MEM          0

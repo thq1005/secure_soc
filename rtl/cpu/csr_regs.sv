@@ -73,7 +73,7 @@ module csr_regs  (
    end
 
 
-   always_ff @(posedge clk_i or posedge e_intr) begin
+   always_ff @(posedge clk_i) begin
       if (~rst_ni) begin
          mip_reg <= '0;
       end
@@ -85,7 +85,7 @@ module csr_regs  (
       end
    end
 
-   always_ff @ (posedge clk_i or posedge e_intr) begin
+   always_ff @ (posedge clk_i) begin
       if (~rst_ni) begin
          mepc_reg <= '0;
       end
@@ -94,7 +94,7 @@ module csr_regs  (
       end
    end
      
-   always_ff @ (posedge clk_i or posedge e_intr) begin
+   always_ff @ (posedge clk_i) begin
       if (~rst_ni) 
          mcause_reg <= '0;
       else if (e_intr) 

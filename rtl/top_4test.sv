@@ -1,10 +1,50 @@
 `include "define.sv" 
-module top(
+module top_4test(
     input logic ACLK_1,
-    input logic ARESETn_1
+    input logic ARESETn_1,
+//signal of m00
+    output logic [`ID_BITS - 1:0] s00_awid,
+    output logic [`ADDR_WIDTH - 1:0] s00_awaddr,
+    output logic [`LEN_BITS - 1:0] s00_awlen,
+    output logic [`SIZE_BITS -1 :0] s00_awsize,
+    output logic [1:0] s00_awburst,
+    output logic s00_awvalid,
+    input logic s00_awready,
+    //W channel
+    output logic [`DATA_WIDTH - 1:0] s00_wdata,
+    output logic [(`DATA_WIDTH/8)-1:0] s00_wstrb,
+    output logic s00_wvalid,
+    output logic s00_wlast,
+    input logic s00_wready,
+    //B channel
+    input logic [`ID_BITS - 1:0] s00_bid,
+    input logic [2:0] s00_bresp,
+    input logic s00_bvalid,
+    output logic s00_bready,
+    //AR channel
+    output logic [`ID_BITS - 1:0] s00_arid,
+    output logic [`ADDR_WIDTH - 1:0] s00_araddr,
+    output logic [`LEN_BITS - 1:0] s00_arlen,
+    output logic [1:0] s00_arburst,
+    output logic [`SIZE_BITS - 1:0] s00_arsize,
+    output logic s00_arvalid,
+    input logic s00_arready,
+    //R channel
+    input logic [`ID_BITS - 1:0] s00_rid,
+    input logic [`DATA_WIDTH - 1:0] s00_rdata,
+    input logic [2:0] s00_rresp,
+    input logic s00_rvalid,
+    input logic s00_rlast,
+    output logic s00_rready
     );
     
-    
+
+
+    logic we_w;
+    logic [`ADDR_WIDTH-1:0] waddr_w;
+    logic [`DATA_WIDTH-1:0] wdata_w;
+    logic [(`DATA_WIDTH/8)-1:0] strb_w;
+
     //signal of m0
     logic [`ID_BITS - 1:0] m0_awid;
     logic [`ADDR_WIDTH - 1:0] m0_awaddr;
@@ -39,41 +79,6 @@ module top(
     logic m0_rvalid;
     logic m0_rlast;
     logic m0_rready;
-
-    //signal of s0
-    logic [`ID_BITS - 1:0] s0_awid;
-    logic [`ADDR_WIDTH - 1:0] s0_awaddr;
-    logic [`LEN_BITS - 1:0] s0_awlen;
-    logic [`SIZE_BITS -1 :0] s0_awsize;
-    logic [1:0] s0_awburst;
-    logic s0_awvalid;
-    logic s0_awready;
-    //W channel
-    logic [`DATA_WIDTH - 1:0] s0_wdata;
-    logic [(`DATA_WIDTH/8)-1:0] s0_wstrb;
-    logic s0_wvalid;
-    logic s0_wlast;
-    logic s0_wready;
-    //B channel
-    logic [`ID_BITS - 1:0] s0_bid;
-    logic [2:0] s0_bresp;
-    logic s0_bvalid;
-    logic s0_bready;
-    //AR channel
-    logic [`ID_BITS - 1:0] s0_arid;
-    logic [`ADDR_WIDTH - 1:0] s0_araddr;
-    logic [`LEN_BITS - 1:0] s0_arlen;
-    logic [1:0] s0_arburst;
-    logic [`SIZE_BITS - 1:0] s0_arsize;
-    logic s0_arvalid;
-    logic s0_arready;
-    //R channel
-    logic [`ID_BITS - 1:0] s0_rid;
-    logic [`DATA_WIDTH - 1:0] s0_rdata;
-    logic [2:0] s0_rresp;
-    logic s0_rvalid;
-    logic s0_rlast;
-    logic s0_rready;
 
     
     //signal of m1
@@ -172,6 +177,47 @@ module top(
     logic aes_irq;
     logic aes_clear_irq;
 
+    axi_interface_slave write_s00_inst (
+        .clk_i      (ACLK_1),
+        .rst_ni     (ARESETn_1),
+        // AXI interface
+        //AW channel
+        .awid       (s00_awid),
+        .awaddr     (s00_awaddr),
+        .awlen      (s00_awlen),
+        .awsize     (s00_awsize),
+        .awburst    (s00_awburst),
+        .awvalid    (s00_awvalid),
+        .awready    (s00_awready),
+        //W channel
+        .wdata      (s00_wdata),
+        .wstrb      (s00_wstrb),
+        .wvalid     (s00_wvalid),
+        .wlast      (s00_wlast),
+        .wready     (s00_wready),
+        //B channel
+        .bid        (s00_bid),
+        .bresp      (s00_bresp),
+        .bvalid     (s00_bvalid),
+        .bready     (s00_bready),
+        //output to core
+        .o_we       (we_w),
+        .o_waddr    (waddr_w),
+        .o_wdata    (wdata_w),
+        .o_strb     (strb_w)
+    );
+
+    logic cpu_on;
+
+    always_ff @(posedge ACLK_1) begin
+        if (~ARESETn_1) begin
+            cpu_on <= 0;
+        end
+        else if (we_w && waddr_w == `ADDR_ONCHIP) begin
+            cpu_on <= wdata_w[0];
+        end
+    end
+
     master_cpu m_inst (
         .clk_i        (ACLK_1),
         .rst_ni       (ARESETn_1),
@@ -206,7 +252,7 @@ module top(
         .m_rready     (m0_rready),
         .dma_irq      (dma_irq),
         .dma_clear_irq(dma_clear_irq),
-        .cpu_on       (1'b1)
+        .cpu_on       (cpu_on)
         );
         
     dmac dma (
@@ -264,39 +310,39 @@ module top(
     );
     
     slave_0_sdram s0_inst (
-        .clk_i      (ACLK_1),
-        .rst_ni     (ARESETn_1),
-        .awid       (s0_awid),
-        .awaddr     (s0_awaddr),
-        .awlen      (s0_awlen),
-        .awsize     (s0_awsize),
-        .awburst    (s0_awburst),
-        .awvalid    (s0_awvalid),
-        .awready    (s0_awready),
-        .wdata      (s0_wdata),
-        .wstrb      (s0_wstrb),
-        .wvalid     (s0_wvalid),
-        .wlast      (s0_wlast),
-        .wready     (s0_wready),
-        .bid        (s0_bid),
-        .bresp      (s0_bresp),
-        .bvalid     (s0_bvalid),
-        .bready     (s0_bready),
-        .arid       (s0_arid),
-        .araddr     (s0_araddr),
-        .arlen      (s0_arlen),
-        .arburst    (s0_arburst),
-        .arsize     (s0_arsize),
-        .arvalid    (s0_arvalid),
-        .arready    (s0_arready),
-        .rid        (s0_rid),
-        .rdata      (s0_rdata),
-        .rresp      (s0_rresp),
-        .rvalid     (s0_rvalid),
-        .rlast      (s0_rlast),
-        .rready     (s0_rready)
+    .clk_i      (ACLK_1),
+    .rst_ni     (ARESETn_1),
+    .awid       (s0_awid),
+    .awaddr     (s0_awaddr),
+    .awlen      (s0_awlen),
+    .awsize     (s0_awsize),
+    .awburst    (s0_awburst),
+    .awvalid    (s0_awvalid),
+    .awready    (s0_awready),
+    .wdata      (s0_wdata),
+    .wstrb      (s0_wstrb),
+    .wvalid     (s0_wvalid),
+    .wlast      (s0_wlast),
+    .wready     (s0_wready),
+    .bid        (s0_bid),
+    .bresp      (s0_bresp),
+    .bvalid     (s0_bvalid),
+    .bready     (s0_bready),
+    .arid       (s0_arid),
+    .araddr     (s0_araddr),
+    .arlen      (s0_arlen),
+    .arburst    (s0_arburst),
+    .arsize     (s0_arsize),
+    .arvalid    (s0_arvalid),
+    .arready    (s0_arready),
+    .rid        (s0_rid),
+    .rdata      (s0_rdata),
+    .rresp      (s0_rresp),
+    .rvalid     (s0_rvalid),
+    .rlast      (s0_rlast),
+    .rready     (s0_rready)
     );
-    
+
     slave_1_aes s1_inst (
         .clk_i      (ACLK_1),
         .rst_ni     (ARESETn_1),
