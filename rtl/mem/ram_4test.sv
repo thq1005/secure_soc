@@ -6,7 +6,8 @@ module ram(								//SDRAM
     input logic cs_i,
     input logic wr_i,
 	/* ------------ */
-    output logic [31:0] rdata_o
+    output logic [31:0] rdata_o,
+    output logic [31:0] soc_on_o
 );
 
 	/* Spec of memory */
@@ -22,9 +23,6 @@ module ram(								//SDRAM
 	/* imem */
 	logic [31:0] imem [512]; //2KB instruction memory
 	
-	initial begin
-		$readmemh("imemfile.mem", imem); 
-	end
 
 	/* ------------- */
 
@@ -32,16 +30,18 @@ module ram(								//SDRAM
 
 	logic [31:0] dmem [512]; 
 	
-	initial begin
-		$readmemh("dmemfile.mem", dmem); 
-	end
-
+    logic [31:0] soc_on;
 	
 	logic temp;
 	
 	assign temp = (addr_i > 511) ? 1 : 0; 
 	always_ff @(posedge clk_i) begin
 	    if (~rst_ni) begin
+            for (int i = 0; i < 512; i++) begin
+                imem[i] <= 32'h00000000;
+                dmem[i] <= 32'h00000000;
+            end
+            soc_on <= 32'h00000000;
 	    end
 		else if (cs_i) begin 
             if (~wr_i) begin
@@ -50,10 +50,12 @@ module ram(								//SDRAM
               	else 
                   	rdata_o = dmem[addr_i[31:2]-512];
             end
-            else 
+            else if (addr_i != 32'h00030000)
                 dmem[addr_i[31:2]-512] = wdata_i;
+            else 
+                soc_on = wdata_i;
         end
 	end
 
-
+    assign soc_on_o = soc_on;
 endmodule

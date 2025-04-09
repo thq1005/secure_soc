@@ -135,4 +135,5 @@
 `define ID_DMA2MEM          2
 `define ID_DMA2AES          3
 `define ID_CPU2AES          4
+`define ID_PS2MEM           5
 `endif
