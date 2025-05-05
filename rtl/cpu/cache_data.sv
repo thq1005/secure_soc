@@ -1,4 +1,5 @@
 `include "../define.sv"
+import cache_def::*;
 /* cache: data memory, single port, 1024 blocks */
 module cache_data(
     input logic clk_i,
@@ -8,22 +9,22 @@ module cache_data(
     output cache_data_type data_read_o
 );
 
-    //logic [WAYS*DATA_WIDTH-1:0] data_mem[0:DEPTH-1];
-    cache_data_type data_mem[0:`DEPTH-1][0:`WAYS-1];
+    logic [127:0] data_i;
+    logic [127:0] data_o;
 
-    initial begin
-        for (int i = 0; i < `DEPTH; i++)
-            for (int j = 0; j < `WAYS; j++)
-                data_mem[i][j] = '0;
-    end
+    assign data_i = data_write_i;
+    assign data_read_o = data_o;
 
-    assign data_read_o = data_mem[data_req_i.index[`INDEX-1:0]][address_way_tag2data_i];
-
-    
-    always_ff @(posedge clk_i) begin
-        if (data_req_i.we) begin
-            data_mem[data_req_i.index[`INDEX-1:0]][address_way_tag2data_i] <= data_write_i;
-        end
-    end
+    block_ram_single_port #(
+        .DATA_WIDTH(128),
+        .DEPTH(`WAYS*`DEPTH)
+    ) cache_data_ram (
+        .rd_data(data_o),
+        .wr_data(data_i),
+        .addr({data_req_i.index,address_way_tag2data_i}),
+        .cs (1),
+        .wr_en(data_req_i.we),
+        .clk(clk_i)
+    );
 
 endmodule

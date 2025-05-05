@@ -50,7 +50,7 @@ logic cs_w;
 logic wr_w;
 logic [31:0] addr_w;
 
-axi_interface_slave s1_itf (
+axi_interface_slave s0_itf (
 .clk_i      (clk_i),
 .rst_ni     (rst_ni),
 .awid       (awid),
@@ -91,18 +91,14 @@ axi_interface_slave s1_itf (
 .i_rdata    (rdata_w)
 );
 
-assign cs_w = (we_w || re_w) ? 1 : 0;
-assign wr_w = we_w ? 1 : 0;
-assign addr_w = we_w ? waddr_w : raddr_w;
-
-ram sdram_inst(
-.clk_i    (clk_i),
-.rst_ni   (rst_ni),   
-.cs_i     (cs_w),
-.wr_i     (we_w),
-.addr_i   (addr_w),
-.wdata_i  (wdata_w),
-.rdata_o  (rdata_w)
+block_ram_dual_port sdram_inst(
+    .rd_data(rdata_w),
+    .wr_data(wdata_w),
+    .addr_rd(raddr_w[31:2]),
+    .addr_wr(waddr_w[31:2]),
+    .wr_en(we_w),
+    .rd_en(re_w),
+    .clk(clk_i)
 );
 
 endmodule

@@ -7,9 +7,7 @@ module top_tb;
 
     
     top top_inst (.ACLK_1     (ACLK_1),
-                  .ACLK_2     (ACLK_2),
-                  .ARESETn_1  (ARESETn_1),
-                  .ARESETn_2  (ARESETn_2));
+                  .ARESETn_1  (ARESETn_1));
     
     always #5 ACLK_1 = ~ACLK_1;
     always #10 ACLK_2 = ~ACLK_2;

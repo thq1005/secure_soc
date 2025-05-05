@@ -11,7 +11,7 @@ module ram(								//SDRAM
 
 	/* Spec of memory */
 	/*
-	 4KB instruction and data, the first 2KB for instruction and the second 2KB for data
+	 8KB instruction and data, the first 2KB for instruction and the second 2KB for data
 	 Address:
 	 	0 -> 511 : instructions
 		512 -> 1023 : data memory

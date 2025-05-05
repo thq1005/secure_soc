@@ -205,8 +205,7 @@ module top(
         .m_rlast      (m0_rlast),
         .m_rready     (m0_rready),
         .dma_irq      (dma_irq),
-        .dma_clear_irq(dma_clear_irq),
-        .cpu_on       (1'b1)
+        .dma_clear_irq(dma_clear_irq)
         );
         
     dmac dma (

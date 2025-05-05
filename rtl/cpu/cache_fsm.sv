@@ -57,7 +57,7 @@ module cache_fsm(
     /* signal enable lru load */
     logic lru_valid;
 
-
+    logic wait_data;
 //    /* var of counter */
 //    logic [31:0] no_acc_old_w;
 //    //logic [31:0] no_hit_old_w;
@@ -150,9 +150,9 @@ module cache_fsm(
         data_write = data_read;
         
         case (cpu_req_i.addr[3:2])
-            2'b00: data_write[31:0] = cpu_req_i.data;
-            2'b01: data_write[63:32] = cpu_req_i.data;
-            2'b10: data_write[95:64] = cpu_req_i.data;
+            2'b00: data_write[31:0]   = cpu_req_i.data;
+            2'b01: data_write[63:32]  = cpu_req_i.data;
+            2'b10: data_write[95:64]  = cpu_req_i.data;
             2'b11: data_write[127:96] = cpu_req_i.data;
         endcase 
 		//data_write = cpu_req_i.data;
@@ -179,14 +179,17 @@ module cache_fsm(
 //        //hit1_w = 1'b0;
 //        miss1_w = 1'b0;
         accessing_o = 1'b0;
-
+        wait_data = 1'b0;
         /* ------------------- Cache FSM --------------------- */
         case (rstate)
             IDLE: begin
                 //second_compare = 1'b0;
                 //tag_write = '{0, 0, 0};
                 /* if there is a CPU reqest, then compare cache tag */
-                if (cpu_req_i.valid) begin
+                if (wait_data) begin
+                    accessing_o = 1'b1;
+                    vstate = COMPARE_TAG;
+                end else if (cpu_req_i.valid) begin
                     vstate = COMPARE_TAG;
 //                    acc1_w = 1'b1;
                 end
@@ -278,7 +281,8 @@ module cache_fsm(
 
                     /* re-compare tag for write miss (need modify correct word) */
                     //second_compare = 1'b1;
-                    vstate = COMPARE_TAG;
+                    wait_data = 1'b1;
+                    vstate = IDLE;
                 end
             end
             /* wait for writing back dirty cache line */

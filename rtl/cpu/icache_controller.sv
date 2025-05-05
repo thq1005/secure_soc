@@ -184,16 +184,14 @@ module icache_controller(
                 //second_compare = 1'b0;
                 //tag_write = '{0, 0, 0};
                 /* if there is a CPU reqest, then compare cache tag */
-                if (rst_ni) begin
-                    vstate = COMPARE_TAG;
+                vstate = COMPARE_TAG;
 //                    acc1_w = 1'b1;
-                    accessing_o = 1'b1;
-                end
+                accessing_o = 1'b1;
             end
             COMPARE_TAG: begin
                 /* cache hit (tag match and cache entry is valid) */
                 if (cpu_req_i.addr[`TAGMSB:`TAGLSB] == tag_read.tag && tag_read.valid) begin
-                    v_cpu_res.ready = '1;
+                    v_cpu_res.ready = '1;   
 
                     /* write hit */
                     if (cpu_req_i.rw) begin
@@ -242,7 +240,7 @@ module icache_controller(
             /* wait for allocating a new cache line */
             ALLOCATE: begin
                 /* generate new tag */
-                 accessing_o = 1'b1;
+                accessing_o = 1'b1;
                 //     tag_req.we = '1;
                 //     tag_write.valid = '1;
 
@@ -262,7 +260,7 @@ module icache_controller(
 
                     /* re-compare tag for write miss (need modify correct word) */
                     //second_compare = 1'b1;
-                    vstate = COMPARE_TAG;
+                    vstate = IDLE;
                     lru_valid = 1'b1;
                 end
             end
