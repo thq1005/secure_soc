@@ -1,5 +1,5 @@
 `include "../define.sv"
-module axi_bus(
+module axi_interconnect(
     input clk_i,
     input rst_ni,
     //Master 0 cpu

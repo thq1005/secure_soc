@@ -9,8 +9,7 @@ module dmac_read (
     input [`SIZE_BITS-1:0]  size_i,
     input [1:0]             burst_i,
     output logic rdata_valid_o,
-    output logic [511:0] data_o, 
-    input write_rq,
+    output logic [31:0] data_o, 
     //AR channel
     output logic [`ID_BITS - 1:0]       m_arid,
     output logic [`ADDR_WIDTH - 1:0]    m_araddr,
@@ -37,8 +36,6 @@ module dmac_read (
     logic [`SIZE_BITS-1:0]  arsize_r;
     logic [1:0]             arburst_r;
 
-    logic [31:0] rdata_r [0:15];
-    logic [3:0]  rdata_cnt;
 
     always_ff @(posedge clk_i) begin
         if (!rst_ni) begin
@@ -46,7 +43,7 @@ module dmac_read (
             arlen_r  <= '0;
             arsize_r <= '0;
             arburst_r <= '0;
-        end else if (write_rq) begin
+        end else if (valid_i) begin
             araddr_r <= src_addr_i;
             arlen_r  <= len_i;
             arsize_r <= size_i;
@@ -93,42 +90,6 @@ module dmac_read (
 
     assign m_araddr = araddr_r;
     
-    always_ff @(posedge clk_i) begin
-        if (!rst_ni) begin
-            rdata_cnt <= 0;
-        end
-        else if (r_state == RA) begin
-            rdata_cnt <= 0;
-        end
-        else if (r_state == R) begin
-            if (m_rvalid && m_rready)
-                rdata_cnt <= rdata_cnt + 1;
-        end
-    end
-
-    always_ff @(posedge clk_i) begin
-        if (!rst_ni) 
-            for (int i = 0; i < 16; i++) begin
-            rdata_r[i] <= '0; 
-        end
-        else if (r_state == R) begin
-            if (m_rvalid && m_rready) begin
-                rdata_r[rdata_cnt] <= m_rdata;
-            end
-        end
-    end
-
-    always_ff @(posedge clk_i) begin
-        if (!rst_ni) 
-            rdata_valid_o <= 0;
-        else if (r_state == R) begin
-            if (m_rvalid && m_rready && m_rlast) begin
-                rdata_valid_o <= 1;
-            end
-        end
-        else 
-            rdata_valid_o <= 0;
-    end
 
     assign m_arid    = (araddr_r[19:16] == 4'h0) ? `ID_DMA2MEM:
                        (araddr_r[19:16] == 4'h2) ? `ID_DMA2AES: 0;
@@ -137,7 +98,8 @@ module dmac_read (
     assign m_arburst = arburst_r;
     assign m_rready  = (r_state == R);
     assign m_arvalid = (r_state == RA);
-    assign data_o    = {rdata_r[15], rdata_r[14], rdata_r[13], rdata_r[12], rdata_r[11], rdata_r[10], rdata_r[9], rdata_r[8], rdata_r[7], rdata_r[6], rdata_r[5], rdata_r[4], rdata_r[3], rdata_r[2], rdata_r[1], rdata_r[0]};
+    assign data_o    = m_rdata;
+    assign rdata_valid_o = (r_state == R) && m_rvalid && m_rready;
     assign r_nstate = r_next_state;
 endmodule
 
