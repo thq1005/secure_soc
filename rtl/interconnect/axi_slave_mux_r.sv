@@ -1,5 +1,5 @@
-.`include "../define.sv"
-module axi_master_mux_r (
+`include "../define.sv"
+module axi_slave_mux_r (
     input                    clk_i,
     input                    rst_ni,
     /********************/
@@ -21,15 +21,14 @@ module axi_master_mux_r (
 
     input                    rready,
 
-    output  [7:0]            rid,
-    output                   rvalid,
-    output                   rlast,
-    output  [`DATA_WIDTH - 1:0] rdata,
-    output  [1:0]            rresp,
-
-    output                   s0_RREADY,
-    output                   s1_RREADY,
-    output                   s3_RREADY,
+    output logic [7:0]            rid,
+    output logic                  rvalid,
+    output logic                  rlast,
+    output logic [`DATA_WIDTH - 1:0] rdata,
+    output logic [1:0]            rresp,
+    output logic                  s0_RREADY,
+    output logic                  s1_RREADY,
+    output logic                  s3_RREADY
 );
 
     enum logic [0:1] {
@@ -98,31 +97,21 @@ module axi_master_mux_r (
             AXI_MASTER_0: begin
                 s0_RREADY = rready;
                 s1_RREADY = '0;
-                s2_RREADY = '0;
                 s3_RREADY = '0;
             end
             AXI_MASTER_1: begin
                 s0_RREADY = '0;
                 s1_RREADY = rready;
-                s2_RREADY = '0;
-                s3_RREADY = '0;
-            end
-            AXI_MASTER_2: begin
-                s0_RREADY = '0;
-                s1_RREADY = '0;
-                s2_RREADY = rready;
                 s3_RREADY = '0;
             end
             AXI_MASTER_3: begin
                 s0_RREADY = '0;
                 s1_RREADY = '0;
-                s2_RREADY = '0;
                 s3_RREADY = rready;
             end
             default: begin
                 s0_RREADY = '0;
                 s1_RREADY = '0;
-                s2_RREADY = '0;
                 s3_RREADY = '0;
             end
         endcase

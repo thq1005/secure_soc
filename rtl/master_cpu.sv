@@ -19,7 +19,7 @@ module master_cpu(
       input  logic m_wready,
       //B channel
       input  logic [`ID_BITS - 1:0] m_bid,
-      input  logic [2:0] m_bresp,
+      input  logic [1:0] m_bresp,
       input  logic m_bvalid,
       output logic m_bready,
       //AR channel
@@ -33,7 +33,7 @@ module master_cpu(
       //R channel
       input  logic [`ID_BITS - 1:0] m_rid,
       input  logic [`DATA_WIDTH - 1:0] m_rdata,
-      input  logic [2:0] m_rresp,
+      input  logic [1:0] m_rresp,
       input  logic m_rvalid,
       input  logic m_rlast,
       output logic m_rready,

@@ -21,7 +21,7 @@ module top(
     logic m0_wready;
     //B channel
     logic [`ID_BITS - 1:0] m0_bid;
-    logic [2:0] m0_bresp;
+    logic [1:0] m0_bresp;
     logic m0_bvalid;
     logic m0_bready;
     //AR channel
@@ -35,7 +35,7 @@ module top(
     //R channel
     logic [`ID_BITS - 1:0] m0_rid;
     logic [`DATA_WIDTH - 1:0] m0_rdata;
-    logic [2:0] m0_rresp;
+    logic [1:0] m0_rresp;
     logic m0_rvalid;
     logic m0_rlast;
     logic m0_rready;
@@ -56,7 +56,7 @@ module top(
     logic s0_wready;
     //B channel
     logic [`ID_BITS - 1:0] s0_bid;
-    logic [2:0] s0_bresp;
+    logic [1:0] s0_bresp;
     logic s0_bvalid;
     logic s0_bready;
     //AR channel
@@ -70,7 +70,7 @@ module top(
     //R channel
     logic [`ID_BITS - 1:0] s0_rid;
     logic [`DATA_WIDTH - 1:0] s0_rdata;
-    logic [2:0] s0_rresp;
+    logic [1:0] s0_rresp;
     logic s0_rvalid;
     logic s0_rlast;
     logic s0_rready;
@@ -92,7 +92,7 @@ module top(
     logic m_wready;
     //B channel
     logic [`ID_BITS - 1:0] m_bid;
-    logic [2:0] m_bresp;
+    logic [1:0] m_bresp;
     logic m_bvalid;
     logic m_bready;
     //AR channel
@@ -106,7 +106,7 @@ module top(
     //R channel
     logic [`ID_BITS - 1:0] m_rid;
     logic [`DATA_WIDTH - 1:0] m_rdata;
-    logic [2:0] m_rresp;
+    logic [1:0] m_rresp;
     logic m_rvalid;
     logic m_rlast;
     logic m_rready;
@@ -127,7 +127,7 @@ module top(
     logic s1_wready;
     //B channel
     logic [`ID_BITS - 1:0] s1_bid;
-    logic [2:0] s1_bresp;
+    logic [1:0] s1_bresp;
     logic s1_bvalid;
     logic s1_bready;
     //AR channel
@@ -141,7 +141,7 @@ module top(
     //R channel
     logic [`ID_BITS - 1:0] s1_rid;
     logic [`DATA_WIDTH - 1:0] s1_rdata;
-    logic [2:0] s1_rresp;
+    logic [1:0] s1_rresp;
     logic s1_rvalid;
     logic s1_rlast;
     logic s1_rready;
@@ -162,7 +162,7 @@ module top(
     logic s_wready;
     //B channel
     logic [`ID_BITS - 1:0] s_bid;
-    logic [2:0] s_bresp;
+    logic [1:0] s_bresp;
     logic s_bvalid;
     logic s_bready;
 

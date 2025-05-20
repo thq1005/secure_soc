@@ -74,7 +74,7 @@
 `define ADDR_WIDTH     32
 
 //AXI4
-`define ID_BITS   3
+`define ID_BITS   8
 `define LEN_BITS  8
 `define SIZE_BITS 3
 `define RESP_OKAY 0

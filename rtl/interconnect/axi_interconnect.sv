@@ -1,5 +1,5 @@
 `include "../define.sv"
-module axi_INTERCONNECT(
+module axi_interconnect(
     input clk_i,
     input rst_ni,
     //Master 0 cpu
@@ -72,7 +72,7 @@ module axi_INTERCONNECT(
     output  logic [1:0] m1_RRESP,
     output  logic m1_RVALID,
     output  logic m1_RLAST,
-    input logic m1_RREADY
+    input logic m1_RREADY,
 
     //Slave 0
     //AW channel
@@ -221,7 +221,7 @@ module axi_INTERCONNECT(
     logic                       wready;
     //B channel
     logic [`ID_BITS - 1:0]      bid;
-    logic [2:0]                 bresp;
+    logic [1:0]                 bresp;
     logic                       bvalid;
     logic                       bready;
     //AR channel
@@ -235,13 +235,23 @@ module axi_INTERCONNECT(
     //R channel
     logic [`ID_BITS - 1:0]      rid;
     logic [`DATA_WIDTH - 1:0]   rdata;
-    logic [2:0]                 rresp;
+    logic [1:0]                 rresp;
     logic                       rvalid;
     logic                       rlast;
     logic                       rready;
 
     logic m0_wgrnt;
     logic m1_wgrnt;
+    logic m0_rgrnt;
+    logic m1_rgrnt;
+
+
+    logic w_m0_wgrnt, w_m1_wgrnt;
+    logic [1:0] s_wsel;
+    logic fifo_full, fifo_empty;
+
+    logic ready_to_write;
+    
 
     axi_arbiter_aw arbiter_aw (.*);
 
@@ -249,8 +259,10 @@ module axi_INTERCONNECT(
 
     axi_slave_mux_aw slave_mux_aw (.*);
 
-    logic w_m0_wgrnt, w_m1_wgrnt;
-    logic [1:0] s_wsel;
+    
+    assign ready_to_write = ~fifo_empty && wvalid && wready && wlast;
+
+    
 
     fifo #(.DATA_W(4), 
         .DEPTH(128)) fifo_for_w_channel  (
@@ -264,11 +276,89 @@ module axi_INTERCONNECT(
         .empty (fifo_empty)
     );
 
+    axi_master_mux_w master_mux_w (.*);
+    axi_slave_mux_w slave_mux_w (.*);
+
     axi_master_mux_b master_mux_b (.*);
     axi_slave_mux_b slave_mux_b (.*);
+
     axi_master_mux_ar master_mux_ar (.*);
     axi_slave_mux_ar slave_mux_ar (.*);
-    axi_arbiter_r arbiter_r (.*);
+    axi_arbiter_ar arbiter_ar (.*);
+
+    axi_master_mux_r master_mux_r (.*);
     axi_slave_mux_r slave_mux_r (.*);
-    axi_arbiter_r arbiter_r (.*);
+
+    assign bresp = 0;
+    assign rresp = 0;
+
+    assign s0_AWLEN     = awlen;
+    assign s0_AWSIZE    = awsize;
+    assign s0_AWBURST   = awburst;
+    assign s0_AWID      = awid;
+    assign s0_AWADDR    = awaddr;
+    assign s1_AWLEN     = awlen;
+    assign s1_AWSIZE    = awsize;
+    assign s1_AWBURST   = awburst;
+    assign s1_AWID      = awid;
+    assign s1_AWADDR    = awaddr;
+    assign s2_AWLEN     = awlen;
+    assign s2_AWSIZE    = awsize;
+    assign s2_AWBURST   = awburst;
+    assign s2_AWID      = awid;
+    assign s2_AWADDR    = awaddr;
+    assign s3_AWLEN     = awlen;
+    assign s3_AWSIZE    = awsize;
+    assign s3_AWBURST   = awburst;
+    assign s3_AWID      = awid;
+    assign s3_AWADDR    = awaddr;
+
+    assign s0_WDATA     = wdata;
+    assign s0_WSTRB     = wstrb;
+    assign s0_WLAST     = wlast;
+    assign s1_WDATA     = wdata;
+    assign s1_WSTRB     = wstrb;
+    assign s1_WLAST     = wlast;
+    assign s2_WDATA     = wdata;
+    assign s2_WSTRB     = wstrb;
+    assign s2_WLAST     = wlast;
+    assign s3_WDATA     = wdata;
+    assign s3_WSTRB     = wstrb;
+    assign s3_WLAST     = wlast;
+
+    assign m0_BID      = bid;
+    assign m0_BRESP    = bresp;
+    assign m1_BID      = bid;
+    assign m1_BRESP    = bresp;
+
+    assign s0_ARLEN     = arlen;
+    assign s0_ARSIZE    = arsize;
+    assign s0_ARBURST   = arburst;
+    assign s0_ARID      = arid;
+    assign s0_ARADDR    = araddr;
+    assign s1_ARLEN     = arlen;
+    assign s1_ARSIZE    = arsize;
+    assign s1_ARBURST   = arburst;
+    assign s1_ARID      = arid;
+    assign s1_ARADDR    = araddr;
+    assign s2_ARLEN     = arlen;
+    assign s2_ARSIZE    = arsize;
+    assign s2_ARBURST   = arburst;
+    assign s2_ARID      = arid;
+    assign s2_ARADDR    = araddr;
+    assign s3_ARLEN     = arlen;
+    assign s3_ARSIZE    = arsize;
+    assign s3_ARBURST   = arburst;
+    assign s3_ARID      = arid;
+    assign s3_ARADDR    = araddr;
+
+    assign m0_RID      = rid;
+    assign m0_RDATA    = rdata;
+    assign m0_RRESP    = rresp;
+    assign m1_RID      = rid;
+    assign m1_RDATA    = rdata;
+    assign m1_RRESP    = rresp;
+    assign m0_RLAST    = rlast;
+    assign m1_RLAST    = rlast;
+
 endmodule

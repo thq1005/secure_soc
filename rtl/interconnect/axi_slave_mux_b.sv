@@ -1,5 +1,5 @@
 `include "../define.sv"
-module axi_master_mux_b (
+module axi_slave_mux_b (
     input                    clk_i,
     input                    rst_ni,
     /********************/
@@ -13,12 +13,12 @@ module axi_master_mux_b (
     input   [7:0]            s3_BID,
     input                    bready,
 
-    output  [7:0]            bid,
-    output                   bvalid,
-    output                   s0_BREADY,
-    output                   s1_BREADY,
-    output                   s2_BREADY,
-    output                   s3_BREADY,
+    output logic [7:0]       bid,
+    output logic             bvalid,
+    output logic             s0_BREADY,
+    output logic             s1_BREADY,
+    output logic             s2_BREADY,
+    output logic             s3_BREADY
 );
 
     enum logic [0:1] {

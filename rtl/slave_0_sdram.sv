@@ -19,7 +19,7 @@ module slave_0_sdram(
   output logic wready,
   //B channel
   output logic [`ID_BITS - 1:0] bid,
-  output logic [2:0] bresp,
+  output logic [1:0] bresp,
   output logic bvalid,
   input logic bready,
   //AR channel
@@ -33,7 +33,7 @@ module slave_0_sdram(
   //R channel
   output logic [`ID_BITS - 1:0] rid,
   output logic [`DATA_WIDTH - 1:0] rdata,
-  output logic [2:0] rresp,
+  output logic [1:0] rresp,
   output logic rvalid,
   output logic rlast,
   input logic rready
@@ -46,9 +46,6 @@ logic re_w;
 logic [`ADDR_WIDTH-1:0] raddr_w;
 logic [`DATA_WIDTH-1:0] rdata_w;
 
-logic cs_w;
-logic wr_w;
-logic [31:0] addr_w;
 
 axi_interface_slave s0_itf (
 .clk_i      (clk_i),

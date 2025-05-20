@@ -4,8 +4,8 @@ module axi_arbiter_aw (
     input           m0_AWVALID,
     input           m1_AWVALID,
     input           awready,
-    output          m0_wgrnt,
-	output 	        m1_wgrnt
+    output  logic   m0_wgrnt,
+	output 	logic   m1_wgrnt
 );
 
     enum logic [0:0] {

@@ -4,8 +4,8 @@ module axi_arbiter_ar (
     input           m0_ARVALID,
     input           m1_ARVALID,
     input           arready,
-    output          m0_rgrnt,
-	output 	        m1_rgrnt
+    output  logic   m0_rgrnt,
+	output 	logic   m1_rgrnt
 );
 
     enum logic [0:0] {

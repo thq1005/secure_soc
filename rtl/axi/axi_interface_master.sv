@@ -1,6 +1,6 @@
 `include "../define.sv"
 
-module axi_interface_master(
+module axi_interface_master #(parameter id = 0) (
     input logic clk_i,
     input logic rst_ni,
     //AW channel
@@ -19,7 +19,7 @@ module axi_interface_master(
     input  logic wready_i,
     //B channel
     input  logic [`ID_BITS - 1:0] bid_i,
-    input  logic [2:0] bresp_i,
+    input  logic [1:0] bresp_i,
     input  logic bvalid_i,
     output logic bready_o,
     //AR channel
@@ -33,15 +33,15 @@ module axi_interface_master(
     //R channel
     input  logic [`ID_BITS - 1:0] rid_i,
     input  logic [`DATA_WIDTH - 1:0] rdata_i,
-    input  logic [2:0] rresp_i,
+    input  logic [1:0] rresp_i,
     input  logic rvalid_i,
     input  logic rlast_i,
     output logic rready_o,
     //signal of cpu
-    input logic [`ADDR_WIDTH - 1:0] addr_i,
-    input logic [`DATA_WIDTH_CACHE - 1:0] wdata_i,
-    input logic we_i,
-    input logic cs_i,
+    input  logic [`ADDR_WIDTH - 1:0] addr_i,
+    input  logic [`DATA_WIDTH_CACHE - 1:0] wdata_i,
+    input  logic we_i,
+    input  logic cs_i,
     output logic [`DATA_WIDTH_CACHE - 1:0] rdata_o,
     output logic rvalid_o
     );
@@ -279,23 +279,19 @@ module axi_interface_master(
         end
     end
       
-    assign arid_o    = (araddr_o[19:16] == 4'h2) ? `ID_CPU2AES : `ID_CPU2MEM;
-    assign arlen_o   = (araddr_o[19:16] == 4'h2) ? 0 : 3;
+    assign arid_o    = id;
+    assign arlen_o   = (araddr_o[31:30] == 2'b00) ? 3 : 0;
     assign arsize_o  = 2;
-    assign arburst_o = (araddr_o[19:16] == 4'h2) ? 0 : 1;
+    assign arburst_o = (araddr_o[31:30] == 2'b00) ? 1 : 0;
     assign rready_o  = (r_state == R);
     assign arvalid_o = (r_state == RA);
     
-    assign awid_o    =  (w_state == WA && awaddr_o[19:16] == 4'h0)     ? `ID_CPU2MEM :
-                        (w_state == WA && awaddr_o[19:16] == 4'h1)     ? `ID_CPU2DMA : 
-                        (w_state == WA && awaddr_o[19:16] == 4'h2)     ? `ID_CPU2AES : 0;
+    assign awid_o = id;
 
 
-    assign awlen_o   =  (awaddr_o[19:16] == 4'h0)     ? 3 :
-                        (awaddr_o[19:16] == 4'h1)     ? 3 : 
-                        (awaddr_o[19:16] == 4'h2)     ? 0 : 0;
+    assign awlen_o   = (awaddr_o[31:30] == 2'b00) ? 3 : 0;
     assign awsize_o  = 2;
-    assign awburst_o = (awaddr_o[19:16] == 4'h2) ? 0 : 1;
+    assign awburst_o = (awaddr_o[31:30] == 2'b00) ? 1 : 0;
     assign awvalid_o = (w_state == WA);
     
     assign wlast_o  = (w_cnt == w_len_cnt & w_state == W);

@@ -2,22 +2,22 @@
 module axi_slave_mux_aw(
 	input                       clk_i,
 	input      	                rst_ni,
-    output                      s0_AWVALID,
+    output  logic               s0_AWVALID,
     input	   	                s0_AWREADY,
-    output                      s1_AWVALID,
+    output  logic               s1_AWVALID,
     input	   	                s1_AWREADY,
-    output                      s2_AWVALID,
+    output  logic               s2_AWVALID,
     input	   	                s2_AWREADY,
-    output                      s3_AWVALID,
+    output  logic               s3_AWVALID,
     input	   	                s3_AWREADY,
-    output  	                awready,
+    output  logic               awready,
     input     [`ADDR_WIDTH-1:0]	awaddr,
-    input                       awvalid,
+    input                       awvalid
 );
 
 
     always_comb begin
-        case(s_AWADDR[`ADDR_WIDTH-1-:2])
+        case(awaddr[`ADDR_WIDTH-1-:2])
             2'b00: begin
                 awready   = s0_AWREADY;
             end

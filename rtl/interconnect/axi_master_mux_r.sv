@@ -3,21 +3,21 @@ module axi_master_mux_r (
     /********************/
     input                    m0_RREADY,
     input                    m1_RREADY,
-    output                   m0_RVALID,
-    output                   m1_RVALID,
+    output  logic            m0_RVALID,
+    output  logic            m1_RVALID,
 
     input  [7:0]             rid,
     input                    rvalid,
-    output                   rready
+    output  logic            rready
 );
 
     always_comb begin
-        case(bid)    
-            8'h01: begin
+        case(rid)    
+            8'h00: begin
                 m0_RVALID = rvalid;
                 m1_RVALID = 1'b0;
             end
-            8'h02: begin
+            8'h01: begin
                 m0_RVALID = 1'b0;
                 m1_RVALID = rvalid;
             end
@@ -30,10 +30,10 @@ module axi_master_mux_r (
 
     always_comb begin
         case(rid)    
-            8'h01: begin
+            8'h00: begin
                 rready = m0_RREADY;
             end
-            8'h02: begin
+            8'h01: begin
                 rready = m1_RREADY;
             end
             default: begin

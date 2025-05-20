@@ -19,7 +19,7 @@ module slave_1_aes(
   output logic wready,
   //B channel
   output logic [`ID_BITS - 1:0] bid,
-  output logic [2:0] bresp,
+  output logic [1:0] bresp,
   output logic bvalid,
   input logic bready,
   //AR channel
@@ -33,7 +33,7 @@ module slave_1_aes(
   //R channel
   output logic [`ID_BITS - 1:0] rid,
   output logic [`DATA_WIDTH - 1:0] rdata,
-  output logic [2:0] rresp,
+  output logic [1:0] rresp,
   output logic rvalid,
   output logic rlast,
   input logic rready,
