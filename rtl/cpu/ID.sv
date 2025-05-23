@@ -11,8 +11,9 @@ module ID(
 	input logic enable_i,
 	input logic reset_i,
 	input logic hit_d_i,
-	input logic dma_intr,		//aes interrupt
-	output logic dma_clear_intr,
+
+	input logic e_intr,		
+
 	input logic [31:0] csr_wdata_i,
 	input logic [31:0] csr_waddr_i,
 	input logic csr_we_i,
@@ -33,7 +34,6 @@ module ID(
 	output logic hit_ex_o,
 	/* valid signal when CPU access cache */
 	output logic Valid_cpu2cache_ex_o,
-	output logic Valid_cpu2aes_ex_o,
 	output logic [31:0] csr_rdata_o,  
 	output logic csr_we_o,
 	output logic [31:0] csr_waddr_o,
@@ -41,8 +41,7 @@ module ID(
 
 	output logic [31:0] pc_intr_o,
 	output logic intr_flag,
-	output logic is_mret,
-	output logic aes_load_ex_o
+	output logic is_mret
 	);
 	
 	logic [31:0] rs1_w, rs2_w, imm_w;
@@ -65,8 +64,6 @@ module ID(
 	/* valid signal when CPU access cache */
 	logic Valid_cpu2cache_w;
 	logic Valid_cpu2cache_r;
-	logic Valid_cpu2aes_w;
-	logic Valid_cpu2aes_r;
 
 	logic [31:0] csr_rdata_w;
 	logic [31:0] csr_rdata_r;
@@ -75,8 +72,6 @@ module ID(
 	logic [31:0] csr_waddr_w;
 	logic [31:0] csr_waddr_r;
 
-	logic aes_load_w;
-	logic aes_load_r;
 
 	regfile RF_ID(
 		.dataW_i(data_wb_i),
@@ -109,10 +104,8 @@ module ID(
 		//.Mul_ext_o(Mul_ext_w)
 		/* valid signal when CPU access cache */
 		.Valid_cpu2cache_o(Valid_cpu2cache_w),
-		.Valid_cpu2aes_o (Valid_cpu2aes_w),
 		.is_mret (is_mret),
-		.csr_we (csr_we_w),
-		.aes_load (aes_load_w)
+		.csr_we (csr_we_w)
 		);
 		
 	csr_regs CSR_Regs (					//31             20 19    15 14    12 11     7 6     0  
@@ -150,11 +143,9 @@ module ID(
 			inst_r <= 32'b0;
 			hit_r <= 1'b0;
 			Valid_cpu2cache_r <= 1'b0;
-			Valid_cpu2aes_r <= 1'b0;
 			csr_rdata_r <= 32'b0;
 			csr_we_r <= 1'b0;
 			csr_waddr_r <= 32'b0;
-			aes_load_r <= 1'b0;
 		end
 		else if (enable_i) begin 
 			if (reset_i) begin
@@ -174,11 +165,9 @@ module ID(
 				inst_r <= 32'b0;
 				hit_r <= 1'b0;
 				Valid_cpu2cache_r <= 1'b0;
-				Valid_cpu2aes_r <= 1'b0;
 				csr_rdata_r <= 32'b0;
 				csr_we_r <= 1'b0;
 				csr_waddr_r <= 32'b0;
-				aes_load_r <= 1'b0;		
 			end
 			else begin
 				rs1_r <= rs1_w;
@@ -197,11 +186,9 @@ module ID(
 				inst_r <= inst_d_i;
 				hit_r <= hit_d_i;
 				Valid_cpu2cache_r <= Valid_cpu2cache_w;
-				Valid_cpu2aes_r <= Valid_cpu2aes_w;
 				csr_rdata_r <= csr_rdata_w;
 				csr_we_r <= csr_we_w;
 				csr_waddr_r <= csr_waddr_w;
-				aes_load_r <= aes_load_w;
 			end
 		end
 	end
@@ -222,12 +209,10 @@ module ID(
 	assign inst_ex_o = inst_r;
 	assign hit_ex_o = hit_r;
 	assign Valid_cpu2cache_ex_o = Valid_cpu2cache_r;
-	assign Valid_cpu2aes_ex_o = Valid_cpu2aes_r;
 	assign csr_rdata_o = csr_rdata_r;
 	assign csr_we_o    = csr_we_r;
 	assign csr_waddr_o = csr_waddr_r;
 	assign alu_csr_sel_o = csr_we_r;
-	assign aes_load_ex_o = aes_load_r;
 
 	always_ff @(posedge clk_i) begin
 		if (~rst_ni)

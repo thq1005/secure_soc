@@ -1,5 +1,5 @@
 `include "define.sv"
-module slave_1_aes(
+module slave_3_sdram(
   input logic clk_i,
   input logic rst_ni,
   // AXI interface
@@ -37,25 +37,23 @@ module slave_1_aes(
   output logic rvalid,
   output logic rlast,
   input logic rready,
-  output logic aes_irq
+
+  input logic aes_interrupt,
+  input logic dma_interrupt,
+  input logic sd_host_interrupt,
+  output logic irq_out
+
 );
     
 logic we_w;
 logic [`ADDR_WIDTH-1:0] waddr_w;
 logic [`DATA_WIDTH-1:0] wdata_w;
-logic [(`DATA_WIDTH/8)-1:0] strb_w;
 logic re_w;
 logic [`ADDR_WIDTH-1:0] raddr_w;
 logic [`DATA_WIDTH-1:0] rdata_w;
-logic [`DATA_WIDTH-1:0] rdata_r;
 
-logic a_cs;
-logic a_we;
-logic [`ADDR_WIDTH-1:0] a_addr;
-logic [`DATA_WIDTH-1:0] a_wdata;
-logic [`DATA_WIDTH-1:0] a_rdata;
 
-axi_interface_slave s1_itf (
+axi_interface_slave s0_itf (
 .clk_i      (clk_i),
 .rst_ni     (rst_ni),
 .awid       (awid),
@@ -90,54 +88,29 @@ axi_interface_slave s1_itf (
 .o_we       (we_w),
 .o_waddr    (waddr_w),
 .o_wdata    (wdata_w),
-.o_strb     (strb_w),
+.o_strb     (),
 .o_re       (re_w),
 .o_raddr    (raddr_w),
 .i_rdata    (rdata_w)
 );
 
-always_comb begin
-    a_cs = 0;
-    if (we_w || re_w) 
-        a_cs = 1;
-end
+logic [31:0] plic_addr;
 
-always_comb begin
-    a_we = 0;
-    if (we_w) 
-        a_we = 1;
-end
+assign plic_addr = (we_w) ? waddr_w : raddr_w;
 
-always_comb begin
-    a_addr = (we_w) ? waddr_w : raddr_w;
-end
+plic plic_inst (
+.clk_i,
+.rst_ni,
+.aes_interrupt,
+.dma_interrupt,
+.sd_host_interrupt,
+.irq_out,
 
-always_comb begin
-    a_wdata = wdata_w;
-end
-
-always_comb begin
-    rdata_w = rdata_r;
-end
-
-always_ff @(posedge clk_i) begin
-    if (!rst_ni)
-        rdata_r <= 0;
-    else if (re_w)
-        rdata_r <= a_rdata;
-    else
-        rdata_r <= rdata_r;
-end
-
-aes aes_inst(
-.clk_i   (clk_i),
-.rst_ni  (rst_ni),   
-.cs_i    (a_cs),
-.we_i    (a_we),
-.addr_i  (a_addr),
-.wdata_i (a_wdata),
-.rdata_o (a_rdata),
-.aes_irq (aes_irq)
+.addr (plic_addr),
+.wr_en(we_w),
+.rd_en(re_w),
+.wr_data (wdata_w),
+.rd_data (rdata_w)
 );
 
 endmodule

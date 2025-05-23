@@ -213,7 +213,7 @@ always_ff @(posedge clk_i) begin
             valid2_reg  <= core_valid;
         else if (state == 3'b100 && ~valid3_reg)
             valid3_reg  <= core_valid;
-        else if (start_reg) begin
+        else if (start_reg | (valid_we & ~wdata_i[0])) begin
             valid0_reg  <= 0;
             valid1_reg  <= 0;
             valid2_reg  <= 0;
@@ -248,6 +248,18 @@ end
 
 logic valid_w;
 assign valid_w = (valid0_reg == on_reg[0] && valid1_reg == on_reg[1] && valid2_reg == on_reg[2] && valid3_reg == on_reg[3] &&(valid1_reg | valid2_reg | valid3_reg | valid0_reg));
+
+logic valid_reg;
+logic valid_we;
+
+always_ff (@posedge clk_i) begin
+    if (~rst_ni) begin
+        valid_reg <= 1'b0;
+    end
+    else begin
+        valid_reg <= valid_w;
+    end
+end
 
 always_comb begin
     start_new   = 1'b0;
@@ -286,6 +298,9 @@ always_comb begin
 
             if (addr_i == `ADDR_START)
                 start_new = wdata_i[`START_BIT];
+
+            if (addr_i == `ADDR_STATUS)
+                valid_we = 1;
         end
         else begin
             if (addr_i == `ADDR_STATUS)
@@ -335,20 +350,5 @@ always_comb begin
 end
 
 
-
-logic intr_reg;
-
-always_ff @(posedge clk_i) begin
-    if(~rst_ni) begin
-        intr_reg <= 1'b0;
-    end
-    else if (valid_w) begin
-        intr_reg <= 1'b1;
-    end
-    else if (aes_clear_irq) begin
-        intr_reg <= 1'b0;
-    end
-end
-
-assign aes_irq = intr_reg;
+assign aes_irq = valid_reg;
 endmodule

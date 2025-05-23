@@ -23,13 +23,11 @@ module EX(
 	input logic reset_i,
 	/* valid signal when CPU access cache */
 	input logic Valid_cpu2cache_ex_i,
-	input logic Valid_cpu2aes_ex_i,
 
 	input logic [31:0] csr_rdata_ex_i,
 	input logic csr_we_ex_i,
 	input logic [31:0] csr_waddr_ex_i,
 	input logic alu_csr_sel_i,
-	input logic aes_load_ex_i,
 
 	output logic [31:0] alu_mem_o,
 	output logic [31:0] rs2_mem_o,
@@ -44,11 +42,9 @@ module EX(
 	output logic [31:0] alu_o,
 	/* valid signal when CPU access cache */
 	output logic Valid_cpu2cache_mem_o,
-	output logic Valid_cpu2aes_mem_o,
 	output logic csr_we_mem_o,
 	output logic [31:0] csr_waddr_mem_o,
-	output logic [31:0] csr_rdata_mem_o,
-	output logic aes_load_mem_o
+	output logic [31:0] csr_rdata_mem_o
 	);
 	
 	logic [31:0] alu_w;
@@ -66,13 +62,11 @@ module EX(
 	logic [31:0] csr_waddr_ex_r;
 	logic csr_we_ex_r;
 
-	logic aes_load_ex_r;
 
 	logic [31:0] csr_rdata_ex_r;
 
 	/* valid signal when CPU access cache */
 	logic Valid_cpu2cache_r;
-	logic Valid_cpu2aes_r;
 
 	logic [31:0] rs2_csr_w;
 	brcomp BrComp_EX(
@@ -135,11 +129,9 @@ module EX(
 			rsW_r <= 5'b0;
 			inst_r <= 32'b0;
 			Valid_cpu2cache_r <= 1'b0;
-			Valid_cpu2aes_r   <= 1'b0;
 			csr_waddr_ex_r <= 32'b0;
 			csr_we_ex_r <= 1'b0;
 			csr_rdata_ex_r <= 32'b0;
-			aes_load_ex_r <= 1'b0;
 		end
 		else if (enable_i) begin
 			if (reset_i) begin
@@ -152,11 +144,9 @@ module EX(
 				rsW_r <= 5'b0;
 				inst_r <= 32'b0;
 				Valid_cpu2cache_r <= 1'b0;
-				Valid_cpu2aes_r   <= 1'b0;
 				csr_waddr_ex_r <= 32'b0;
 				csr_we_ex_r <= 1'b0;
 				csr_rdata_ex_r <= 32'b0;
-				aes_load_ex_r <= 1'b0;
 			end
 			else begin
 				alu_r <= alu_w;
@@ -168,11 +158,9 @@ module EX(
 				rsW_r <= rsW_ex_i;
 				inst_r <= inst_ex_i;
 				Valid_cpu2cache_r <= Valid_cpu2cache_ex_i;
-				Valid_cpu2aes_r   <= Valid_cpu2aes_ex_i;
 				csr_waddr_ex_r <= csr_waddr_ex_i;
 				csr_we_ex_r <= csr_we_ex_i;
 				csr_rdata_ex_r <= csr_rdata_ex_i;
-				aes_load_ex_r <= aes_load_ex_i;
 			end
 		end
 	end
@@ -189,10 +177,8 @@ module EX(
 	assign inst_mem_o = inst_r;
 	assign alu_o = alu_w;
 	assign Valid_cpu2cache_mem_o = Valid_cpu2cache_r;
-	assign Valid_cpu2aes_mem_o = Valid_cpu2aes_r;
 	assign csr_waddr_mem_o = csr_waddr_ex_r;
 	assign csr_we_mem_o = csr_we_ex_r;
 	assign csr_rdata_mem_o = csr_rdata_ex_r;
-	assign aes_load_mem_o = aes_load_ex_r;
 
 endmodule

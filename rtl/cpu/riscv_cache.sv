@@ -9,8 +9,7 @@ module riscv_cache(
     output logic cs_o,
     input logic [`DATA_WIDTH_CACHE-1:0] rdata_i,
     input logic rvalid_i,
-	input logic dma_intr,
-	output logic dma_clear_intr
+	input logic e_irq
 	);
 	
 	logic BrEq_w, BrLt_w;
@@ -52,9 +51,6 @@ module riscv_cache(
 	logic stall_by_dcache_w;
 	logic stall_by_icache_w;
 
-    logic Valid_cpu2aes_ex_w;
-	logic Valid_cpu2aes_mem_w;
-
 	logic [31:0] imm_mem_w;
 
     logic [31:0] mem_addr_w;
@@ -90,11 +86,6 @@ module riscv_cache(
 
 	logic [31:0] csr_wdata_w;
 
-	logic [31:0] aes_status_w;
-	logic stall_by_aes_w;
-
-	logic aes_load_ex_w;
-	logic aes_load_mem_w;
 
 //	/* evaluation */
 //	logic [31:0] icache_no_acc_w, icache_no_hit_w, icache_no_miss_w, dcache_no_acc_w, dcache_no_hit_w, dcache_no_miss_w;
@@ -113,8 +104,8 @@ module riscv_cache(
 		.rst_ni(rst_ni),
 		.hit_i(hit_w),
 		.predicted_pc_i(predicted_pc_w),
-		.enable_pc_i(~(Stall_IF_w | stall_by_dcache_w | stall_by_icache_w | stall_by_aes_w )),
-		.enable_i   (~(Stall_ID_w | stall_by_dcache_w | stall_by_icache_w | stall_by_aes_w )),
+		.enable_pc_i(~(Stall_IF_w | stall_by_dcache_w | stall_by_icache_w)),
+		.enable_i   (~(Stall_ID_w | stall_by_dcache_w | stall_by_icache_w)),
 		.reset_i(Flush_ID_w),
 		.mispredicted_pc_i(pc4_ex_w),
 		.wrong_predicted_i(wrong_predicted_w),
@@ -149,10 +140,10 @@ module riscv_cache(
 		.pc4_d_i(pc4_d_w),
 		.RegWEn_i(RegWEn_wb_w),
 		.rsW_i(rsW_wb_w),
-		.enable_i(~(Stall_EX_w | stall_by_dcache_w  | stall_by_icache_w | stall_by_aes_w )),
+		.enable_i(~(Stall_EX_w | stall_by_dcache_w  | stall_by_icache_w)),
 		.reset_i(Flush_EX_w),
 		.hit_d_i(hit_d_w),
-		.dma_intr(dma_intr),		
+		.e_intr(e_irq),		
 		.csr_wdata_i (csr_wdata_w),
 		.csr_waddr_i (csr_waddr_wb_w),
 		.csr_we_i    (csr_we_wb_w),
@@ -172,16 +163,13 @@ module riscv_cache(
 		.inst_ex_o(inst_ex_w),
 		.hit_ex_o(hit_ex_w),
 		.Valid_cpu2cache_ex_o(Valid_cpu2cache_ex_w),
-		.Valid_cpu2aes_ex_o(Valid_cpu2aes_ex_w),
 		.csr_rdata_o (csr_rdata_ex_w),
 		.csr_we_o (csr_we_ex_w),
 		.csr_waddr_o (csr_waddr_ex_w),
 		.alu_csr_sel_o (alu_csr_sel_w),
 		.pc_intr_o (csr_pc_w),
 		.intr_flag (intr_flag),
-		.is_mret   (is_mret),
-		.aes_load_ex_o (aes_load_ex_w),
-		.dma_clear_intr (dma_clear_intr)
+		.is_mret   (is_mret)
 		);
 		
 	EX EX(
@@ -204,15 +192,13 @@ module riscv_cache(
 		.Bsel_haz_i(Bsel_haz_w),
 		.inst_ex_i(inst_ex_w),
 		.data_wb_i(data_wb_w),
-		.enable_i(~(Stall_MEM_w | stall_by_dcache_w  | stall_by_icache_w | stall_by_aes_w )),
+		.enable_i(~(Stall_MEM_w | stall_by_dcache_w  | stall_by_icache_w)),
 		.reset_i(Flush_MEM_w),
-		.Valid_cpu2aes_ex_i (Valid_cpu2aes_ex_w),
 		.Valid_cpu2cache_ex_i(Valid_cpu2cache_ex_w),
 		.csr_rdata_ex_i(csr_rdata_ex_w),
 		.csr_we_ex_i(csr_we_ex_w),
 		.csr_waddr_ex_i(csr_waddr_ex_w),
 		.alu_csr_sel_i(alu_csr_sel_w),
-		.aes_load_ex_i(aes_load_ex_w),
 		.alu_mem_o(alu_mem_w),
 		.rs2_mem_o(rs2_mem_w),
 		.pc4_mem_o(pc4_mem_w),
@@ -225,11 +211,9 @@ module riscv_cache(
 		.inst_mem_o(inst_mem_w),
 		.alu_o(alu_w),
 		.Valid_cpu2cache_mem_o(Valid_cpu2cache_mem_w),
-		.Valid_cpu2aes_mem_o(Valid_cpu2aes_mem_w),
 		.csr_we_mem_o(csr_we_mem_w),
 		.csr_waddr_mem_o(csr_waddr_mem_w),
-		.csr_rdata_mem_o(csr_rdata_mem_w),
-		.aes_load_mem_o(aes_load_mem_w)
+		.csr_rdata_mem_o(csr_rdata_mem_w)
 		);
 		
 	MEM MEM(
@@ -243,15 +227,13 @@ module riscv_cache(
 		.RegWEn_mem_i(RegWEn_mem_w),
 		.rsW_mem_i(rsW_mem_w),
 		.inst_mem_i(inst_mem_w),
-		.enable_i(~(Stall_WB_w | stall_by_dcache_w | stall_by_icache_w| stall_by_aes_w )),
+		.enable_i(~(Stall_WB_w | stall_by_dcache_w | stall_by_icache_w)),
 		.reset_i(Flush_WB_w),
 		.Valid_cpu2cache_mem_i(Valid_cpu2cache_mem_w),
-		.Valid_cpu2aes_mem_i(Valid_cpu2aes_mem_w),
 		.stall_by_icache_i(stall_by_icache_w),
 		.csr_we_mem_i(csr_we_mem_w),
 		.csr_waddr_mem_i(csr_waddr_mem_w),
 		.csr_rdata_mem_i(csr_rdata_mem_w),
-		.aes_load_mem_i(aes_load_mem_w),
 		.alu_wb_o(alu_wb_w),
 		.pc4_wb_o(pc4_wb_w),
 		.mem_wb_o(mem_wb_w),
@@ -271,8 +253,7 @@ module riscv_cache(
 	    .mem_rvalid_i(dmem_rvalid_w),
 		.csr_we_wb_o(csr_we_wb_w),
 		.csr_waddr_wb_o(csr_waddr_wb_w),	
-		.csr_rdata_wb_o(csr_rdata_wb_w),
-		.stall_by_aes_o(stall_by_aes_w)
+		.csr_rdata_wb_o(csr_rdata_wb_w)
 		);
 		
 	WB WB(
@@ -327,7 +308,7 @@ module riscv_cache(
 		.predicted_pc_o(predicted_pc_w),
 		.wrong_predicted_o(wrong_predicted_w),
 		.alu_pc_o(alu_pc_w),
-		.enable_i (~(Stall_WB_w | stall_by_dcache_w | stall_by_icache_w| stall_by_aes_w))
+		.enable_i (~(Stall_WB_w | stall_by_dcache_w | stall_by_icache_w))
 		);
 		
 	arbiter arbiter_inst (

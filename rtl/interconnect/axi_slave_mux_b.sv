@@ -7,10 +7,12 @@ module axi_slave_mux_b (
     input                    s1_BVALID,
     input                    s2_BVALID,
     input                    s3_BVALID,
+    input                    s4_BVALID,
     input   [7:0]            s0_BID,
     input   [7:0]            s1_BID,
     input   [7:0]            s2_BID,
     input   [7:0]            s3_BID,
+    input   [7:0]            s4_BID,
     input                    bready,
 
     output logic [7:0]       bid,
@@ -18,14 +20,16 @@ module axi_slave_mux_b (
     output logic             s0_BREADY,
     output logic             s1_BREADY,
     output logic             s2_BREADY,
-    output logic             s3_BREADY
+    output logic             s3_BREADY,
+    output logic             s4_BREADY,
 );
 
-    enum logic [0:1] {
+    enum logic [0:2] {
         AXI_MASTER_0,  
         AXI_MASTER_1,
         AXI_MASTER_2,
-        AXI_MASTER_3  
+        AXI_MASTER_3,
+        AXI_MASTER_4  
     } state,next_state;
 //------------------------------------------------------
     always_comb begin
@@ -39,12 +43,16 @@ module axi_slave_mux_b (
                     next_state = AXI_MASTER_2;  
                 else if (s3_BVALID && bready && s0_BVALID)             
                     next_state = AXI_MASTER_3;
+                else if (s4_BVALID && bready && s0_BVALID)
+                    next_state = AXI_MASTER_4;
                 else if (s1_BVALID)
                     next_state = AXI_MASTER_1;
                 else if (s2_BVALID)
                     next_state = AXI_MASTER_2;
                 else if (s3_BVALID)
                     next_state = AXI_MASTER_3;
+                else if (s4_BVALID)
+                    next_state = AXI_MASTER_4;
                 else                            
                     next_state = AXI_MASTER_0;
             end
@@ -57,12 +65,16 @@ module axi_slave_mux_b (
                     next_state = AXI_MASTER_2;
                 else if (s3_BVALID && bready && s1_BVALID)
                     next_state = AXI_MASTER_3;
+                else if (s4_BVALID && bready && s1_BVALID)
+                    next_state = AXI_MASTER_4;
                 else if (s0_BVALID)
                     next_state = AXI_MASTER_0;
                 else if (s2_BVALID)
                     next_state = AXI_MASTER_2;
                 else if (s3_BVALID)
                     next_state = AXI_MASTER_3;
+                else if (s4_BVALID)
+                    next_state = AXI_MASTER_4;
                 else
                     next_state = AXI_MASTER_1;
             end
@@ -75,12 +87,16 @@ module axi_slave_mux_b (
                     next_state = AXI_MASTER_1;
                 else if (s3_BVALID && bready && s2_BVALID)
                     next_state = AXI_MASTER_3;
+                else if (s4_BVALID && bready && s2_BVALID)
+                    next_state = AXI_MASTER_4;
                 else if (s0_BVALID)
                     next_state = AXI_MASTER_0;
                 else if (s1_BVALID)
                     next_state = AXI_MASTER_1;
                 else if (s3_BVALID)
                     next_state = AXI_MASTER_3;
+                else if (s4_BVALID)
+                    next_state = AXI_MASTER_4;
                 else
                     next_state = AXI_MASTER_2;
             end
@@ -93,14 +109,40 @@ module axi_slave_mux_b (
                     next_state = AXI_MASTER_1;
                 else if (s2_BVALID && bready && s3_BVALID)
                     next_state = AXI_MASTER_2;
+                else if (s4_BVALID && bready && s3_BVALID)
+                    next_state = AXI_MASTER_4;
                 else if (s0_BVALID)
                     next_state = AXI_MASTER_0;
                 else if (s1_BVALID)
                     next_state = AXI_MASTER_1;
                 else if (s2_BVALID)
                     next_state = AXI_MASTER_2;
+                else if (s4_BVALID)
+                    next_state = AXI_MASTER_4;
                 else
                     next_state = AXI_MASTER_3;
+            end
+            AXI_MASTER_4: begin                 
+                if(s4_BVALID)                  
+                    next_state = AXI_MASTER_4;
+                else if(s0_BVALID && bready && s4_BVALID)
+                    next_state = AXI_MASTER_0;
+                else if (s1_BVALID && bready && s4_BVALID)
+                    next_state = AXI_MASTER_1;
+                else if (s2_BVALID && bready && s4_BVALID)
+                    next_state = AXI_MASTER_2;
+                else if (s3_BVALID && bready && s4_BVALID)
+                    next_state = AXI_MASTER_3;
+                else if (s0_BVALID)
+                    next_state = AXI_MASTER_0;
+                else if (s1_BVALID)
+                    next_state = AXI_MASTER_1;
+                else if (s2_BVALID)
+                    next_state = AXI_MASTER_2;
+                else if (s3_BVALID)
+                    next_state = AXI_MASTER_3;
+                else
+                    next_state = AXI_MASTER_4;
             end
             default:
                 next_state = AXI_MASTER_0;      
@@ -120,30 +162,42 @@ module axi_slave_mux_b (
                 s1_BREADY = '0;
                 s2_BREADY = '0;
                 s3_BREADY = '0;
+                s4_BREADY = '0;
             end
             AXI_MASTER_1: begin
                 s0_BREADY = '0;
                 s1_BREADY = bready;
                 s2_BREADY = '0;
                 s3_BREADY = '0;
+                s4_BREADY = '0;
             end
             AXI_MASTER_2: begin
                 s0_BREADY = '0;
                 s1_BREADY = '0;
                 s2_BREADY = bready;
                 s3_BREADY = '0;
+                s4_BREADY = '0;
             end
             AXI_MASTER_3: begin
                 s0_BREADY = '0;
                 s1_BREADY = '0;
                 s2_BREADY = '0;
                 s3_BREADY = bready;
+                s4_BREADY = '0;
+            end
+            AXI_MASTER_4: begin
+                s0_BREADY = '0;
+                s1_BREADY = '0;
+                s2_BREADY = '0;
+                s3_BREADY = '0;
+                s4_BREADY = bready;
             end
             default: begin
                 s0_BREADY = '0;
                 s1_BREADY = '0;
                 s2_BREADY = '0;
                 s3_BREADY = '0;
+                s4_BREADY = '0;
             end
         endcase
     end
@@ -151,10 +205,12 @@ module axi_slave_mux_b (
     assign bid = (state == AXI_MASTER_0) ? s0_BID :
                  (state == AXI_MASTER_1) ? s1_BID :
                  (state == AXI_MASTER_2) ? s2_BID :
-                 (state == AXI_MASTER_3) ? s3_BID : 8'b0;
+                 (state == AXI_MASTER_3) ? s3_BID : 
+                 (state == AXI_MASTER_4) ? s4_BID : 8'b0;
 
     assign bvalid = (state == AXI_MASTER_0) ? s0_BVALID :
                     (state == AXI_MASTER_1) ? s1_BVALID :
                     (state == AXI_MASTER_2) ? s2_BVALID :
-                    (state == AXI_MASTER_3) ? s3_BVALID : 1'b0;
+                    (state == AXI_MASTER_3) ? s3_BVALID :
+                    (state == AXI_MASTER_4) ? s4_BVALID : 1'b0;
 endmodule

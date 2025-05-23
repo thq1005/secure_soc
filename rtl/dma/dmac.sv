@@ -56,15 +56,16 @@ module dmac (
         input  logic m_rvalid,
         input  logic m_rlast,
         output logic m_rready,	
-        output logic dma_irq,		//dma interrupt
-        input logic dma_clear_irq
+        output logic dma_irq
 );
      // | burst | size | len |
      // 12    11 10   8 7    0
 
     // reg request
     logic [`ADDR_WIDTH-1:0] saddr_reg, daddr_reg;
-    logic [2+`SIZE_BITS+`LEN_BITS-1:0] config_reg;
+    logic [31:0] config_reg;
+    logic done_reg;
+    logic done_we;
     logic src_addr_we;
     logic dst_addr_we;
     logic config_we;
@@ -185,10 +186,11 @@ module dmac (
             saddr_reg  <= '0;
             daddr_reg  <= '0;
             config_reg <= '0; 
+            done_reg   <= '0;
         end
         else begin           
             if (config_we) 
-                config_reg <= wdata_w[2+`SIZE_BITS+`LEN_BITS-1:0];
+                config_reg <= wdata_w;
             if (src_addr_we)
                 if (wdata_w[19:16]==0)
                     saddr_reg <= wdata_w;// + 32'h00000800;
@@ -203,6 +205,13 @@ module dmac (
                 run <= wdata_w[0];
             else  
                 run <= 0;
+
+            if (done_we)
+                done_reg <= wdata_w;
+            else if (dma_intr_w)
+                done_reg <= 1;
+            else 
+                done_reg <= done_reg;
         end
     end 
 
@@ -218,9 +227,12 @@ module dmac (
                 dst_addr_we = 1'b1;
     
             if (waddr_w == `ADDR_CONFIG_DMA) 
-                config_we = 1'b1;
+                config_we   = 1'b1;
+            if (waddr_w == `ADDR_STATUS) begin
+                done_we     = 1'b1
+            end
         end
     end
 
-
+    assign dma_irq = done_reg;
 endmodule

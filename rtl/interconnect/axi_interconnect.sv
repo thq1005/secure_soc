@@ -202,7 +202,42 @@ module axi_interconnect(
     input  logic [1:0] s3_RRESP,
     input  logic s3_RVALID,
     input  logic s3_RLAST,
-    output logic s3_RREADY
+    output logic s3_RREADY,
+
+    //Slave 4
+    output logic [`ID_BITS - 1:0] s4_AWID,
+    output logic [`ADDR_WIDTH - 1:0] s4_AWADDR,
+    output logic [`LEN_BITS - 1:0] s4_AWLEN,
+    output logic [`SIZE_BITS -1 :0] s4_AWSIZE,
+    output logic [1:0] s4_AWBURST,
+    output logic s4_AWVALID,
+    input  logic s4_AWREADY,
+    //W channel
+    output logic [`DATA_WIDTH - 1:0] s4_WDATA,
+    output logic [(`DATA_WIDTH/8)-1:0] s4_WSTRB,
+    output logic s4_WVALID,
+    output logic s4_WLAST,
+    input  logic s4_WREADY,
+    //B channel
+    input  logic [`ID_BITS - 1:0] s4_BID,
+    input  logic [1:0] s4_BRESP,
+    input  logic s4_BVALID,
+    output logic s4_BREADY,
+    //AR channel
+    output logic [`ID_BITS - 1:0] s4_ARID,
+    output logic [`ADDR_WIDTH - 1:0] s4_ARADDR,
+    output logic [`LEN_BITS - 1:0] s4_ARLEN,
+    output logic [1:0] s4_ARBURST,
+    output logic [`SIZE_BITS - 1:0] s4_ARSIZE,
+    output logic s4_ARVALID,
+    input  logic s4_ARREADY,
+    //R channel
+    input  logic [`ID_BITS - 1:0] s4_RID,
+    input  logic [`DATA_WIDTH - 1:0] s4_RDATA,
+    input  logic [1:0] s4_RRESP,
+    input  logic s4_RVALID,
+    input  logic s4_RLAST,
+    output logic s4_RREADY,
     );
 
     //AW channel
@@ -247,7 +282,7 @@ module axi_interconnect(
 
 
     logic w_m0_wgrnt, w_m1_wgrnt;
-    logic [1:0] s_wsel;
+    logic [3:0] s_wsel;
     logic fifo_full, fifo_empty;
 
     logic ready_to_write;
@@ -264,13 +299,13 @@ module axi_interconnect(
 
     
 
-    fifo #(.DATA_W(4), 
+    fifo #(.DATA_W(6), 
         .DEPTH(128)) fifo_for_w_channel  (
         .clk_i,
         .rst_ni,
         .we_i (awready && awvalid && ~fifo_full),
         .re_i (ready_to_write),
-        .wdata_i ({awaddr[`ADDR_WIDTH-1-:2],m1_wgrnt,m0_wgrnt}),
+        .wdata_i ({awaddr[`ADDR_WIDTH-1-:4],m1_wgrnt,m0_wgrnt}),
         .rdata_o ({s_wsel,w_m1_wgrnt,w_m0_wgrnt}),
         .full  (fifo_full),
         .empty (fifo_empty)
@@ -312,6 +347,11 @@ module axi_interconnect(
     assign s3_AWBURST   = awburst;
     assign s3_AWID      = awid;
     assign s3_AWADDR    = awaddr;
+    assign s4_AWLEN     = awlen;
+    assign s4_AWSIZE    = awsize;
+    assign s4_AWBURST   = awburst;
+    assign s4_AWID      = awid;
+    assign s4_AWADDR    = awaddr;
 
     assign s0_WDATA     = wdata;
     assign s0_WSTRB     = wstrb;
@@ -325,6 +365,9 @@ module axi_interconnect(
     assign s3_WDATA     = wdata;
     assign s3_WSTRB     = wstrb;
     assign s3_WLAST     = wlast;
+    assign s4_WDATA     = wdata;
+    assign s4_WSTRB     = wstrb;
+    assign s4_WLAST     = wlast;
 
     assign m0_BID      = bid;
     assign m0_BRESP    = bresp;
@@ -351,6 +394,11 @@ module axi_interconnect(
     assign s3_ARBURST   = arburst;
     assign s3_ARID      = arid;
     assign s3_ARADDR    = araddr;
+    assign s4_ARLEN     = arlen;
+    assign s4_ARSIZE    = arsize;
+    assign s4_ARBURST   = arburst;
+    assign s4_ARID      = arid;
+    assign s4_ARADDR    = araddr;
 
     assign m0_RID      = rid;
     assign m0_RDATA    = rdata;

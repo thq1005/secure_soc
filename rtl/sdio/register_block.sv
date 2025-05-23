@@ -1,3 +1,4 @@
+`include "../define.sv"
 module register_block (
     input  logic        clk,
     input  logic        rst_n,
@@ -65,16 +66,7 @@ module register_block (
     logic        interrupt_reg;
 
     // Định nghĩa địa chỉ thanh ghi
-    localparam ADDR_CMD_INDEX    = 32'h00;
-    localparam ADDR_CMD_ARG      = 32'h04;
-    localparam ADDR_BLOCK_CONFIG = 32'h08;
-    localparam ADDR_CONTROL      = 32'h0C;
-    localparam ADDR_STATUS       = 32'h10;
-    localparam ADDR_BUFFER       = 32'h14;
-    localparam ADDR_TX_DATA      = 32'h18;
-    localparam ADDR_CLK_DIV      = 32'h1C;
-    localparam ADDR_RESP_DATA_LO = 32'h20; // 32 bit thấp của resp_data
-    localparam ADDR_RESP_DATA_HI = 32'h24; // 16 bit cao của resp_data
+    
 
     // Gán tín hiệu đầu ra
     assign cmd_index = cmd_index_reg;
@@ -112,15 +104,15 @@ module register_block (
         rdata = 32'h0;
         if (re) begin
             case (raddr)
-                ADDR_CMD_INDEX:    rdata = {26'b0, cmd_index_reg};
-                ADDR_CMD_ARG:      rdata = cmd_arg_reg;
-                ADDR_BLOCK_CONFIG: rdata = {19'b0, data_direction_reg, block_size_reg};
-                ADDR_CONTROL:      rdata = {31'b0, cmd_start_reg};
-                ADDR_STATUS:       rdata = {24'b0, crc_err_cmd, timeout_err_cmd, resp_ready, tx_full, rx_empty, data_done, cmd_done};
-                ADDR_BUFFER:       rdata = buffer_rdata_reg;
-                ADDR_CLK_DIV:      rdata = {24'b0, clk_div_reg};
-                ADDR_RESP_DATA_LO: rdata = resp_data_reg[47:16]; // 32 bit thấp
-                ADDR_RESP_DATA_HI: rdata = {16'b0, resp_data_reg[15:0]}; // 16 bit cao
+                `ADDR_CMD_INDEX:    rdata = {26'b0, cmd_index_reg};
+                `ADDR_CMD_ARG:      rdata = cmd_arg_reg;
+                `ADDR_BLOCK_CONFIG: rdata = {19'b0, data_direction_reg, block_size_reg};
+                `ADDR_CONTROL:      rdata = {31'b0, cmd_start_reg};
+                `ADDR_STATUS:       rdata = {24'b0, crc_err_cmd, timeout_err_cmd, resp_ready, tx_full, rx_empty, data_done, cmd_done};
+                `ADDR_BUFFER:       rdata = buffer_rdata_reg;
+                `ADDR_CLK_DIV:      rdata = {24'b0, clk_div_reg};
+                `ADDR_RESP_DATA_LO: rdata = resp_data_reg[47:16]; // 32 bit thấp
+                `ADDR_RESP_DATA_HI: rdata = {16'b0, resp_data_reg[15:0]}; // 16 bit cao
                 default:           rdata = 32'h0;
             endcase
         end

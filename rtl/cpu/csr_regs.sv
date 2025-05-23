@@ -98,7 +98,7 @@ module csr_regs  (
       if (~rst_ni) 
          mcause_reg <= '0;
       else if (e_intr) 
-         mcause_reg <= 32'h8000000b;
+         mcause_reg <= 32'h8000000b;z
    end
 
 csr_ops i_csr_ops(

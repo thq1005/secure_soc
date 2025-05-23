@@ -1,5 +1,5 @@
 `include "define.sv"
-module slave_2_sdio(
+module slave_4_sdio(
   input logic clk_i,
   input logic rst_ni,
   // AXI interface
@@ -37,8 +37,8 @@ module slave_2_sdio(
   output logic rvalid,
   output logic rlast,
   input logic rready,
-  output logic sd_irq,
-  input logic sd_irq,
+
+  output logic sd_host_irq,
 
   //connect to the sd pin on fpga board
   input logic cmd_i,
@@ -66,7 +66,7 @@ logic [`ADDR_WIDTH-1:0] a_addr;
 logic [`DATA_WIDTH-1:0] a_wdata;
 logic [`DATA_WIDTH-1:0] a_rdata;
 
-axi_interface_slave s2_itf (
+axi_interface_slave s4_itf (
 .clk_i      (clk_i),
 .rst_ni     (rst_ni),
 .awid       (awid),
@@ -117,7 +117,7 @@ sd_host_controller sd_inst(
 .re         (re_w),
 .wdata      (wdata_w),
 .rdata      (raddr_w),
-.interrupt  (sd_irq),
+.interrupt  (sd_host_irq),
 .cmd_i,    
 .cmd_o,    
 .cmd_t,    

@@ -82,39 +82,39 @@
 //AES-128
 `define AES_ROUND           10
 `define KEY_WIDTH           128
-`define ADDR_CTRL           32'h00020000
+`define ADDR_CTRL           32'h10000000
 `define CTRL_ON0_BIT        0
 `define CTRL_ON1_BIT        1
 `define CTRL_ON2_BIT        2
 `define CTRL_ON3_BIT        3
-`define ADDR_STATUS         32'h00020001
-`define STATUS_READY_BIT   0
-`define STATUS_VALID_BIT   1
-`define ADDR_CONFIG         32'h00020002
+`define ADDR_STATUS         32'h10000001
+`define STATUS_READY_BIT    0
+`define STATUS_VALID_BIT    1
+`define ADDR_CONFIG         32'h10000002
 `define CTRL_ENCDEC0_BIT    0
 `define CTRL_ENCDEC1_BIT    1
 `define CTRL_ENCDEC2_BIT    2
 `define CTRL_ENCDEC3_BIT    3
-`define ADDR_START          32'h00020003
+`define ADDR_START          32'h10000003
 `define START_BIT           0
-`define ADDR_BLOCK0         32'h00020004
-`define ADDR_BLOCK1         32'h00020014
-`define ADDR_BLOCK2         32'h00020024
-`define ADDR_BLOCK3         32'h00020034
-`define ADDR_KEY0           32'h00020044
-`define ADDR_KEY1           32'h00020054
-`define ADDR_KEY2           32'h00020064
-`define ADDR_KEY3           32'h00020074
-`define ADDR_RESULT0        32'h00020084
-`define ADDR_RESULT1        32'h00020094
-`define ADDR_RESULT2        32'h000200a4
-`define ADDR_RESULT3        32'h000200b4 
+`define ADDR_BLOCK0         32'h10000004
+`define ADDR_BLOCK1         32'h10000014
+`define ADDR_BLOCK2         32'h10000024
+`define ADDR_BLOCK3         32'h10000034
+`define ADDR_KEY0           32'h10000044
+`define ADDR_KEY1           32'h10000054
+`define ADDR_KEY2           32'h10000064
+`define ADDR_KEY3           32'h10000074
+`define ADDR_RESULT0        32'h10000084
+`define ADDR_RESULT1        32'h10000094
+`define ADDR_RESULT2        32'h100000a4
+`define ADDR_RESULT3        32'h100000b4 
 
 //DMA
-`define ADDR_VALID          32'h0001000c
-`define ADDR_ADDR_SRC       32'h00010000
-`define ADDR_ADDR_DST       32'h00010004
-`define ADDR_CONFIG_DMA     32'h00010008
+`define ADDR_VALID          32'h2000000c
+`define ADDR_ADDR_SRC       32'h20000000
+`define ADDR_ADDR_DST       32'h20000004
+`define ADDR_CONFIG_DMA     32'h20000008
 `define DMA_BURST_BIT0      11
 `define DMA_BURST_BIT1      12
 `define DMA_LEN_BIT0        0
@@ -122,17 +122,29 @@
 `define DMA_SIZE_BIT0       8
 `define DMA_SIZE_BIT2       10
 
-//ADDR MAP
-`define ADDR_MEM            32'h00000000
-`define ADDR_DMA            32'h00010000
-`define ADDR_AES            32'h00020000
-`define ADDR_ONCHIP         32'h00030000
+//PLIC
+`define ADDR_PRIORITY1      32'h30000000
+`define ADDR_PRIORITY2      32'h30000004
+`define ADDR_PRIORITY3      32'h30000008
+`define ADDR_ENABLE         32'h3000000c
+`define ADDR_THRESHOLD      32'h30000010
+`define ADDR_CLAIM_COMPLETE 32'h30000014
 
-//id
-`define ID_CPU2MEM          0
-`define ID_CPU2DMA          1
-`define ID_DMA2MEM          2
-`define ID_DMA2AES          3
-`define ID_CPU2AES          4
-`define ID_PS2MEM           5
+
+//SD Host Controller
+`define ADDR_CMD_INDEX      32'h40000000
+`define ADDR_CMD_ARG        32'h40000004
+`define ADDR_BLOCK_CONFIG   32'h40000008
+`define ADDR_CONTROL        32'h4000000C
+`define ADDR_STATUS         32'h40000010
+`define ADDR_BUFFER         32'h40000014
+`define ADDR_TX_DATA        32'h40000018
+`define ADDR_CLK_DIV        32'h4000001C
+`define ADDR_RESP_DATA_LO   32'h40000020 // 32 bit thấp của resp_data
+`define ADDR_RESP_DATA_HI   32'h40000024 // 16 bit cao của resp_data
+
+
+
+
+
 `endif
