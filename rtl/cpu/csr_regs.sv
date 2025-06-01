@@ -11,8 +11,9 @@ module csr_regs  (
    input  logic [`ADDR_WIDTH-1:0]   addr_w,
    input  logic                     we,
 
-   input  logic [`DATA_WIDTH-1:0]   pc_i,
-   input  logic [`DATA_WIDTH-1:0]   data_i,
+   input  logic [31:0]   pc_i,
+   input  logic [31:0]   inst_i,
+   input  logic [31:0]   data_i,
 
    output logic                     intr_flag,
    output logic [`DATA_WIDTH-1:0]   pc_o,
@@ -89,8 +90,13 @@ module csr_regs  (
       if (~rst_ni) begin
          mepc_reg <= '0;
       end
-      else if (e_intr) begin
-         mepc_reg    <= pc_i;
+      else if (intr_flag) begin
+         if (inst_i[6:0] == 7'h63 | inst_i[6:0] == 7'h6f) begin
+            mepc_reg <= pc_i; 
+         end
+         else begin
+            mepc_reg <= pc_i+4;
+         end
       end
    end
      
@@ -98,7 +104,7 @@ module csr_regs  (
       if (~rst_ni) 
          mcause_reg <= '0;
       else if (e_intr) 
-         mcause_reg <= 32'h8000000b;z
+         mcause_reg <= 32'h8000000b;
    end
 
 csr_ops i_csr_ops(

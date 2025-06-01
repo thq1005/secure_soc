@@ -124,7 +124,6 @@ module icache_controller(
     assign mem_req_o = v_mem_req;
 
     /* debuging */
-
     /* Combinational block */
     always_comb begin
         /* default values for all signals */
@@ -177,7 +176,6 @@ module icache_controller(
 //        //hit1_w = 1'b0;
 //        miss1_w = 1'b0;
         accessing_o = 1'b0;
-
         /* ------------------- Cache FSM --------------------- */
         case (rstate)
             IDLE: begin
@@ -191,23 +189,9 @@ module icache_controller(
             COMPARE_TAG: begin
                 /* cache hit (tag match and cache entry is valid) */
                 if (cpu_req_i.addr[`TAGMSB:`TAGLSB] == tag_read.tag && tag_read.valid) begin
-                    v_cpu_res.ready = '1;   
-
-                    /* write hit */
-                    if (cpu_req_i.rw) begin
-                        /* read/modify cache line */
-                        tag_req.we = '1;
-                        data_req.we = '1;
-
-                        /* no change in tag */
-                        tag_write.tag = tag_read.tag;
-                        tag_write.valid = '1;
-
-                        /*cache line is dirty */
-                        tag_write.dirty = '1;
-                    end
-                    vstate = COMPARE_TAG;
-                    accessing_o = 1'b0;
+                        v_cpu_res.ready = '1;   
+                        vstate = IDLE;
+                        accessing_o = 1'b0;
                 end
                 /* cache miss */
                 else begin
@@ -223,33 +207,13 @@ module icache_controller(
                     /* generate memory request on miss */
                     v_mem_req.valid = '1;
 
-                    if (cpu_req_i.rw == 1'b1 && full_w == 1'b1 && tag_read.dirty == 1'b1) begin
-                        /* miss with dirty line */
-                        /* write back address */
-                        v_mem_req.addr = {tag_read.tag, cpu_req_i.addr[`TAGLSB-1:0]};
-                        v_mem_req.rw = '1;
-
-                        /* wait till write is completed */
-                        vstate = WRITE_BACK;
-                    end
-                    else begin
-                        vstate = ALLOCATE;
-                    end
+                    vstate = ALLOCATE;
                 end
             end
             /* wait for allocating a new cache line */
             ALLOCATE: begin
                 /* generate new tag */
                 accessing_o = 1'b1;
-                //     tag_req.we = '1;
-                //     tag_write.valid = '1;
-
-                    /* new tag */
-                    // tag_write.tag = cpu_req_i.addr[TAGMSB:TAGLSB];
-
-                    /* cache line is dirty if write */
-                    // tag_write.dirty = cpu_req_i.rw;
-
                 v_mem_req.valid = '1;
 
                 /* memory controller has responded */
@@ -262,18 +226,6 @@ module icache_controller(
                     //second_compare = 1'b1;
                     vstate = IDLE;
                     lru_valid = 1'b1;
-                end
-            end
-            /* wait for writing back dirty cache line */
-            WRITE_BACK: begin
-                accessing_o = 1'b1;
-                /* write back is completed */
-                if (mem_data_i.ready) begin
-                    /* issue new memory request (allocating a new line) */
-                    v_mem_req.valid = '1;
-                    v_mem_req.rw = '0;
-
-                    vstate = ALLOCATE;
                 end
             end
             default: vstate = IDLE;

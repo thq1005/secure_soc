@@ -10,8 +10,7 @@ module aes(
     input logic [31:0] addr_i,
     input logic [31:0] wdata_i,
     output logic [31:0] rdata_o,
-    output logic aes_irq,
-    input logic aes_clear_irq
+    output logic aes_irq
     );
     logic [3:0] on_reg;
     logic on_we;
@@ -57,6 +56,9 @@ module aes(
     
     logic [2:0] state;
     logic [2:0] next_state; 
+
+    logic valid_reg;
+    logic valid_we;
 
 always_ff @(posedge clk_i) begin
     if (~rst_ni) begin
@@ -249,10 +251,10 @@ end
 logic valid_w;
 assign valid_w = (valid0_reg == on_reg[0] && valid1_reg == on_reg[1] && valid2_reg == on_reg[2] && valid3_reg == on_reg[3] &&(valid1_reg | valid2_reg | valid3_reg | valid0_reg));
 
-logic valid_reg;
-logic valid_we;
 
-always_ff (@posedge clk_i) begin
+
+
+always_ff @(posedge clk_i) begin
     if (~rst_ni) begin
         valid_reg <= 1'b0;
     end
@@ -268,7 +270,7 @@ always_comb begin
     key_we      = 3'b0;
     block_we    = 3'b0;
     tmp_read_data = 32'h0;
-    
+    valid_we    = 1'b0;
     if (cs_i) begin
         if (we_i) begin
             if (addr_i == `ADDR_CTRL) begin

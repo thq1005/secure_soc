@@ -81,23 +81,16 @@ module register_block (
     assign interrupt = interrupt_reg;
     assign buffer_access = 1'b0;
     assign tx_data = (tx_wr_en) ? wdata : 32'h0;
-    assign tx_wr_en = (we && waddr == ADDR_TX_DATA && !tx_full);
+    assign tx_wr_en = (we && waddr == `ADDR_TX_DATA && !tx_full);
 
     // Logic đọc từ RX FIFO
     always_comb begin
         rx_rd_en = 1'b0;
-        if (re && raddr == ADDR_BUFFER && !rx_empty) begin
+        if (re && raddr == `ADDR_BUFFER && !rx_empty) begin
             rx_rd_en = 1'b1;
         end
     end
 
-    // Logic ngắt
-    always_comb begin
-        interrupt_reg = 1'b0;
-        if (cmd_done || data_done) begin
-            interrupt_reg = 1'b1;
-        end
-    end
 
     // Logic đọc dữ liệu từ host
     always_comb begin
@@ -137,19 +130,19 @@ module register_block (
             // Xử lý yêu cầu ghi từ host
             if (we) begin
                 case (waddr)
-                    ADDR_CMD_INDEX:    cmd_index_reg <= wdata[5:0];
-                    ADDR_CMD_ARG:      cmd_arg_reg <= wdata;
-                    ADDR_BLOCK_CONFIG: begin
+                    `ADDR_CMD_INDEX:    cmd_index_reg <= wdata[5:0];
+                    `ADDR_CMD_ARG:      cmd_arg_reg <= wdata;
+                    `ADDR_BLOCK_CONFIG: begin
                         block_size_reg <= wdata[11:0];
                         data_direction_reg <= wdata[12];
                     end
-                    ADDR_CONTROL:      cmd_start_reg <= wdata[0];
-                    ADDR_CLK_DIV:      clk_div_reg <= wdata[7:0];
+                    `ADDR_CONTROL:      cmd_start_reg <= wdata[0];
+                    `ADDR_CLK_DIV:      clk_div_reg <= wdata[7:0];
                 endcase
             end
 
             // Đọc dữ liệu từ RX FIFO khi host yêu cầu
-            if (re && raddr == ADDR_BUFFER && !rx_empty && rx_rd_en) begin
+            if (re && raddr == `ADDR_BUFFER && !rx_empty && rx_rd_en) begin
                 buffer_rdata_reg <= rx_data;
             end
 
@@ -161,6 +154,10 @@ module register_block (
             // Reset cmd_start sau khi cmd_path_ctrl xử lý xong
             if (cmd_done) begin
                 cmd_start_reg <= 1'b0;
+            end
+
+            if (cmd_done || data_done) begin
+                interrupt_reg = 1'b1;
             end
         end
     end

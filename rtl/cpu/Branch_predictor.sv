@@ -26,6 +26,7 @@ module Branch_predictor(
 	output logic [31:0] predicted_pc_o,
 	output logic [1:0] wrong_predicted_o,
 	output logic [31:0] alu_pc_o
+
 	);
 	
 	logic [6:0] opcode_r;
@@ -67,7 +68,7 @@ module Branch_predictor(
 						   ((opcode_r == `OP_Btype) & (funct3 == `BGE) & (~BrLt_i))  |
 						   ((opcode_r == `OP_Btype) & (funct3 == `BLTU) & (BrLt_i))  |
 						   ((opcode_r == `OP_Btype) & (funct3 == `BGEU) & (~BrLt_i)) |
-						   ((opcode_r == `OP_JAL) | (opcode_r == `OP_JALR))) ? 1'b1 : 1'b0;
+						   ((opcode_r == `OP_JAL) | (opcode_r == `OP_JALR) | (opcode_r == `OP_Itype_csr && inst_ex_i[31:20]==12'h302))) ? 1'b1 : 1'b0;
 	assign alu_w = (~rst_ni) ? 32'b0 : alu_i;
 	
 

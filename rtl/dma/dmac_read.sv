@@ -21,7 +21,7 @@ module dmac_read (
     //R channel
     input [`ID_BITS - 1:0]      m_rid,
     input [`DATA_WIDTH - 1:0]   m_rdata,
-    input [2:0]                 m_rresp,
+    input [1:0]                 m_rresp,
     input                       m_rvalid,
     input                       m_rlast,
     output logic                m_rready,
@@ -91,8 +91,7 @@ module dmac_read (
     assign m_araddr = araddr_r;
     
 
-    assign m_arid    = (araddr_r[19:16] == 4'h0) ? `ID_DMA2MEM:
-                       (araddr_r[19:16] == 4'h2) ? `ID_DMA2AES: 0;
+    assign m_arid    = 1;
     assign m_arlen   = arlen_r;
     assign m_arsize  = arsize_r;
     assign m_arburst = arburst_r;

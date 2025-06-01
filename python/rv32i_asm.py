@@ -14,9 +14,9 @@ import re
 # Bảng tra cứu cho các lệnh RISC-V
 opcode_table = {
     'add': '0110011', 'sub': '0110011', 'xor': '0110011', 'or': '0110011', 'and': '0110011', 'sll': '0110011', 'srl': '0110011', 'sra': '0110011', 'slt': '0110011', 'sltu': '0110011', # R-type
-    'addi': '0010011', 'xori': '0010011', 'andi': '0010011', 'ori': '0010011', 'slli': '0010011', 'srli': '0010011', 'srai': '0010011', 'slti': '0010011', 'sltiu': '0010011', 'aes_status': '0001011',# I-type
+    'addi': '0010011', 'xori': '0010011', 'andi': '0010011', 'ori': '0010011', 'slli': '0010011', 'srli': '0010011', 'srai': '0010011', 'slti': '0010011', 'sltiu': '0010011', 
     'lb': '0000011', 'lh': '0000011', 'lw': '0000011', 'lbu': '0000011', 'lhu': '0000011', # I-type
-    'sb': '0100011', 'sh': '0100011', 'sw': '0100011', 'aes_cfg': '0100111', 'aes_key': '0100111', 'aes_block': '0100111', 'aes_start': '0100111', 'aes_res' : '0100111', 'aes_ctrl':'0100111',# S-type
+    'sb': '0100011', 'sh': '0100011', 'sw': '0100011',
     'beq': '1100011', 'bne': '1100011', 'blt': '1100011', 'bge': '1100011', 'bltu': '1100011', 'bgeu': '1100011', # SB-type
     'jalr': '1100111', # I-type
     'jal': '1101111', # UJ-type
@@ -89,45 +89,55 @@ def add_space_after_comma(code):
     return processed_code
 
 # Get a list of addresses
-def get_addr(cleaned_code):
+def get_label_addr(cleaned_code):
 
     addr = {}
     current_address = 0
 
     for line in cleaned_code:
+        print (line)
+        print ("Current address:", current_address)
         if line.endswith(":"):
             # Nếu là nhãn, lưu địa chỉ của nhãn
             addr[line] = current_address
         else:
-            # Nếu là lệnh, lưu địa chỉ của lệnh và tăng địa chỉ hiện tại lên 4 byte
-            addr[line] = current_address
             current_address += 4
-
+        print (addr)
     return addr
 
 # Change the label to the offset
 def change_label_to_offset(code):
-
-    list_addr = get_addr(code)
-    for i, line in enumerate(code):
+    label_addr = get_label_addr(code)
+    current_addr = 0
+    new_code = []
+    for line in code:
         if line.endswith(":"):
+            new_code.append(line)
             continue
-        parts = line.split()
-        if parts[0] in ['beq', 'bne', 'blt', 'bge', 'bltu', 'bgeu', 'jal','jalr']:
-            label = parts[-1]
+        part = line.split()
+        opcode = part[0]
+        if opcode in ['beq','bne','blt','bge','bltu','bgeu','jal','jalr']:
+            label = part[-1]
             if label.isdigit():
+                new_code.append(line)
+                current_addr += 4
                 continue
-            current_address = list_addr[line]
-            target_address = list_addr[label + ":"]
-            offset = (target_address - current_address)
-            code[i] = ' '.join(parts[:-1]) + f" {offset}"
-        elif parts[0] in ['addi', 'xori', 'andi', 'ori', 'slti', 'sltiu', 'slli', 'srli', 'srai']:
-            label = parts[-1]
-            if label.isdigit():
-                continue
-            l_address = list_addr[label + ":"]
-            code[i] = ' '.join(parts[:-1]) + f" {l_address}"
-    return code
+            target_label = label_addr[label+":"]
+            offset = target_label - current_addr
+            new_instr = ' '.join(part[:-1]) + f" {offset}"
+            new_code.append(new_instr)
+        elif opcode in ['addi', 'xori', 'andi', 'ori', 'slti', 'sltiu', 'slli', 'srli', 'srai']:
+            label = part[-1]
+            if label.isdigit() or label.startswith("0x"):
+                new_code.append(line)
+            else:
+                address = label_addr [label+":"]
+                new_instr = ' '.join(part[:-1]) + f" {address}"
+                new_code.append(new_instr)
+        else:
+            new_code.append(line)
+        current_addr += 4
+    return new_code
 
 # Pre-process: "Clean" the assembly code
 def pre_process(code):
@@ -251,25 +261,6 @@ def asm_to_bin(instruction):
 
             imm_bin = imm_to_bin(imm, 20)
             return f"{imm_bin}{rd}{opcode_table[opcode]}"
-        elif opcode in ['aes_cfg', 'aes_key', 'aes_block', 'aes_start', 'aes_res', 'aes_ctrl']:
-            funct3 = funct3_table[opcode]
-            if (opcode == 'aes_cfg' or opcode == 'aes_ctrl' or opcode == 'aes_start'):    
-                rs2 = "00000"
-                if (len(parts) != 1):
-                    rs1 = reg_table[parts[1]]
-                else:  
-                    rs1 = "00000"
-            else:
-                rs2 = reg_table[parts[2]]
-                rs1 = reg_table[parts[1][:-1]]
-            imm = "000000000000"
-            return f"{imm[:7]}{rs2}{rs1}{funct3}{imm[7:]}{opcode_table[opcode]}"
-        elif opcode in ['aes_status']:
-            funct3 = funct3_table[opcode]
-            imm = "000000000000"
-            rs1 = "00000"
-            rd  = reg_table[parts[1]]
-            return f"{imm}{rs1}{funct3}{rd}{opcode_table[opcode]}"
         elif opcode in ['csrrw', 'csrrwi', 'csrrc', 'csrrci', 'csrrs', 'csrrsi', 'mret']:
             if (opcode != 'mret'):
                 funct3 = funct3_table[opcode]
@@ -321,7 +312,6 @@ def main(input_file, output_file, bin2hex):
     # Làm sạch mã assembly
     cleaned_code = add_space_after_comma(code)
     cleaned_code = pre_process(cleaned_code)
-
     # Xử lý mã assembly và chuyển đổi sang mã máy
     binary_code = process(cleaned_code)
     # Ghi mã máy ra file

@@ -81,7 +81,7 @@ module MEM(
 //		.no_miss_o(no_miss_o)
 	);
 
-	assign mem_w = (alu_mem_i[31-:3] == 4'h0) ? cpu_result_w.data : 
+	assign mem_w = ((alu_mem_i[31-:4] == 4'h0) & cpu_result_w.ready) ? cpu_result_w.data : 
 				   (mem_rvalid_i) ? mem_rdata_i[31:0] : 32'h00000000;
 
 	always_ff @(posedge clk_i, negedge rst_ni) begin
@@ -137,13 +137,13 @@ module MEM(
 	assign cpu_req_w.addr = alu_mem_i;
 	assign cpu_req_w.data = rs2_mem_i;
 	assign cpu_req_w.rw   = MemRW_mem_i;
-	assign cpu_req_w.valid = Valid_cpu2cache_mem_i & (~stall_by_icache_i) & (alu_mem_i[31-:3] == 4'h0);
+	assign cpu_req_w.valid = Valid_cpu2cache_mem_i & (~stall_by_icache_i) & (alu_mem_i[31-:4] == 4'h0);
 	//assign mem_data_w = {memory_data_w, Valid_memory2cache_w};
 	assign mem_data_w.data = memory_data_w;
 	assign mem_data_w.ready = mem_rvalid_i;
 
 	/* control stall for previous stages */
-	assign stall_by_dcache_o = (Valid_cpu2cache_mem_i&(~cpu_result_w.ready)&(alu_mem_i[31-:3] == 4'h0)) | (Valid_cpu2cache_mem_i&mem_rvalid_i&(alu_mem_i[31-:3] != 4'h0));
+	assign stall_by_dcache_o = (Valid_cpu2cache_mem_i&(~cpu_result_w.ready)&(alu_mem_i[31-:4] == 4'h0)) | (Valid_cpu2cache_mem_i&~mem_rvalid_i&~we_o&(alu_mem_i[31-:4] != 4'h0)) & ~stall_by_icache_i;
 
 	assign csr_waddr_wb_o = csr_waddr_mem_r;
 	assign csr_we_wb_o = csr_we_mem_r;

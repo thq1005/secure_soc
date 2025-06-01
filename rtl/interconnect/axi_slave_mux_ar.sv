@@ -8,8 +8,6 @@ module axi_slave_mux_ar(
     input	   	                s1_ARREADY,
     output  logic               s3_ARVALID,
     input	   	                s3_ARREADY,
-    output  logic               s4_ARVALID,
-    input	   	                s4_ARREADY,
     output  logic               arready,
     input     [`ADDR_WIDTH-1:0]	araddr,
     input                       arvalid
@@ -27,9 +25,6 @@ module axi_slave_mux_ar(
             4'h3: begin
                 arready   = s3_ARREADY;
             end
-            4'h4: begin
-                arready   = s4_ARREADY;
-            end
             default: begin
                 arready   = '0;
             end
@@ -43,31 +38,21 @@ module axi_slave_mux_ar(
                 s0_ARVALID  = arvalid;
                 s1_ARVALID  = '0;
                 s3_ARVALID  = '0;
-                s4_ARVALID  = '0;
             end
             4'h1:begin
                 s0_ARVALID  = '0;
                 s1_ARVALID  = arvalid;
                 s3_ARVALID  = '0;
-                s4_ARVALID  = '0;
             end
             4'h3:begin
                 s0_ARVALID  = '0;
                 s1_ARVALID  = '0;
                 s3_ARVALID  = arvalid;
-                s4_ARVALID  = '0;
-            end
-            4'h4:begin
-                s0_ARVALID  = '0;
-                s1_ARVALID  = '0;
-                s3_ARVALID  = '0;
-                s4_ARVALID  = arvalid;
             end
             default: begin
                 s0_ARVALID  = '0;
                 s1_ARVALID  = '0;
                 s3_ARVALID  = '0;
-                s4_ARVALID  = arvalid;
             end
         endcase
     end

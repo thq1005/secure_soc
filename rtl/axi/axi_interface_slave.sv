@@ -250,8 +250,6 @@ always_ff @(posedge clk_i) begin
         else 
             axi_rlast <= (axi_rlen == 1);
     end  
-    else
-        axi_rlast <= 0;   
 end
 
 always_comb begin

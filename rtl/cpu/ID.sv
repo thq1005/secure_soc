@@ -41,7 +41,9 @@ module ID(
 
 	output logic [31:0] pc_intr_o,
 	output logic intr_flag,
-	output logic is_mret
+	output logic is_mret_o,
+	output logic [31:0] pc_mret_o
+
 	);
 	
 	logic [31:0] rs1_w, rs2_w, imm_w;
@@ -72,6 +74,9 @@ module ID(
 	logic [31:0] csr_waddr_w;
 	logic [31:0] csr_waddr_r;
 
+	logic is_mret;
+	logic is_mret_r;
+	logic [31:0] pc_mret_r;
 
 	regfile RF_ID(
 		.dataW_i(data_wb_i),
@@ -104,24 +109,49 @@ module ID(
 		//.Mul_ext_o(Mul_ext_w)
 		/* valid signal when CPU access cache */
 		.Valid_cpu2cache_o(Valid_cpu2cache_w),
-		.is_mret (is_mret),
-		.csr_we (csr_we_w)
+		.csr_we (csr_we_w),
+		.is_mret (is_mret)
 		);
-		
+	
+	logic intr_flag_w;
+	logic [31:0] pc_intr_w;
+	logic intr_flag_r;
+	logic [31:0] pc_intr_r;
+
+ 
 	csr_regs CSR_Regs (					//31             20 19    15 14    12 11     7 6     0  
 		.clk_i		(clk_i),			//|       csr      |   rs1  | funct3 |   rd   |opcode|  csrrx
 		.rst_ni		(rst_ni),			//|       csr      |   uimm | funct3 |   rd   |opcode|  csrrxi
-		.e_intr		(dma_intr & dma_clear_intr),
-		.is_mret	(is_mret),
+		.e_intr		(e_intr),
+		.is_mret	(is_mret & ~reset_i),
 		.addr_r		({20'h00000,inst_d_i[31:20]}),
 		.addr_w		(csr_waddr_i),		
 		.we			(csr_we_i),
-		.pc_i		(pc4_d_i),
+		.inst_i		(inst_d_i),		
+		.pc_i		(pc_d_i),
 		.data_i		(csr_wdata_i),
-		.intr_flag	(intr_flag),
-		.pc_o		(pc_intr_o),
+		.intr_flag	(intr_flag_w),
+		.pc_o		(pc_intr_w),
 		.data_o		(csr_rdata_w)
 	);
+
+	always_ff @(posedge clk_i) begin
+		if (~rst_ni) begin
+			intr_flag_r <= 1'b0;
+			pc_intr_r <= 32'b0;
+		end
+		else if (~enable_i && intr_flag_r) begin 
+			intr_flag_r <= intr_flag_r;
+			pc_intr_r <= pc_intr_r;
+		end
+		else begin
+			intr_flag_r <= intr_flag_w;
+			pc_intr_r <= pc_intr_w;
+		end
+	end
+
+	assign intr_flag = (enable_i) ? intr_flag_r : 0;
+	assign pc_intr_o = (enable_i) ? pc_intr_r : 32'b0;
 
 	assign csr_waddr_w = {20'h00000,inst_d_i[31:20]};
 
@@ -146,6 +176,8 @@ module ID(
 			csr_rdata_r <= 32'b0;
 			csr_we_r <= 1'b0;
 			csr_waddr_r <= 32'b0;
+			is_mret_r <= 1'b0;
+			pc_mret_r <= 32'b0;
 		end
 		else if (enable_i) begin 
 			if (reset_i) begin
@@ -168,6 +200,8 @@ module ID(
 				csr_rdata_r <= 32'b0;
 				csr_we_r <= 1'b0;
 				csr_waddr_r <= 32'b0;
+				is_mret_r <= 1'b0;
+				pc_mret_r <= 32'b0;
 			end
 			else begin
 				rs1_r <= rs1_w;
@@ -189,6 +223,8 @@ module ID(
 				csr_rdata_r <= csr_rdata_w;
 				csr_we_r <= csr_we_w;
 				csr_waddr_r <= csr_waddr_w;
+				is_mret_r <= is_mret;
+				pc_mret_r <= pc_intr_w;
 			end
 		end
 	end
@@ -213,13 +249,7 @@ module ID(
 	assign csr_we_o    = csr_we_r;
 	assign csr_waddr_o = csr_waddr_r;
 	assign alu_csr_sel_o = csr_we_r;
+	assign is_mret_o = is_mret_r;
+	assign pc_mret_o = pc_mret_r;
 
-	always_ff @(posedge clk_i) begin
-		if (~rst_ni)
-			dma_clear_intr <= 0;
-		else if (dma_intr)
-			dma_clear_intr <= 1;
-		else 
-			dma_clear_intr <= 0;
-	end
 endmodule

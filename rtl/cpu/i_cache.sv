@@ -57,6 +57,7 @@ module i_cache(
     );
     cache_data cdata(
         .clk_i(clk_i),
+        .rst_ni(rst_ni),
         .data_req_i(data_req), 
         .data_write_i(data_write),
         .address_way_tag2data_i(address_way_a2p),

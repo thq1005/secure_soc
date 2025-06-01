@@ -280,18 +280,18 @@ module axi_interface_master #(parameter id = 0) (
     end
       
     assign arid_o    = id;
-    assign arlen_o   = (araddr_o[31:30] == 2'b00) ? 3 : 0;
+    assign arlen_o   = (araddr_o[31-:4] == 4'h0) ? 3 : 0;
     assign arsize_o  = 2;
-    assign arburst_o = (araddr_o[31:30] == 2'b00) ? 1 : 0;
+    assign arburst_o = (araddr_o[31-:4] == 2'b00) ? 1 : 0;
     assign rready_o  = (r_state == R);
     assign arvalid_o = (r_state == RA);
     
     assign awid_o = id;
 
 
-    assign awlen_o   = (awaddr_o[31:30] == 2'b00) ? 3 : 0;
+    assign awlen_o   = (awaddr_o[31-:4] == 4'h0) ? 3 : 0;
     assign awsize_o  = 2;
-    assign awburst_o = (awaddr_o[31:30] == 2'b00) ? 1 : 0;
+    assign awburst_o = (awaddr_o[31-:4] == 4'h0) ? 1 : 0;
     assign awvalid_o = (w_state == WA);
     
     assign wlast_o  = (w_cnt == w_len_cnt & w_state == W);

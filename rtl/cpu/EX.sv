@@ -44,7 +44,10 @@ module EX(
 	output logic Valid_cpu2cache_mem_o,
 	output logic csr_we_mem_o,
 	output logic [31:0] csr_waddr_mem_o,
-	output logic [31:0] csr_rdata_mem_o
+	output logic [31:0] csr_rdata_mem_o,
+
+	input logic is_mret_ex_i,
+	input logic [31:0] pc_mret_ex_i
 	);
 	
 	logic [31:0] alu_w;
@@ -118,6 +121,7 @@ module EX(
 		.Result_o(alu_w)
 		);
 		
+
 	always_ff @(posedge clk_i, negedge rst_ni) begin
 		if (~rst_ni) begin
 			alu_r <= 32'b0;
@@ -175,7 +179,7 @@ module EX(
 	assign RegWEn_mem_o = RegWEn_r;
 	assign rsW_mem_o = rsW_r;
 	assign inst_mem_o = inst_r;
-	assign alu_o = alu_w;
+	assign alu_o = (is_mret_ex_i) ? pc_mret_ex_i : alu_w;
 	assign Valid_cpu2cache_mem_o = Valid_cpu2cache_r;
 	assign csr_waddr_mem_o = csr_waddr_ex_r;
 	assign csr_we_mem_o = csr_we_ex_r;

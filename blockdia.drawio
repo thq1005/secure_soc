@@ -1,4 +1,4 @@
-<mxfile host="app.diagrams.net" agent="Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/134.0.0.0 Safari/537.36" version="26.2.14" pages="2">
+<mxfile host="app.diagrams.net" agent="Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/135.0.0.0 Safari/537.36" version="27.1.1" pages="2">
   <diagram name="cpu" id="qcFNsDO8frQkDNvJiyGB">
     <mxGraphModel dx="1315" dy="600" grid="0" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="2000" pageHeight="5000" math="0" shadow="0">
       <root>
@@ -3266,10 +3266,10 @@
         <mxCell id="tXr0tWT2RTWIG4CN3Gqt-12" value="&lt;font style=&quot;font-size: 14px;&quot;&gt;Memory System&lt;/font&gt;" style="text;html=1;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;fontStyle=1" parent="1" vertex="1">
           <mxGeometry x="1219.7799999999997" y="1224" width="194.46" height="41" as="geometry" />
         </mxCell>
-        <mxCell id="tXr0tWT2RTWIG4CN3Gqt-14" value="&lt;span style=&quot;font-size: 14px;&quot;&gt;&lt;b&gt;DDR Controller&lt;/b&gt;&lt;/span&gt;" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#E6E6E6;" parent="1" vertex="1">
+        <mxCell id="tXr0tWT2RTWIG4CN3Gqt-14" value="&lt;span style=&quot;font-size: 14px;&quot;&gt;&lt;b&gt;BRAM Controller&lt;/b&gt;&lt;/span&gt;" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#E6E6E6;" parent="1" vertex="1">
           <mxGeometry x="1225.15" y="1268" width="185.46" height="51" as="geometry" />
         </mxCell>
-        <mxCell id="tXr0tWT2RTWIG4CN3Gqt-16" value="&lt;span style=&quot;font-size: 14px;&quot;&gt;&lt;b&gt;&lt;font style=&quot;color: rgb(255, 255, 255);&quot;&gt;DDR&lt;/font&gt;&lt;/b&gt;&lt;/span&gt;" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#4D4D4D;" parent="1" vertex="1">
+        <mxCell id="tXr0tWT2RTWIG4CN3Gqt-16" value="&lt;span style=&quot;font-size: 14px;&quot;&gt;&lt;b&gt;&lt;font style=&quot;color: rgb(255, 255, 255);&quot;&gt;BRAM&lt;/font&gt;&lt;/b&gt;&lt;/span&gt;" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#4D4D4D;" parent="1" vertex="1">
           <mxGeometry x="1223.98" y="1331" width="186.05" height="40" as="geometry" />
         </mxCell>
         <mxCell id="tXr0tWT2RTWIG4CN3Gqt-18" value="&lt;font style=&quot;font-size: 14px;&quot;&gt;AXI Interconnect&lt;/font&gt;" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#FFD966;" parent="1" vertex="1">
@@ -3618,7 +3618,7 @@
         <mxCell id="CSeQ7WMsBXo6n06E20Lq-3" value="AXI4" style="text;html=1;align=center;verticalAlign=middle;resizable=0;points=[];autosize=1;strokeColor=none;fillColor=none;rotation=-90;" parent="1" vertex="1">
           <mxGeometry x="993.83" y="1188" width="44" height="26" as="geometry" />
         </mxCell>
-        <mxCell id="Wz545VDyZdFFV-84PkGW-1" value="&lt;font style=&quot;font-size: 14px;&quot;&gt;&lt;b&gt;SDIO&lt;/b&gt;&lt;/font&gt;" style="whiteSpace=wrap;html=1;fillColor=#00CC00;" parent="1" vertex="1">
+        <mxCell id="Wz545VDyZdFFV-84PkGW-1" value="&lt;font style=&quot;font-size: 14px;&quot;&gt;&lt;b&gt;PLIC&lt;/b&gt;&lt;/font&gt;" style="whiteSpace=wrap;html=1;fillColor=#53DFFF;" parent="1" vertex="1">
           <mxGeometry x="964.3299999999999" y="1224" width="103" height="75" as="geometry" />
         </mxCell>
       </root>

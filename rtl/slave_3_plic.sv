@@ -1,5 +1,5 @@
 `include "define.sv"
-module slave_3_sdram(
+module slave_3_plic(
   input logic clk_i,
   input logic rst_ni,
   // AXI interface
@@ -103,7 +103,6 @@ plic plic_inst (
 .rst_ni,
 .aes_interrupt,
 .dma_interrupt,
-.sd_host_interrupt,
 .irq_out,
 
 .addr (plic_addr),

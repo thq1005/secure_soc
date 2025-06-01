@@ -1,4 +1,4 @@
-module cmd_path_ctrl (
+module command_path_ctrl (
     input  logic        clk,
     input  logic        rst_n,
     input  logic        sdclk_i,

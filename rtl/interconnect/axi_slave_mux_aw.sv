@@ -10,8 +10,6 @@ module axi_slave_mux_aw(
     input	   	                s2_AWREADY,
     output  logic               s3_AWVALID,
     input	   	                s3_AWREADY,
-    output  logic               s4_AWVALID,
-    input	   	                s4_AWREADY,
     output  logic               awready,
     input     [`ADDR_WIDTH-1:0]	awaddr,
     input                       awvalid
@@ -32,9 +30,6 @@ module axi_slave_mux_aw(
             4'h3: begin
                 awready   = s3_AWREADY;
             end
-            4'h4: begin
-                awready   = s4_AWREADY;
-            end
             default: begin
                 awready   = '0;
             end
@@ -49,35 +44,24 @@ module axi_slave_mux_aw(
                 s1_AWVALID  = '0;
                 s2_AWVALID  = '0;
                 s3_AWVALID  = '0;
-                s4_AWVALID  = '0;
             end
             4'h1:begin
                 s0_AWVALID  = '0;
                 s1_AWVALID  = awvalid;
                 s2_AWVALID  = '0;
                 s3_AWVALID  = '0;
-                s4_AWVALID  = '0;
             end
             4'h2:begin
                 s0_AWVALID  = '0;
                 s1_AWVALID  = '0;
                 s2_AWVALID  = awvalid;
                 s3_AWVALID  = '0;
-                s4_AWVALID  = '0;
             end
             4'h3:begin
                 s0_AWVALID  = '0;
                 s1_AWVALID  = '0;
                 s2_AWVALID  = '0;
                 s3_AWVALID  = awvalid;
-                s4_AWVALID  = '0;
-            end
-            4'h4:begin
-                s0_AWVALID  = '0;
-                s1_AWVALID  = '0;
-                s2_AWVALID  = '0;
-                s3_AWVALID  = '0;
-                s4_AWVALID  = awvalid;
             end
             default: begin
                 s0_AWVALID  = '0;

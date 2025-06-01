@@ -30,8 +30,7 @@ module IF(
 	input logic mem_rvalid_i,
 
 	input logic [31:0] csr_pc_i,
-	input logic intr_flag,
-	input logic is_mret
+	input logic intr_flag
 	);
 	
     
@@ -63,17 +62,17 @@ module IF(
 		);
 		
 	mux3to1_32bit MUX3_IF(
-		.a_i(PC_mux1_w), 
+		.a_i(PC_mux_w), 
 		.b_i(mispredicted_pc_i), 
 		.c_i(alu_pc_i),
 		.se_i(wrong_predicted_i),
 		.r_o(PC_mux2_w)
 		);
 	
-	assign PC_mux1_w = (intr_flag | is_mret) ? csr_pc_i : PC_mux_w;
+	assign PC_mux1_w = (intr_flag) ? csr_pc_i : PC_mux2_w;
 
 	pc PC_IF(
-		.data_i(PC_mux2_w),
+		.data_i(PC_mux1_w),
 		.clk_i(clk_i),
 		.rst_ni(rst_ni),
 		.enable_i(enable_pc_i),
@@ -110,7 +109,7 @@ module IF(
 	assign inst_mem_w = mem_rdata_i;   
     
 	assign inst_w = cpu_result_w.data;
-		
+	
 	always_ff @(posedge clk_i, negedge rst_ni) begin
 		if (~rst_ni) begin
 			PC_r <= 32'b0;

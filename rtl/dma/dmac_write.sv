@@ -27,7 +27,7 @@ module dmac_write (
     input  logic m_wready,
     //B channel
     input  logic [`ID_BITS - 1:0] m_bid,
-    input  logic [2:0] m_bresp,
+    input  logic [1:0] m_bresp,
     input  logic m_bvalid,
     output logic m_bready,
     output logic dma_intr
@@ -41,7 +41,7 @@ module dmac_write (
     logic [`SIZE_BITS-1:0]  awsize_r;
     logic [1:0]             awburst_r;
 
-    logic [3:0]  wdata_cnt;
+    logic [7:0]  wdata_cnt;
 
     always_ff @(posedge clk_i) begin
         if (!rst_ni) begin
@@ -120,8 +120,7 @@ module dmac_write (
 
     assign m_awaddr  = awaddr_r;
     assign m_wstrb   = 4'hf;
-    assign m_awid    =  (awaddr_r[19:16] == 4'h0) ? `ID_DMA2MEM:
-                        (awaddr_r[19:16] == 4'h2) ? `ID_DMA2AES: 0;
+    assign m_awid    =  1;
 
     assign m_awlen   = awlen_r;
     assign m_awsize  = awsize_r;

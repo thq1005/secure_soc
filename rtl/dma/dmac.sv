@@ -18,7 +18,7 @@ module dmac (
         output logic s_wready,
         //B channel
         output logic [`ID_BITS - 1:0] s_bid,
-        output logic [2:0] s_bresp,
+        output logic [1:0] s_bresp,
         output logic s_bvalid,
         input s_bready,
 
@@ -38,7 +38,7 @@ module dmac (
         input  logic m_wready,
         //B channel
         input  logic [`ID_BITS - 1:0] m_bid,
-        input  logic [2:0] m_bresp,
+        input  logic [1:0] m_bresp,
         input  logic m_bvalid,
         output logic m_bready,
         //AR channel
@@ -52,7 +52,7 @@ module dmac (
         //R channel
         input  logic [`ID_BITS - 1:0] m_rid,
         input  logic [`DATA_WIDTH - 1:0] m_rdata,
-        input  logic [2:0] m_rresp,
+        input  logic [1:0] m_rresp,
         input  logic m_rvalid,
         input  logic m_rlast,
         output logic m_rready,	
@@ -219,6 +219,7 @@ module dmac (
         config_we   = 1'b0;
         src_addr_we = 1'b0;
         dst_addr_we = 1'b0;  
+        done_we = 1'b0;
         if (we_w) begin
             if (waddr_w == `ADDR_ADDR_SRC)
                 src_addr_we = 1'b1;
@@ -228,8 +229,8 @@ module dmac (
     
             if (waddr_w == `ADDR_CONFIG_DMA) 
                 config_we   = 1'b1;
-            if (waddr_w == `ADDR_STATUS) begin
-                done_we     = 1'b1
+            if (waddr_w == `ADDR_STATUS_DMA) begin
+                done_we     = 1'b1;
             end
         end
     end

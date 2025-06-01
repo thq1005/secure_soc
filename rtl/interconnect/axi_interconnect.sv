@@ -10,13 +10,13 @@ module axi_interconnect(
     input  logic [`SIZE_BITS -1 :0] m0_AWSIZE,
     input  logic [1:0] m0_AWBURST,
     input  logic m0_AWVALID,
-    output  logic m0_AWREADY,
+    output logic m0_AWREADY,
     //W channel
-    input logic [`DATA_WIDTH - 1:0] m0_WDATA,
-    input logic [(`DATA_WIDTH/8)-1:0] m0_WSTRB,
-    input logic m0_WVALID,
-    input logic m0_WLAST,
-    output  logic m0_WREADY,
+    input  logic [`DATA_WIDTH - 1:0] m0_WDATA,
+    input  logic [(`DATA_WIDTH/8)-1:0] m0_WSTRB,
+    input  logic m0_WVALID,
+    input  logic m0_WLAST,
+    output logic m0_WREADY,
     //B channel
     output logic [`ID_BITS - 1:0] m0_BID,
     output logic [1:0] m0_BRESP,
@@ -29,14 +29,14 @@ module axi_interconnect(
     input  logic [1:0] m0_ARBURST,
     input  logic [`SIZE_BITS - 1:0] m0_ARSIZE,
     input  logic m0_ARVALID,
-    output  logic m0_ARREADY,
+    output logic m0_ARREADY,
     //R channel
-    output  logic [`ID_BITS - 1:0] m0_RID,
-    output  logic [`DATA_WIDTH - 1:0] m0_RDATA,
-    output  logic [1:0] m0_RRESP,
-    output  logic m0_RVALID,
-    output  logic m0_RLAST,
-    input logic m0_RREADY,
+    output logic [`ID_BITS - 1:0] m0_RID,
+    output logic [`DATA_WIDTH - 1:0] m0_RDATA,
+    output logic [1:0] m0_RRESP,
+    output logic m0_RVALID,
+    output logic m0_RLAST,
+    input  logic m0_RREADY,
     
     //Master 1 dmac
     //AW channel
@@ -46,13 +46,13 @@ module axi_interconnect(
     input  logic [`SIZE_BITS -1 :0] m1_AWSIZE,
     input  logic [1:0] m1_AWBURST,
     input  logic m1_AWVALID,
-    output  logic m1_AWREADY,
+    output logic m1_AWREADY,
     //W channel
-    input logic [`DATA_WIDTH - 1:0] m1_WDATA,
-    input logic [(`DATA_WIDTH/8)-1:0] m1_WSTRB,
-    input logic m1_WVALID,
-    input logic m1_WLAST,
-    output  logic m1_WREADY,
+    input  logic [`DATA_WIDTH - 1:0] m1_WDATA,
+    input  logic [(`DATA_WIDTH/8)-1:0] m1_WSTRB,
+    input  logic m1_WVALID,
+    input  logic m1_WLAST,
+    output logic m1_WREADY,
     //B channel
     output logic [`ID_BITS - 1:0] m1_BID,
     output logic [1:0] m1_BRESP,
@@ -65,14 +65,14 @@ module axi_interconnect(
     input  logic [1:0] m1_ARBURST,
     input  logic [`SIZE_BITS - 1:0] m1_ARSIZE,
     input  logic m1_ARVALID,
-    output  logic m1_ARREADY,
+    output logic m1_ARREADY,
     //R channel
-    output  logic [`ID_BITS - 1:0] m1_RID,
-    output  logic [`DATA_WIDTH - 1:0] m1_RDATA,
-    output  logic [1:0] m1_RRESP,
-    output  logic m1_RVALID,
-    output  logic m1_RLAST,
-    input logic m1_RREADY,
+    output logic [`ID_BITS - 1:0] m1_RID,
+    output logic [`DATA_WIDTH - 1:0] m1_RDATA,
+    output logic [1:0] m1_RRESP,
+    output logic m1_RVALID,
+    output logic m1_RLAST,
+    input  logic m1_RREADY,
 
     //Slave 0
     //AW channel
@@ -168,6 +168,43 @@ module axi_interconnect(
     input  logic s2_BVALID,
     output logic s2_BREADY,
 
+    //add the dma of sdio signal
+    //master 3
+    //AW channel
+    input  logic [`ID_BITS - 1:0] m2_AWID,
+    input  logic [`ADDR_WIDTH - 1:0] m2_AWADDR,
+    input  logic [`LEN_BITS - 1:0] m2_AWLEN,
+    input  logic [`SIZE_BITS -1 :0] m2_AWSIZE,
+    input  logic [1:0] m2_AWBURST,
+    input  logic m2_AWVALID,
+    output logic m2_AWREADY,
+    //W channel
+    input  logic [`DATA_WIDTH - 1:0] m2_WDATA,
+    input  logic [(`DATA_WIDTH/8)-1:0] m2_WSTRB,
+    input  logic m2_WVALID,
+    input  logic m2_WLAST,
+    output logic m2_WREADY,
+    //B channel
+    output logic [`ID_BITS - 1:0] m2_BID,
+    output logic [1:0] m2_BRESP,
+    output logic m2_BVALID,
+    input  logic m2_BREADY,
+    //AR channel
+    input  logic [`ID_BITS - 1:0] m2_ARID,
+    input  logic [`ADDR_WIDTH - 1:0] m2_ARADDR,
+    input  logic [`LEN_BITS - 1:0] m2_ARLEN,
+    input  logic [1:0] m2_ARBURST,
+    input  logic [`SIZE_BITS - 1:0] m2_ARSIZE,
+    input  logic m2_ARVALID,
+    output logic m2_ARREADY,
+    //R channel
+    output logic [`ID_BITS - 1:0] m2_RID,
+    output logic [`DATA_WIDTH - 1:0] m2_RDATA,
+    output logic [1:0] m2_RRESP,
+    output logic m2_RVALID,
+    output logic m2_RLAST,
+    input  logic m2_RREADY,
+
     //Slave 3
     //AW channel
     output logic [`ID_BITS - 1:0] s3_AWID,
@@ -202,42 +239,8 @@ module axi_interconnect(
     input  logic [1:0] s3_RRESP,
     input  logic s3_RVALID,
     input  logic s3_RLAST,
-    output logic s3_RREADY,
+    output logic s3_RREADY
 
-    //Slave 4
-    output logic [`ID_BITS - 1:0] s4_AWID,
-    output logic [`ADDR_WIDTH - 1:0] s4_AWADDR,
-    output logic [`LEN_BITS - 1:0] s4_AWLEN,
-    output logic [`SIZE_BITS -1 :0] s4_AWSIZE,
-    output logic [1:0] s4_AWBURST,
-    output logic s4_AWVALID,
-    input  logic s4_AWREADY,
-    //W channel
-    output logic [`DATA_WIDTH - 1:0] s4_WDATA,
-    output logic [(`DATA_WIDTH/8)-1:0] s4_WSTRB,
-    output logic s4_WVALID,
-    output logic s4_WLAST,
-    input  logic s4_WREADY,
-    //B channel
-    input  logic [`ID_BITS - 1:0] s4_BID,
-    input  logic [1:0] s4_BRESP,
-    input  logic s4_BVALID,
-    output logic s4_BREADY,
-    //AR channel
-    output logic [`ID_BITS - 1:0] s4_ARID,
-    output logic [`ADDR_WIDTH - 1:0] s4_ARADDR,
-    output logic [`LEN_BITS - 1:0] s4_ARLEN,
-    output logic [1:0] s4_ARBURST,
-    output logic [`SIZE_BITS - 1:0] s4_ARSIZE,
-    output logic s4_ARVALID,
-    input  logic s4_ARREADY,
-    //R channel
-    input  logic [`ID_BITS - 1:0] s4_RID,
-    input  logic [`DATA_WIDTH - 1:0] s4_RDATA,
-    input  logic [1:0] s4_RRESP,
-    input  logic s4_RVALID,
-    input  logic s4_RLAST,
-    output logic s4_RREADY,
     );
 
     //AW channel
@@ -277,11 +280,12 @@ module axi_interconnect(
 
     logic m0_wgrnt;
     logic m1_wgrnt;
+    logic m2_wgrnt;
     logic m0_rgrnt;
     logic m1_rgrnt;
+    logic m2_rgrnt;
 
-
-    logic w_m0_wgrnt, w_m1_wgrnt;
+    logic w_m0_wgrnt, w_m1_wgrnt, w_m2_wgrnt;
     logic [3:0] s_wsel;
     logic fifo_full, fifo_empty;
 
@@ -299,14 +303,14 @@ module axi_interconnect(
 
     
 
-    fifo #(.DATA_W(6), 
+    fifo #(.DATA_W(7), 
         .DEPTH(128)) fifo_for_w_channel  (
         .clk_i,
         .rst_ni,
         .we_i (awready && awvalid && ~fifo_full),
         .re_i (ready_to_write),
-        .wdata_i ({awaddr[`ADDR_WIDTH-1-:4],m1_wgrnt,m0_wgrnt}),
-        .rdata_o ({s_wsel,w_m1_wgrnt,w_m0_wgrnt}),
+        .wdata_i ({awaddr[`ADDR_WIDTH-1-:4],m1_wgrnt,m0_wgrnt, m2_wgrnt}),
+        .rdata_o ({s_wsel,w_m1_wgrnt,w_m0_wgrnt, w_m2_wgrnt}),
         .full  (fifo_full),
         .empty (fifo_empty)
     );
@@ -347,11 +351,6 @@ module axi_interconnect(
     assign s3_AWBURST   = awburst;
     assign s3_AWID      = awid;
     assign s3_AWADDR    = awaddr;
-    assign s4_AWLEN     = awlen;
-    assign s4_AWSIZE    = awsize;
-    assign s4_AWBURST   = awburst;
-    assign s4_AWID      = awid;
-    assign s4_AWADDR    = awaddr;
 
     assign s0_WDATA     = wdata;
     assign s0_WSTRB     = wstrb;
@@ -365,14 +364,17 @@ module axi_interconnect(
     assign s3_WDATA     = wdata;
     assign s3_WSTRB     = wstrb;
     assign s3_WLAST     = wlast;
-    assign s4_WDATA     = wdata;
-    assign s4_WSTRB     = wstrb;
-    assign s4_WLAST     = wlast;
 
     assign m0_BID      = bid;
     assign m0_BRESP    = bresp;
     assign m1_BID      = bid;
     assign m1_BRESP    = bresp;
+    assign m2_BID      = bid;
+    assign m2_BRESP    = bresp;
+    assign m2_RID      = rid;
+    assign m2_RDATA    = rdata;
+    assign m2_RRESP    = rresp;
+    assign m2_RLAST    = rlast;
 
     assign s0_ARLEN     = arlen;
     assign s0_ARSIZE    = arsize;
@@ -394,11 +396,6 @@ module axi_interconnect(
     assign s3_ARBURST   = arburst;
     assign s3_ARID      = arid;
     assign s3_ARADDR    = araddr;
-    assign s4_ARLEN     = arlen;
-    assign s4_ARSIZE    = arsize;
-    assign s4_ARBURST   = arburst;
-    assign s4_ARID      = arid;
-    assign s4_ARADDR    = araddr;
 
     assign m0_RID      = rid;
     assign m0_RDATA    = rdata;

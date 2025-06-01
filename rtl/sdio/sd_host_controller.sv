@@ -1,6 +1,6 @@
 module sd_host_controller (
-    input  logic        clk,           // Đồng hồ hệ thống (50 MHz)
-    input  logic        rst_n,         // Reset active-low
+    input  logic        clk,           
+    input  logic        rst_n,         
 
     // Giao tiếp với host (CPU)
     input  logic [31:0] waddr,
@@ -12,13 +12,13 @@ module sd_host_controller (
     output logic        interrupt,
 
     // Giao tiếp với thẻ SD
-    input  logic        cmd_i,         // Đường CMD vào
-    output logic        cmd_o,         // Đường CMD ra
-    output logic        cmd_t,         // Điều khiển hướng CMD
-    input  logic [3:0]  dat_i,         // Đường DAT vào
-    output logic [3:0]  dat_o,         // Đường DAT ra
-    output logic [3:0]  dat_t,         // Điều khiển hướng DAT
-    output logic        sdclk_o        // Đồng hồ thẻ SD (25 MHz)
+    input  logic        cmd_i,         
+    output logic        cmd_o,         
+    output logic        cmd_t,         
+    input  logic [3:0]  dat_i,         
+    output logic [3:0]  dat_o,         
+    output logic [3:0]  dat_t,         
+    output logic        sdclk_o        
 );
 
     // Tín hiệu nội bộ giữa các khối
@@ -121,7 +121,7 @@ module sd_host_controller (
     );
 
     // Khối cmd_path_ctrl (giả định, cần được triển khai đầy đủ)
-    cmd_path_ctrl cmd_path (
+    command_path_ctrl cmd_path (
         .clk(clk),
         .rst_n(rst_n),
         .sdclk_i(sdclk_o),
@@ -137,41 +137,41 @@ module sd_host_controller (
         .cmd_busy(cmd_busy),
         .cmd_done(cmd_done),
         .resp_ready(resp_ready),
-        .timeout_err_cmd(timeout_err_cmd),
-        .crc_err_cmd(crc_err_cmd),
+        .timeout_err(timeout_err_cmd),
+        .crc_err(crc_err_cmd),
         .resp_data(resp_data)
     );
 
     // Khối clock_divider
-    clock_divider clk_divider (
+    clock_div clk_divider (
         .clk(clk),
         .rst_n(rst_n),
         .clk_div(clk_div),
-        .clk_out(sdclk_o)
+        .sdclk_i(sdclk_o)
     );
 
     // Khối tx_fifo (giả định, sử dụng FIFO đơn giản)
-    fifo #(.DATA_WIDTH(32), .DEPTH(128)) tx_fifo (
-        .clk(clk),
-        .rst_n(rst_n),
-        .wr_en(tx_wr_en),
-        .rd_en(tx_rd_en),
-        .data_in(tx_data),
-        .data_out(tx_data),
-        .full(tx_full),
-        .empty(tx_empty)
+    fifo #(.DATA_W(32), .DEPTH(128)) tx_fifo (
+        .clk_i (clk),
+        .rst_ni (rst_n),
+        .we_i (tx_wr_en),
+        .re_i (tx_rd_en),
+        .wdata_i(tx_data),
+        .rdata_o(tx_data),
+        .full   (tx_full),
+        .empty  (tx_empty)
     );
 
     // Khối rx_fifo (giả định, sử dụng FIFO đơn giản)
-    fifo #(.DATA_WIDTH(32), .DEPTH(128)) rx_fifo (
-        .clk(clk),
-        .rst_n(rst_n),
-        .wr_en(rx_wr_en),
-        .rd_en(rx_rd_en),
-        .data_in(rx_data),
-        .data_out(rx_data),
-        .full(rx_full),
-        .empty(rx_empty)
+    fifo #(.DATA_W(32), .DEPTH(128)) rx_fifo (
+        .clk_i   (clk),
+        .rst_ni  (rst_n),
+        .we_i    (rx_wr_en),
+        .re_i    (rx_rd_en),
+        .wdata_i (rx_data),
+        .rdata_o (rx_data),
+        .full   (rx_full),
+        .empty  (rx_empty)
     );
 
 endmodule

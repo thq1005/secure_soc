@@ -12,8 +12,8 @@ module ctrl_unit(
 	output logic Asel_o,
 	/* valid signal when CPU access cache */
 	output logic Valid_cpu2cache_o,
-	output logic is_mret,
-	output logic csr_we
+	output logic csr_we,
+	output logic is_mret
 	);
 
 	logic [6:0] opcode_r;
@@ -32,7 +32,7 @@ module ctrl_unit(
 	assign AluSel_o = 		((opcode_r == `OP_Btype) | (opcode_r == `OP_JAL)   | (opcode_r == `OP_Itype_load) |
 							(opcode_r == `OP_Stype)  | (opcode_r == `OP_AUIPC) | (opcode_r == `OP_JALR)       |
 							((opcode_r == `OP_Itype) & (funct3 == 3'b000)))    | 
-							((opcode_r == `OP_Itype_csr) & (funct3 == 3'b001 | funct3 == 3'b101)) ? `ADD :						// in case addi 
+							((opcode_r == `OP_Itype_csr) & (funct3 == 3'b001 | funct3 == 3'b101 | inst_i[31:20]==12'h302)) ? `ADD :						// in case addi 
 							(opcode_r == `OP_LUI) 												  ? `B : 
 							((opcode_r == `OP_Itype_csr) & (funct3 == 3'b011 | funct3 == 3'b111)) ? `AND :
 							((opcode_r == `OP_Itype_csr) & (funct3 == 3'b010 | funct3 == 3'b110)) ? `OR : {funct7[5], funct3};
@@ -61,8 +61,6 @@ module ctrl_unit(
 	/* valid signal when CPU access cache */
 	assign Valid_cpu2cache_o = ((opcode_r == `OP_Itype_load) | (opcode_r == `OP_Stype)) ? 1'b1 : 1'b0;
 
-	assign is_mret = ((opcode_r == `OP_Itype_csr) && (inst_i[31:20] == 12'h302));
-
-	assign csr_we  = (opcode_r == `OP_Itype_csr);
-
+	assign csr_we  = (opcode_r == `OP_Itype_csr && inst_i[31:20]!=12'h302);
+	assign is_mret = (opcode_r == `OP_Itype_csr && inst_i[31:20]==12'h302);
 endmodule

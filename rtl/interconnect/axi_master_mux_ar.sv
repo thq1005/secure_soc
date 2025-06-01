@@ -18,6 +18,13 @@ module axi_master_mux_ar (
     input                       m1_ARVALID,
     output reg                  m1_ARREADY,
     
+    input   [`ID_BITS - 1:0]    m2_ARID,
+    input   [`ADDR_WIDTH-1:0]   m2_ARADDR,
+    input   [`LEN_BITS - 1:0]   m2_ARLEN,
+    input   [`SIZE_BITS -1 :0]  m2_ARSIZE,
+    input   [1:0]               m2_ARBURST,
+    input                       m2_ARVALID,
+    output reg                  m2_ARREADY,
 
     output reg   [`ID_BITS - 1:0]    arid   ,
     output reg   [`ADDR_WIDTH-1:0]   araddr ,
@@ -30,13 +37,14 @@ module axi_master_mux_ar (
     input                       arready,
 
     input                       m0_rgrnt,
-	input                       m1_rgrnt
+	input                       m1_rgrnt,
+    input                       m2_rgrnt
 
 );
 
     always_comb begin
-        case({m0_rgrnt,m1_rgrnt})    
-            2'b10: begin
+        case({m0_rgrnt,m1_rgrnt,m2_rgrnt})    
+            3'b100: begin
                 arid      =  m0_ARID;
                 araddr    =  m0_ARADDR;
                 arlen     =  m0_ARLEN;
@@ -44,13 +52,21 @@ module axi_master_mux_ar (
                 arburst   =  m0_ARBURST;
                 arvalid   =  m0_ARVALID;
             end
-            2'b01: begin
+            3'b010: begin
                 arid      =  m1_ARID;
                 araddr    =  m1_ARADDR;
                 arlen     =  m1_ARLEN;
                 arsize    =  m1_ARSIZE;
                 arburst   =  m1_ARBURST;
                 arvalid   =  m1_ARVALID;
+            end
+            3'b100: begin
+                arid      =  m2_ARID;
+                araddr    =  m2_ARADDR;
+                arlen     =  m2_ARLEN;
+                arsize    =  m2_ARSIZE;
+                arburst   =  m2_ARBURST;
+                arvalid   =  m2_ARVALID;
             end
             default: begin
                 arid      =  '0;
@@ -67,17 +83,25 @@ module axi_master_mux_ar (
     //---------------------------------------------------------
     always_comb begin
         case({m0_rgrnt,m1_rgrnt})
-            2'b10: begin 
+            3'b100: begin 
                 m0_ARREADY = arready;
                 m1_ARREADY = '0;
+                m2_ARREADY = '0;
             end
-            2'b01: begin
+            3'b010: begin
                 m0_ARREADY = '0;
                 m1_ARREADY = arready;
+                m2_ARREADY = '0;
+            end
+            3'b001:begin
+                m0_ARREADY = '0;
+                m1_ARREADY = '0;
+                m2_ARREADY = arready;
             end
             default: begin
                 m0_ARREADY = '0;
                 m1_ARREADY = '0;
+                m2_ARREADY = '0;
             end
         endcase
     end

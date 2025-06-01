@@ -109,8 +109,8 @@ axi_interface_slave s4_itf (
 
 
 sd_host_controller sd_inst(
-.clk_i      (clk_i),
-.rst_ni     (rst_ni),   
+.clk        (clk_i),
+.rst_n      (rst_ni),   
 .waddr      (wdata_w),
 .raddr      (raddr_w),
 .we         (we_w),

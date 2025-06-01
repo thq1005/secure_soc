@@ -51,7 +51,6 @@ module riscv_cache(
 	logic stall_by_dcache_w;
 	logic stall_by_icache_w;
 
-	logic [31:0] imm_mem_w;
 
     logic [31:0] mem_addr_w;
 	logic [127:0] mem_wdata_w;
@@ -86,6 +85,8 @@ module riscv_cache(
 
 	logic [31:0] csr_wdata_w;
 
+	logic is_mret_ex_w;
+	logic [31:0] pc_mret_ex_w;
 
 //	/* evaluation */
 //	logic [31:0] icache_no_acc_w, icache_no_hit_w, icache_no_miss_w, dcache_no_acc_w, dcache_no_hit_w, dcache_no_miss_w;
@@ -127,8 +128,7 @@ module riscv_cache(
 	    .mem_rdata_i(imem_rdata_i),
 	    .mem_rvalid_i(imem_rvalid_i),
 		.csr_pc_i (csr_pc_w),
-		.intr_flag(intr_flag),
-		.is_mret  (is_mret)
+		.intr_flag(intr_flag)
 		);
 		
 	ID ID(
@@ -169,7 +169,8 @@ module riscv_cache(
 		.alu_csr_sel_o (alu_csr_sel_w),
 		.pc_intr_o (csr_pc_w),
 		.intr_flag (intr_flag),
-		.is_mret   (is_mret)
+		.is_mret_o   (is_mret_ex_w),
+		.pc_mret_o   (pc_mret_ex_w)
 		);
 		
 	EX EX(
@@ -213,7 +214,9 @@ module riscv_cache(
 		.Valid_cpu2cache_mem_o(Valid_cpu2cache_mem_w),
 		.csr_we_mem_o(csr_we_mem_w),
 		.csr_waddr_mem_o(csr_waddr_mem_w),
-		.csr_rdata_mem_o(csr_rdata_mem_w)
+		.csr_rdata_mem_o(csr_rdata_mem_w),
+		.is_mret_ex_i(is_mret_ex_w),
+		.pc_mret_ex_i(pc_mret_ex_w)
 		);
 		
 	MEM MEM(
@@ -330,7 +333,8 @@ module riscv_cache(
 		.we_o        (we_o),
 		.cs_o        (cs_o ),
 		.rdata_i     (rdata_i),
-		.rvalid_i    (rvalid_i)
+		.rvalid_i    (rvalid_i),
+		.stall_by_icache (stall_by_icache_w)
     );
 endmodule
 
