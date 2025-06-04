@@ -20,9 +20,8 @@ module top_tb;
         #27;
         ARESETn_1  = 1;
         ARESETn_2  = 1;
+        #1000;
+        $finish;
     end
 
-    initial begin
-        $readmemh ("memory.mem", top_inst.s0_inst.sdram_inst.ram);
-    end
 endmodule

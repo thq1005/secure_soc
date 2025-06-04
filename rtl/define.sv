@@ -131,21 +131,8 @@
 `define ADDR_THRESHOLD      32'h30000010
 `define ADDR_CLAIM_COMPLETE 32'h30000014
 
-
-//SD Host Controller
-`define ADDR_CMD_INDEX      32'h40000000
-`define ADDR_CMD_ARG        32'h40000004
-`define ADDR_BLOCK_CONFIG   32'h40000008
-`define ADDR_CONTROL        32'h4000000C
-`define ADDR_STATUS_SD      32'h40000010
-`define ADDR_BUFFER         32'h40000014
-`define ADDR_TX_DATA        32'h40000018
-`define ADDR_CLK_DIV        32'h4000001C
-`define ADDR_RESP_DATA_LO   32'h40000020 // 32 bit thấp của resp_data
-`define ADDR_RESP_DATA_HI   32'h40000024 // 16 bit cao của resp_data
-
-
-
-
+//define for sdio IP
+`define SDIO_AXI
+`define AW_AXIL             5
 
 `endif

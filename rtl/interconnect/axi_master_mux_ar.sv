@@ -82,7 +82,7 @@ module axi_master_mux_ar (
 
     //---------------------------------------------------------
     always_comb begin
-        case({m0_rgrnt,m1_rgrnt})
+        case({m0_rgrnt,m1_rgrnt,m2_rgrnt})
             3'b100: begin 
                 m0_ARREADY = arready;
                 m1_ARREADY = '0;

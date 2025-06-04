@@ -1,12 +1,13 @@
 // Mô-đun PLIC đơn giản
 module plic #(
-    parameter NUM_IRQ = 2 
+    parameter NUM_IRQ = 3 
 ) (
     input  logic        clk_i,
     input  logic        rst_ni,
     // Tín hiệu ngắt từ các nguồn
     input  logic        aes_interrupt,
     input  logic        dma_interrupt,
+    input  logic        sd_interrupt,
     // Giao tiếp với CPU
     output logic        irq_out,
     // Giao tiếp với bus (địa chỉ, dữ liệu, đi�?u khiển)
@@ -29,15 +30,17 @@ module plic #(
         if (!rst_ni) begin
             pending[1] <= 0;  // IRQ 1 (AES)
             pending[2] <= 0;  // IRQ 2 (DMA)
+            pending[3] <= 0;
         end else begin
             pending[1] <= aes_interrupt;  // Ngắt từ AES
             pending[2] <= dma_interrupt;  // Ngắt từ DMA
+            pending[3] <= sd_interrupt;
         end
     end
 
     // Logic ưu tiên và tạo tín hiệu ngắt
     logic [31:0] max_priority;
-    logic [2:0]  max_irq;
+    logic [3:0]  max_irq;
     always_comb begin
         max_priority = 0;
         max_irq = 0;
@@ -65,11 +68,11 @@ module plic #(
                 case (addr)
                     `ADDR_PRIORITY1     : rd_data <= priority_r[1];  // Priority 1 (AES)
                     `ADDR_PRIORITY2     : rd_data <= priority_r[2];  // Priority 2 (DMA)
+                    `ADDR_PRIORITY3     : rd_data <= priority_r[3];
                     `ADDR_ENABLE        : rd_data <= enable; // Enable 0
                     `ADDR_THRESHOLD     : rd_data <= threshold; // Threshold
                     `ADDR_CLAIM_COMPLETE: begin
                         rd_data <= max_irq;         // Claim
-                        pending[max_irq] <= 0;      // Xóa pending khi claim
                     end
                     default: rd_data <= 0;
                 endcase
@@ -78,6 +81,7 @@ module plic #(
                 case (addr)
                     `ADDR_PRIORITY1     : priority_r[1] <= wr_data;  // Priority 1 (AES)
                     `ADDR_PRIORITY2     : priority_r[2] <= wr_data;  // Priority 2 (DMA)
+                    `ADDR_PRIORITY3     : priority_r[3] <= wr_data;
                     `ADDR_ENABLE        : enable      <= wr_data; // Enable 0
                     `ADDR_THRESHOLD     : threshold   <= wr_data; // Threshold
                     `ADDR_CLAIM_COMPLETE: claim_complete <= wr_data; // Complete (không làm gì thêm ở đây)

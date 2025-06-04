@@ -16,6 +16,10 @@ module block_ram_dual_port #(
 
     (* ram_style = RAM_STYLE *) reg [DATA_WIDTH-1:0] ram[0:DEPTH-1];
 
+    initial begin
+        $readmemh ("memory.mem", ram); 
+    end
+
     // Write port
     always @ (posedge clk) begin
         if (wr_en) begin

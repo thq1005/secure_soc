@@ -1,4 +1,6 @@
 `include "define.sv"
+
+
 module master_cpu(
       input logic clk_i,
       input logic rst_ni,
@@ -37,13 +39,37 @@ module master_cpu(
       input  logic m_rvalid,
       input  logic m_rlast,
       output logic m_rready,
-      input logic irq
+      input logic irq,
+
+      input                               M_AXIL_ARREADY,
+      input          [`DATA_WIDTH-1:0]    M_AXIL_RDATA,
+      input               [1:0]           M_AXIL_RRESP,
+      input                               M_AXIL_RVALID,
+      input                               M_AXIL_AWREADY,
+      input                               M_AXIL_WREADY,
+      input             [1:0]             M_AXIL_BRESP,
+      input                               M_AXIL_BVALID,
+      output logic    [`AW_AXIL-1 : 0]    M_AXIL_ARADDR,
+      output logic                        M_AXIL_ARVALID,
+      output logic                        M_AXIL_RREADY,
+      output logic    [`AW_AXIL-1 : 0]    M_AXIL_AWADDR,
+      output logic                        M_AXIL_AWVALID,
+      output logic   [`DATA_WIDTH-1:0]    M_AXIL_WDATA,
+      output logic   [3:0]                M_AXIL_WSTRB,
+      output logic                        M_AXIL_WVALID,
+      output logic                        M_AXIL_BREADY,
+
+      output logic [31:0] cpu_debug
+
     );
     
     logic [`ADDR_WIDTH-1:0] mem_addr_w;
-    logic [`DATA_WIDTH_CACHE-1:0] mem_wdata_w, mem_rdata_w;
-    logic mem_we_w,mem_cs_w,mem_rvalid_w,mem_handshaked_w;
+    logic [`DATA_WIDTH_CACHE-1:0] mem_wdata_w, mem_rdata_w, axi_rdata_w;
+    logic mem_we_w,mem_cs_w,mem_rvalid_w;
     
+    logic axil_re_w, axil_we_w, axi_we_w, axi_cs_w;
+    logic axi_rvalid_w;
+    logic axil_rvalid_w;
 
     axi_interface_master m_itf (
     .clk_i        (clk_i),
@@ -79,12 +105,52 @@ module master_cpu(
     .rready_o     (m_rready),
     .addr_i       (mem_addr_w),
     .wdata_i      (mem_wdata_w),
-    .we_i         (mem_we_w),
-    .cs_i         (mem_cs_w),
-    .rdata_o      (mem_rdata_w),
-    .rvalid_o     (mem_rvalid_w)
+    .we_i         (axi_we_w),
+    .cs_i         (axi_cs_w),
+    .rdata_o      (axi_rdata_w),
+    .rvalid_o     (axi_rvalid_w)
     );
     
+    axi4_lite_master m_axil (
+      .clk_i        (clk_i),
+      .rst_ni       (rst_ni),
+      .re           (axil_re_w),
+      .we           (axil_we_w),
+      .address      (mem_addr_w[`AW_AXIL-1:0]),
+      .W_data       (mem_wdata_w[`DATA_WIDTH-1:0]),
+      .M_ARREADY    (M_AXIL_ARREADY),
+      .M_RDATA      (M_AXIL_RDATA),
+      .M_RRESP      (M_AXIL_RRESP),
+      .M_RVALID     (M_AXIL_RVALID),
+      .M_AWREADY    (M_AXIL_AWREADY),
+      .M_WREADY     (M_AXIL_WREADY),
+      .M_BRESP      (M_AXIL_BRESP),
+      .M_BVALID     (M_AXIL_BVALID),
+      .M_ARADDR     (M_AXIL_ARADDR),
+      .M_ARVALID    (M_AXIL_ARVALID),
+      .M_RREADY     (M_AXIL_RREADY),
+      .M_AWADDR     (M_AXIL_AWADDR),
+      .M_AWVALID    (M_AXIL_AWVALID),
+      .M_WDATA      (M_AXIL_WDATA),
+      .M_WSTRB      (M_AXIL_WSTRB),
+      .M_WVALID     (M_AXIL_WVALID),
+      .M_BREADY     (M_AXIL_BREADY)
+    );
+
+    assign mem_rdata_w = (axi_rvalid_w) ? axi_rdata_w : 
+                         (axil_rvalid_w) ? M_AXIL_RDATA : 0;
+
+    assign mem_rvalid_w = axi_rvalid_w || axil_rvalid_w;
+
+    assign axil_re_w = (mem_addr_w[31-:4] == 4'h4) && mem_cs_w && ~mem_we_w;
+    assign axil_we_w = (mem_addr_w[31-:4] == 4'h4) && mem_cs_w && mem_we_w;
+
+    assign axi_we_w = mem_we_w;
+    assign axi_cs_w = mem_cs_w && (mem_addr_w[31-:4] != 4'h4);
+
+    assign axil_rvalid_w = M_AXIL_RVALID && M_AXIL_RREADY;
+
+
     riscv_cache cpu_inst (
     .clk_i          (clk_i),
     .rst_ni         (rst_ni),
@@ -97,5 +163,5 @@ module master_cpu(
     .e_irq          (irq)
     );
     
-    
+    assign cpu_debug = {mem_rvalid_w, mem_addr_w[6:0], axi_rdata_w[7:0], mem_wdata_w[7:0]};
 endmodule

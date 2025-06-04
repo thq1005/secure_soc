@@ -1,15 +1,7 @@
 `include "define.sv" 
-`define SDIO_AXI
 module top(
     input logic ACLK_1,
-    input logic ARESETn_1,
-
-    inout logic io_cmd,
-    inout logic [3:0] io_dat,
-    output logic sd_clk,
-
-
-    output logic o_debug
+    input logic ARESETn_1
     );
     
     
@@ -119,42 +111,6 @@ module top(
     logic m1_rlast;
     logic m1_rready;
 
-    //signal of m1
-    logic [`ID_BITS - 1:0] m2_awid;
-    logic [`ADDR_WIDTH - 1:0] m2_awaddr;
-    logic [`LEN_BITS - 1:0] m2_awlen;
-    logic [`SIZE_BITS -1 :0] m2_awsize;
-    logic [1:0] m2_awburst;
-    logic m2_awvalid;
-    logic m2_awready;
-    //W channel
-    logic [`DATA_WIDTH - 1:0] m2_wdata;
-    logic [(`DATA_WIDTH/8)-1:0] m2_wstrb;
-    logic m2_wvalid;
-    logic m2_wlast;
-    logic m2_wready;
-    //B channel
-    logic [`ID_BITS - 1:0] m2_bid;
-    logic [1:0] m2_bresp;
-    logic m2_bvalid;
-    logic m2_bready;
-    //AR channel
-    logic [`ID_BITS - 1:0] m2_arid;
-    logic [`ADDR_WIDTH - 1:0] m2_araddr;
-    logic [`LEN_BITS - 1:0] m2_arlen;
-    logic [1:0] m2_arburst;
-    logic [`SIZE_BITS - 1:0] m2_arsize;
-    logic m2_arvalid;
-    logic m2_arready;
-    //R channel
-    logic [`ID_BITS - 1:0] m2_rid;
-    logic [`DATA_WIDTH - 1:0] m2_rdata;
-    logic [1:0] m2_rresp;
-    logic m2_rvalid;
-    logic m2_rlast;
-    logic m2_rready;
-
-
     //signal of s1
     logic [`ID_BITS - 1:0] s1_awid;
     logic [`ADDR_WIDTH - 1:0] s1_awaddr;
@@ -246,33 +202,13 @@ module top(
     logic s3_rlast;
     logic s3_rready;
 
-    logic          AXIL_ARREADY;
-    logic  [31:0]  AXIL_RDATA;
-    logic   [1:0]  AXIL_RRESP;
-    logic          AXIL_RVALID;
-    logic          AXIL_AWREADY;
-    logic          AXIL_WREADY;
-    logic   [1:0]  AXIL_BRESP;
-    logic          AXIL_BVALID;
-    logic   [4:0]  AXIL_ARADDR;
-    logic          AXIL_ARVALID;
-    logic          AXIL_RREADY;
-    logic   [4:0]  AXIL_AWADDR;
-    logic          AXIL_AWVALID;
-    logic  [31:0]  AXIL_WDATA;
-    logic  [3:0]   AXIL_WSTRB;
-    logic          AXIL_WVALID;
-    logic          AXIL_BREADY;
-
 
     logic dma_irq;
     logic aes_irq;
-    logic sd_irq;
 
     logic irq;
-    logic [31:0] cpu_debug;
 
-    (* keep_hierarchy = "yes" *) master_cpu m_inst (
+    master_cpu m_inst (
         .clk_i        (ACLK_1),
         .rst_ni       (ARESETn_1),
         .m_awid       (m0_awid),
@@ -304,30 +240,10 @@ module top(
         .m_rvalid     (m0_rvalid),
         .m_rlast      (m0_rlast),
         .m_rready     (m0_rready),
-        .irq          (irq),
-
-        .M_AXIL_ARREADY (AXIL_ARREADY),
-        .M_AXIL_RDATA   (AXIL_RDATA),
-        .M_AXIL_RRESP   (AXIL_RRESP),
-        .M_AXIL_RVALID  (AXIL_RVALID),
-        .M_AXIL_AWREADY (AXIL_AWREADY),
-        .M_AXIL_WREADY  (AXIL_WREADY),
-        .M_AXIL_BRESP   (AXIL_BRESP),
-        .M_AXIL_BVALID  (AXIL_BVALID),
-        .M_AXIL_ARADDR  (AXIL_ARADDR),
-        .M_AXIL_ARVALID (AXIL_ARVALID),
-        .M_AXIL_RREADY  (AXIL_RREADY),
-        .M_AXIL_AWADDR  (AXIL_AWADDR),
-        .M_AXIL_AWVALID (AXIL_AWVALID),
-        .M_AXIL_WDATA   (AXIL_WDATA),
-        .M_AXIL_WSTRB   (AXIL_WSTRB),
-        .M_AXIL_WVALID  (AXIL_WVALID),
-        .M_AXIL_BREADY  (AXIL_BREADY),
-
-        .cpu_debug   (cpu_debug)
+        .irq          (irq)
         );
         
-    (* keep_hierarchy = "yes" *) dmac dma (
+    dmac dma (
         .clk_i      (ACLK_1),
         .rst_ni     (ARESETn_1),
         .s_awid     (s2_awid),
@@ -378,7 +294,7 @@ module top(
         .dma_irq    (dma_irq)
     );
     
-    (* keep_hierarchy = "yes" *) slave_0_sdram s0_inst (
+    slave_0_sdram s0_inst (
         .clk_i      (ACLK_1),
         .rst_ni     (ARESETn_1),
         .awid       (s0_awid),
@@ -412,7 +328,7 @@ module top(
         .rready     (s0_rready)
     );
     
-    (* keep_hierarchy = "yes" *) slave_1_aes s1_inst (
+    slave_1_aes s1_inst (
         .clk_i      (ACLK_1),
         .rst_ni     (ARESETn_1),
         .awid       (s1_awid),
@@ -447,7 +363,7 @@ module top(
         .aes_irq    (aes_irq)
     );    
 
-    (* keep_hierarchy = "yes" *) slave_3_plic s3_inst (
+    slave_3_plic s3_inst (
         .clk_i      (ACLK_1),
         .rst_ni     (ARESETn_1),
         .awid       (s3_awid),
@@ -482,13 +398,12 @@ module top(
 
         .irq_out            (irq),
         .dma_interrupt      (dma_irq),
-        .aes_interrupt      (aes_irq),
-        .sd_interrupt        (sd_irq)
+        .aes_interrupt      (aes_irq)
     );
 
 
 
-    (* keep_hierarchy = "yes" *) axi_interconnect axi_interconnect (
+    axi_interconnect axi_interconnect (
         .clk_i          (ACLK_1),
         .rst_ni         (ARESETn_1),
         .m0_AWID        (m0_awid),
@@ -549,35 +464,6 @@ module top(
         .m1_RVALID      (m1_rvalid),
         .m1_RLAST       (m1_rlast),
         .m1_RREADY      (m1_rready),
-        .m2_AWID        (m2_awid),
-        .m2_AWADDR      (m2_awaddr),
-        .m2_AWLEN       (m2_awlen),
-        .m2_AWSIZE      (m2_awsize),
-        .m2_AWBURST     (m2_awburst),
-        .m2_AWVALID     (m2_awvalid),
-        .m2_AWREADY     (m2_awready),
-        .m2_WDATA       (m2_wdata),
-        .m2_WSTRB       (m2_wstrb),
-        .m2_WVALID      (m2_wvalid),
-        .m2_WLAST       (m2_wlast),
-        .m2_WREADY      (m2_wready),
-        .m2_BID         (m2_bid),
-        .m2_BRESP       (m2_bresp),
-        .m2_BVALID      (m2_bvalid),
-        .m2_BREADY      (m2_bready),
-        .m2_ARID        (m2_arid),
-        .m2_ARADDR      (m2_araddr),
-        .m2_ARLEN       (m2_arlen),
-        .m2_ARBURST     (m2_arburst),
-        .m2_ARSIZE      (m2_arsize),
-        .m2_ARVALID     (m2_arvalid),
-        .m2_ARREADY     (m2_arready),
-        .m2_RID         (m2_rid),
-        .m2_RDATA       (m2_rdata),
-        .m2_RRESP       (m2_rresp),
-        .m2_RVALID      (m2_rvalid),
-        .m2_RLAST       (m2_rlast),
-        .m2_RREADY      (m2_rready),
         .s0_AWID        (s0_awid),
         .s0_AWADDR      (s0_awaddr),
         .s0_AWLEN       (s0_awlen),
@@ -682,117 +568,5 @@ module top(
         .s3_RLAST       (s3_rlast),
         .s3_RREADY      (s3_rready)
     );
-
-
-
-//sdio
-    (* keep_hierarchy = "yes" *) sdio_top #(
-        .LGFIFO        (12),
-        .NUMIO         (4),
-        .ADDRESS_WIDTH (32),
-        .DW            (32),
-        .SW            (32),
-        .OPT_DMA       (1),
-        .AXI_IW        (2),
-        .AXI_WRITE_ID  (2),
-        .AXI_READ_ID   (2),
-        .OPT_LITTLE_ENDIAN (1),
-        .HWDELAY           (0),
-        .OPT_ISTREAM   (0),
-        .OPT_OSTREAM   (0),
-        .OPT_EMMC      (0),
-        .OPT_SERDES    (0),
-        .OPT_DDR       (0),    
-        .OPT_CRCTOKEN  (1),
-        .OPT_1P8V      (0),
-        .LGTIMEOUT     (23)
-    ) sdio_top_inst (
-        .i_clk              (ACLK_1),
-        .i_reset            (ARESETn_1),
-        .i_hsclk            (1'b0),
-
-        .S_AXIL_AWVALID     (AXIL_AWVALID),
-        .S_AXIL_AWREADY     (AXIL_AWREADY),
-        .S_AXIL_AWADDR      (AXIL_AWADDR),
-        .S_AXIL_AWPROT      (0),
-        .S_AXIL_WVALID      (AXIL_WVALID),
-        .S_AXIL_WREADY      (AXIL_WREADY),
-        .S_AXIL_WDATA       (AXIL_WDATA),
-        .S_AXIL_WSTRB       (AXIL_WSTRB),
-        .S_AXIL_BVALID      (AXIL_BVALID),
-        .S_AXIL_BREADY      (AXIL_BREADY),
-        .S_AXIL_BRESP       (AXIL_BRESP),
-        .S_AXIL_ARVALID     (AXIL_ARVALID),
-        .S_AXIL_ARREADY     (AXIL_ARREADY),
-        .S_AXIL_ARADDR      (AXIL_ARADDR),
-        .S_AXIL_ARPROT      (0),
-        .S_AXIL_RVALID      (AXIL_RVALID),
-        .S_AXIL_RREADY      (AXIL_RREADY),
-        .S_AXIL_RDATA       (AXIL_RDATA),
-        .S_AXIL_RRESP       (AXIL_RRESP),
-
-        .M_AXI_AWVALID      (m2_awvalid),
-        .M_AXI_AWREADY      (m2_awready),
-        .M_AXI_AWID         (m2_awid),
-        .M_AXI_AWADDR       (m2_awaddr),
-        .M_AXI_AWLEN        (m2_awlen),
-        .M_AXI_AWSIZE       (m2_awsize),
-        .M_AXI_AWBURST      (m2_awburst),
-        .M_AXI_AWLOCK       (),
-        .M_AXI_AWCACHE      (),
-        .M_AXI_AWPROT       (),
-        .M_AXI_AWQOS        (),   
-        .M_AXI_WVALID       (m2_wvalid),
-        .M_AXI_WREADY       (m2_wready),
-        .M_AXI_WDATA        (m2_wdata),
-        .M_AXI_WSTRB        (m2_wstrb),
-        .M_AXI_WLAST        (m2_wlast),
-        .M_AXI_BVALID       (m2_bvalid),
-        .M_AXI_BREADY       (m2_bready),
-        .M_AXI_BID          (m2_bid),
-        .M_AXI_BRESP        (m2_bresp),
-        .M_AXI_ARVALID      (m2_arvalid),
-        .M_AXI_ARREADY      (m2_arready),
-        .M_AXI_ARID         (m2_arid),
-        .M_AXI_ARADDR       (m2_araddr),
-        .M_AXI_ARLEN        (m2_arlen),
-        .M_AXI_ARSIZE       (m2_arsize),
-        .M_AXI_ARBURST      (m2_arburst),
-        .M_AXI_ARLOCK       (),
-        .M_AXI_ARCACHE      (),
-        .M_AXI_ARPROT       (),
-        .M_AXI_ARQOS        (),
-        .M_AXI_RVALID       (m2_rvalid),
-        .M_AXI_RREADY       (m2_rready),
-        .M_AXI_RID          (m2_rid),
-        .M_AXI_RDATA        (m2_rdata),
-        .M_AXI_RLAST        (m2_rlast),
-        .M_AXI_RRESP        (m2_rresp),
-
-        .s_valid            (0),
-        .s_ready            (),
-        .s_data             (0),
-        .m_valid            (),
-        .m_ready            (0),
-        .m_data             (),
-        .m_last             (),
-
-        .o_ck               (sd_clk),
-        .i_ds               (0),
-
-        .io_cmd             (io_cmd),
-        .io_dat             (io_dat),
-
-        .i_card_detect      (),
-        .o_hwreset_n        (),
-        .o_1p8v             (),
-        .i_1p8v             (),
-        .o_int              (sd_irq),
-        .o_debug            ()
-    );
-
-
-
-    assign o_debug = cpu_debug;
 
 endmodule
