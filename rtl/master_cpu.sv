@@ -59,7 +59,7 @@ module master_cpu(
       output logic                        M_AXIL_WVALID,
       output logic                        M_AXIL_BREADY,
 
-      output logic [31:0] cpu_debug
+      output logic [1:0] led_o
 
     );
     
@@ -160,8 +160,8 @@ module master_cpu(
     .cs_o           (mem_cs_w),
     .rdata_i        (mem_rdata_w),
     .rvalid_i       (mem_rvalid_w),
-    .e_irq          (irq)
+    .e_irq          (irq),
+    .led_o          (led_o)
     );
     
-    assign cpu_debug = {mem_rvalid_w, mem_addr_w[6:0], axi_rdata_w[7:0], mem_wdata_w[7:0]};
 endmodule

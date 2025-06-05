@@ -9,7 +9,9 @@ module riscv_cache(
     output logic cs_o,
     input logic [`DATA_WIDTH_CACHE-1:0] rdata_i,
     input logic rvalid_i,
-	input logic e_irq
+	input logic e_irq,
+	//for debug
+	output logic [1:0] led_o
 	);
 	
 	logic BrEq_w, BrLt_w;
@@ -170,7 +172,8 @@ module riscv_cache(
 		.pc_intr_o (csr_pc_w),
 		.intr_flag (intr_flag),
 		.is_mret_o   (is_mret_ex_w),
-		.pc_mret_o   (pc_mret_ex_w)
+		.pc_mret_o   (pc_mret_ex_w),
+		.led_o(led_o)
 		);
 		
 	EX EX(

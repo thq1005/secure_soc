@@ -5,9 +5,13 @@ module regfile( // Register file
 	input RegWEn_i,
 	input logic clk_i,
 	input logic rst_ni,
-	output logic [31:0] data1_o, data2_o
+	output logic [31:0] data1_o, data2_o,
+  output logic [1:0] o_led
+
 	);
 	
+
+
 	logic [31:0] reg_r0_q;
     logic [31:0] reg_r1_q;
     logic [31:0] reg_r2_q;
@@ -192,5 +196,5 @@ module regfile( // Register file
     assign data1_o = (rst_ni == 1'b0) ? 32'b0 : reg1_r;
     assign data2_o = (rst_ni == 1'b0) ? 32'b0 : reg2_r;
 	 
-	
+	assign o_led = {reg_r17_q[0], reg_r17_q[1]};
 endmodule

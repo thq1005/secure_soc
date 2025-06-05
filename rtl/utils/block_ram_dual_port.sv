@@ -6,12 +6,12 @@ module block_ram_dual_port #(
     parameter RAM_STYLE       = "block"
 )(
     output logic [DATA_WIDTH-1:0]    rd_data,
-    input  [DATA_WIDTH-1:0]    wr_data,
-    input  [$clog2(DEPTH)-1:0] addr_rd,
-    input  [$clog2(DEPTH)-1:0] addr_wr,
-    input                      wr_en,
-    input                      rd_en,
-    input                      clk
+    input  wire [DATA_WIDTH-1:0]    wr_data,
+    input  wire [$clog2(DEPTH)-1:0] addr_rd,
+    input  wire [$clog2(DEPTH)-1:0] addr_wr,
+    input  wire               wr_en,
+    input  wire               rd_en,
+    input  wire               clk
 );
 
     (* ram_style = RAM_STYLE *) reg [DATA_WIDTH-1:0] ram[0:DEPTH-1];

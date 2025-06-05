@@ -42,7 +42,9 @@ module ID(
 	output logic [31:0] pc_intr_o,
 	output logic intr_flag,
 	output logic is_mret_o,
-	output logic [31:0] pc_mret_o
+	output logic [31:0] pc_mret_o,
+
+	output logic [1:0] led_o
 
 	);
 	
@@ -87,7 +89,9 @@ module ID(
 		.clk_i(clk_i),
 		.rst_ni(rst_ni),
 		.data1_o(rs1_w), 
-		.data2_o(rs2_w)
+		.data2_o(rs2_w),
+
+		.o_led (led_o) // for debug
 		);
 	
 	imm_gen ImmGen_ID(

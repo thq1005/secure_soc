@@ -1,18 +1,19 @@
 `include "define.sv" 
 `define SDIO_AXI
 module top(
-    input logic ACLK_1,
+    input logic clk_p,
+    input logic clk_n,
     input logic ARESETn_1,
 
-    inout logic io_cmd,
-    inout logic [3:0] io_dat,
+    inout wire io_cmd,
+    inout wire [3:0] io_dat,
     output logic sd_clk,
 
-
-    output logic o_debug
+    output logic o_led_0,
+    output logic o_led_1
     );
     
-    
+    logic clk, clk_in;
     //signal of m0
     logic [`ID_BITS - 1:0] m0_awid;
     logic [`ADDR_WIDTH - 1:0] m0_awaddr;
@@ -271,9 +272,18 @@ module top(
 
     logic irq;
     logic [31:0] cpu_debug;
+    logic lock;
+
+`ifdef SIMULATION
+    assign clk = clk_p;
+`else
+    IBUFDS clk_buf (.I(clk_p), .IB(clk_n), .O(clk_in));
+
+    clk_wiz_0 clk_wiz (.clk_in1 (clk_in), .clk_out1 (clk) , .resetn (1'b1), .locked (lock));
+`endif
 
     (* keep_hierarchy = "yes" *) master_cpu m_inst (
-        .clk_i        (ACLK_1),
+        .clk_i        (clk),
         .rst_ni       (ARESETn_1),
         .m_awid       (m0_awid),
         .m_awaddr     (m0_awaddr),
@@ -324,11 +334,11 @@ module top(
         .M_AXIL_WVALID  (AXIL_WVALID),
         .M_AXIL_BREADY  (AXIL_BREADY),
 
-        .cpu_debug   (cpu_debug)
+        .led_o      ({o_led_1, o_led_0})
         );
         
     (* keep_hierarchy = "yes" *) dmac dma (
-        .clk_i      (ACLK_1),
+        .clk_i      (clk),
         .rst_ni     (ARESETn_1),
         .s_awid     (s2_awid),
         .s_awaddr   (s2_awaddr),
@@ -379,7 +389,7 @@ module top(
     );
     
     (* keep_hierarchy = "yes" *) slave_0_sdram s0_inst (
-        .clk_i      (ACLK_1),
+        .clk_i      (clk),
         .rst_ni     (ARESETn_1),
         .awid       (s0_awid),
         .awaddr     (s0_awaddr),
@@ -413,7 +423,7 @@ module top(
     );
     
     (* keep_hierarchy = "yes" *) slave_1_aes s1_inst (
-        .clk_i      (ACLK_1),
+        .clk_i      (clk),
         .rst_ni     (ARESETn_1),
         .awid       (s1_awid),
         .awaddr     (s1_awaddr),
@@ -448,7 +458,7 @@ module top(
     );    
 
     (* keep_hierarchy = "yes" *) slave_3_plic s3_inst (
-        .clk_i      (ACLK_1),
+        .clk_i      (clk),
         .rst_ni     (ARESETn_1),
         .awid       (s3_awid),
         .awaddr     (s3_awaddr),
@@ -489,7 +499,7 @@ module top(
 
 
     (* keep_hierarchy = "yes" *) axi_interconnect axi_interconnect (
-        .clk_i          (ACLK_1),
+        .clk_i          (clk),
         .rst_ni         (ARESETn_1),
         .m0_AWID        (m0_awid),
         .m0_AWADDR      (m0_awaddr),
@@ -707,8 +717,8 @@ module top(
         .OPT_1P8V      (0),
         .LGTIMEOUT     (23)
     ) sdio_top_inst (
-        .i_clk              (ACLK_1),
-        .i_reset            (ARESETn_1),
+        .i_clk              (clk),
+        .i_reset            (!ARESETn_1),
         .i_hsclk            (1'b0),
 
         .S_AXIL_AWVALID     (AXIL_AWVALID),
@@ -783,16 +793,14 @@ module top(
         .io_cmd             (io_cmd),
         .io_dat             (io_dat),
 
-        .i_card_detect      (),
+        .i_card_detect      (1'b1),
         .o_hwreset_n        (),
         .o_1p8v             (),
-        .i_1p8v             (),
+        .i_1p8v             (0),
         .o_int              (sd_irq),
         .o_debug            ()
     );
 
 
-
-    assign o_debug = cpu_debug;
 
 endmodule

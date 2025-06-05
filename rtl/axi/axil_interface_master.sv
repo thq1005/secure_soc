@@ -98,10 +98,30 @@ module axi4_lite_master
                     next_state = IDLE;
                 end
             end
-			RADDR_CHANNEL  : if (M_ARVALID && M_ARREADY  ) next_state = RDATA__CHANNEL;
-			RDATA__CHANNEL : if (M_RVALID  && M_RREADY   ) next_state = IDLE;
-            WRITE_CHANNEL  : if (write_addr && write_data) next_state = WRESP__CHANNEL;
-            WRESP__CHANNEL : if (M_BVALID  && M_BREADY   ) next_state = IDLE;
+			RADDR_CHANNEL  : begin 
+                if (M_ARVALID && M_ARREADY) 
+                    next_state = RDATA__CHANNEL;
+                else 
+                    next_state = RADDR_CHANNEL;
+            end
+			RDATA__CHANNEL : begin 
+                if (M_RVALID  && M_RREADY) 
+                    next_state = IDLE;
+                else
+                    next_state = RDATA__CHANNEL;
+            end
+            WRITE_CHANNEL  : begin 
+                if (write_addr && write_data) 
+                    next_state = WRESP__CHANNEL;
+                else 
+                    next_state = WRITE_CHANNEL;
+            end
+            WRESP__CHANNEL : begin 
+                if (M_BVALID  && M_BREADY) 
+                    next_state = IDLE;
+                else
+                    next_state = WRESP__CHANNEL;
+            end
 			default : next_state = IDLE;
 		endcase
 	end
