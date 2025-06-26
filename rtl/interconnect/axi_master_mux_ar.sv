@@ -60,7 +60,7 @@ module axi_master_mux_ar (
                 arburst   =  m1_ARBURST;
                 arvalid   =  m1_ARVALID;
             end
-            3'b100: begin
+            3'b001: begin
                 arid      =  m2_ARID;
                 araddr    =  m2_ARADDR;
                 arlen     =  m2_ARLEN;

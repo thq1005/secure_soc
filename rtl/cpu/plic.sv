@@ -1,16 +1,12 @@
-// Mô-đun PLIC đơn giản
 module plic #(
     parameter NUM_IRQ = 3 
 ) (
     input  logic        clk_i,
     input  logic        rst_ni,
-    // Tín hiệu ngắt từ các nguồn
     input  logic        aes_interrupt,
     input  logic        dma_interrupt,
-    input  logic        sd_interrupt,
-    // Giao tiếp với CPU
     output logic        irq_out,
-    // Giao tiếp với bus (địa chỉ, dữ liệu, đi�?u khiển)
+
     input  logic [31:0] addr,
     input  logic        wr_en,
     input  logic        rd_en,
@@ -18,27 +14,23 @@ module plic #(
     output logic [31:0] rd_data
 );
 
-    // Thanh ghi PLIC
-    logic [31:0] priority_r [0:NUM_IRQ];        // Mức ưu tiên cho mỗi IRQ
-    logic [31:0] pending;         // Trạng thái pending
-    logic [31:0] enable;          // Trạng thái enable
-    logic [31:0] threshold;                     // Ngưỡng ưu tiên
-    logic [31:0] claim_complete;                // Claim/Complete
+    logic [31:0] priority_r [0:NUM_IRQ];       
+    logic [31:0] pending;         
+    logic [31:0] enable;          
+    logic [31:0] threshold;                    
+    logic [31:0] claim_complete;               
 
-    // Gán tín hiệu ngắt pending
     always_ff @(posedge clk_i) begin
         if (!rst_ni) begin
-            pending[1] <= 0;  // IRQ 1 (AES)
-            pending[2] <= 0;  // IRQ 2 (DMA)
+            pending[1] <= 0;  
+            pending[2] <= 0;  
             pending[3] <= 0;
         end else begin
-            pending[1] <= aes_interrupt;  // Ngắt từ AES
-            pending[2] <= dma_interrupt;  // Ngắt từ DMA
-            pending[3] <= sd_interrupt;
+            pending[1] <= aes_interrupt; 
+            pending[2] <= dma_interrupt; 
         end
     end
 
-    // Logic ưu tiên và tạo tín hiệu ngắt
     logic [31:0] max_priority;
     logic [3:0]  max_irq;
     always_comb begin
@@ -53,7 +45,6 @@ module plic #(
         irq_out = (max_priority > 0);
     end
 
-    // �?�?c/ghi thanh ghi
     always_ff @(posedge clk_i) begin
         if (!rst_ni) begin
             for (int i = 0; i <= NUM_IRQ; i++) begin
@@ -66,25 +57,25 @@ module plic #(
         end else begin
             if (rd_en) begin
                 case (addr)
-                    `ADDR_PRIORITY1     : rd_data <= priority_r[1];  // Priority 1 (AES)
-                    `ADDR_PRIORITY2     : rd_data <= priority_r[2];  // Priority 2 (DMA)
+                    `ADDR_PRIORITY1     : rd_data <= priority_r[1]; 
+                    `ADDR_PRIORITY2     : rd_data <= priority_r[2]; 
                     `ADDR_PRIORITY3     : rd_data <= priority_r[3];
-                    `ADDR_ENABLE        : rd_data <= enable; // Enable 0
-                    `ADDR_THRESHOLD     : rd_data <= threshold; // Threshold
+                    `ADDR_ENABLE        : rd_data <= enable; 
+                    `ADDR_THRESHOLD     : rd_data <= threshold; 
                     `ADDR_CLAIM_COMPLETE: begin
-                        rd_data <= max_irq;         // Claim
+                        rd_data <= max_irq;         
                     end
                     default: rd_data <= 0;
                 endcase
             end
             if (wr_en) begin
                 case (addr)
-                    `ADDR_PRIORITY1     : priority_r[1] <= wr_data;  // Priority 1 (AES)
-                    `ADDR_PRIORITY2     : priority_r[2] <= wr_data;  // Priority 2 (DMA)
+                    `ADDR_PRIORITY1     : priority_r[1] <= wr_data;  
+                    `ADDR_PRIORITY2     : priority_r[2] <= wr_data;  
                     `ADDR_PRIORITY3     : priority_r[3] <= wr_data;
-                    `ADDR_ENABLE        : enable      <= wr_data; // Enable 0
-                    `ADDR_THRESHOLD     : threshold   <= wr_data; // Threshold
-                    `ADDR_CLAIM_COMPLETE: claim_complete <= wr_data; // Complete (không làm gì thêm ở đây)
+                    `ADDR_ENABLE        : enable      <= wr_data; 
+                    `ADDR_THRESHOLD     : threshold   <= wr_data; 
+                    `ADDR_CLAIM_COMPLETE: claim_complete <= wr_data; 
                     default: ;
                 endcase
             end

@@ -50,6 +50,12 @@ module MEM(
 	logic csr_we_mem_r;
 	logic [31:0] csr_rdata_mem_r;
 	/* valid signal that memory response to cache */
+
+	//debug
+	logic cache_done;
+	logic stall_by_dcache;
+
+
 	cpu_req_type cpu_req_w;
 	cpu_result_type cpu_result_w;
 	mem_req_type mem_req_w;
@@ -64,7 +70,7 @@ module MEM(
 
 	assign wdata_o 		= (mem_req_w.valid)     ? mem_req_w.data: rs2_mem_i;
 
-	assign cs_o    		= mem_req_w.valid | Valid_cpu2cache_mem_i;
+	assign cs_o    		= mem_req_w.valid | (Valid_cpu2cache_mem_i & (alu_mem_i[31-:4] != 4'h0));
 	
 	assign memory_data_w = mem_rdata_i;
 
@@ -75,7 +81,9 @@ module MEM(
     	.cpu_req_i(cpu_req_w),
     	.mem_data_i(mem_data_w),
     	.cpu_res_o(cpu_result_w),
-    	.mem_req_o(mem_req_w)
+    	.mem_req_o(mem_req_w),
+		.stall_o(stall_by_dcache),
+		.stall (stall_by_icache_i)
 //		.no_acc_o(no_acc_o),
 //		.no_hit_o(no_hit_o),
 //		.no_miss_o(no_miss_o)
@@ -125,6 +133,15 @@ module MEM(
 		end
 	end
 
+	always_ff @(posedge clk_i, negedge rst_ni) begin
+		if (~rst_ni) begin
+			cache_done <= 1'b0;
+		end
+		else begin
+			cache_done <= cpu_result_w.ready;
+		end
+	end
+
 	assign alu_wb_o = alu_r;
 	assign pc4_wb_o = pc4_r;
 	assign mem_wb_o = mem_r;
@@ -143,7 +160,7 @@ module MEM(
 	assign mem_data_w.ready = mem_rvalid_i;
 
 	/* control stall for previous stages */
-	assign stall_by_dcache_o = (Valid_cpu2cache_mem_i&(~cpu_result_w.ready)&(alu_mem_i[31-:4] == 4'h0)) | (Valid_cpu2cache_mem_i&~mem_rvalid_i&~we_o&(alu_mem_i[31-:4] != 4'h0)) & ~stall_by_icache_i;
+	assign stall_by_dcache_o = (stall_by_dcache) | (Valid_cpu2cache_mem_i&~mem_rvalid_i&~we_o&(alu_mem_i[31-:4] != 4'h0)) & ~stall_by_icache_i;
 
 	assign csr_waddr_wb_o = csr_waddr_mem_r;
 	assign csr_we_wb_o = csr_we_mem_r;

@@ -44,8 +44,9 @@ module ID(
 	output logic is_mret_o,
 	output logic [31:0] pc_mret_o,
 
-	output logic [1:0] led_o
-
+	input logic rd_reg_en,
+	input logic [4:0] rd_reg_addr,
+	output logic [31:0] rd_reg_data
 	);
 	
 	logic [31:0] rs1_w, rs2_w, imm_w;
@@ -90,8 +91,9 @@ module ID(
 		.rst_ni(rst_ni),
 		.data1_o(rs1_w), 
 		.data2_o(rs2_w),
-
-		.o_led (led_o) // for debug
+		.rd_reg_en(rd_reg_en),
+		.rd_reg_addr(rd_reg_addr),
+		.rd_reg_data(rd_reg_data)
 		);
 	
 	imm_gen ImmGen_ID(

@@ -8,6 +8,7 @@ module cache_fsm(
     input cache_tag_type tag_read_i,
     input cache_data_type data_read_i,
     input logic full_i,
+    input logic stall,
     output cache_tag_type tag_write_o,
     output cache_req_type tag_req_o,
     output cache_data_type data_write_o,
@@ -129,6 +130,7 @@ module cache_fsm(
 
     /* Combinational block */
     always_comb begin
+        if (~stall) begin
         /* default values for all signals */
         /* no state change by default */
         vstate = rstate;
@@ -179,7 +181,6 @@ module cache_fsm(
 //        //hit1_w = 1'b0;
 //        miss1_w = 1'b0;
         accessing_o = 1'b0;
-        wait_data = 1'b0;
         /* ------------------- Cache FSM --------------------- */
         case (rstate)
             IDLE: begin
@@ -191,6 +192,7 @@ module cache_fsm(
                     vstate = COMPARE_TAG;
                 end else if (cpu_req_i.valid) begin
                     vstate = COMPARE_TAG;
+                    accessing_o = 1'b1;
 //                    acc1_w = 1'b1;
                 end
             end
@@ -281,7 +283,6 @@ module cache_fsm(
 
                     /* re-compare tag for write miss (need modify correct word) */
                     //second_compare = 1'b1;
-                    wait_data = 1'b1;
                     vstate = IDLE;
                 end
             end
@@ -308,8 +309,22 @@ module cache_fsm(
             default: 
                 vstate = IDLE;
         endcase
+        end
+        else begin
+            v_cpu_res.ready = '0;
+            v_mem_req.valid = '0;
+            accessing_o = 1'b0;
+        end
     end
 
+    always_ff @(posedge clk_i) begin
+        if (~rst_ni)
+            wait_data <= 0;
+        else if (rstate == ALLOCATE && mem_data_i.ready)
+            wait_data <= 1;
+        else 
+            wait_data <= 0;
+    end
 
     always_ff @(posedge clk_i) begin
         if (~rst_ni)
@@ -317,6 +332,8 @@ module cache_fsm(
         else
             rstate <= vstate;
     end 
+
+
 
     assign tag_write_o = tag_write;
     assign tag_req_o = tag_req;

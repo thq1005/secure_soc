@@ -88,7 +88,10 @@ axi_interface_slave s0_itf (
 .i_rdata    (rdata_w)
 );
 
-block_ram_dual_port sdram_inst(
+block_ram_dual_port #(
+  .DEPTH(2**10),
+  .DATA_WIDTH(32) 
+) sdram_inst(
     .rd_data(rdata_w),
     .wr_data(wdata_w),
     .addr_rd(raddr_w[31:2]),

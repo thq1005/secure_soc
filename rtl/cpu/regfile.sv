@@ -6,8 +6,9 @@ module regfile( // Register file
 	input logic clk_i,
 	input logic rst_ni,
 	output logic [31:0] data1_o, data2_o,
-  output logic [1:0] o_led
-
+  input logic rd_reg_en,
+  input logic [4:0] rd_reg_addr,
+  output logic [31:0] rd_reg_data
 	);
 	
 
@@ -196,5 +197,45 @@ module regfile( // Register file
     assign data1_o = (rst_ni == 1'b0) ? 32'b0 : reg1_r;
     assign data2_o = (rst_ni == 1'b0) ? 32'b0 : reg2_r;
 	 
-	assign o_led = {reg_r17_q[0], reg_r17_q[1]};
+    always_comb begin : Read_register
+      if (rd_reg_en == 1'b0) begin
+        rd_reg_data = 32'h00000000; // If read is not enabled, return zero
+      end
+      else
+      case (rd_reg_addr)
+        5'd0: rd_reg_data = reg_r0_q;
+        5'd1: rd_reg_data = reg_r1_q;
+        5'd2: rd_reg_data = reg_r2_q;
+        5'd3: rd_reg_data = reg_r3_q;
+        5'd4: rd_reg_data = reg_r4_q;
+        5'd5: rd_reg_data = reg_r5_q;
+        5'd6: rd_reg_data = reg_r6_q;
+        5'd7: rd_reg_data = reg_r7_q;
+        5'd8: rd_reg_data = reg_r8_q;
+        5'd9: rd_reg_data = reg_r9_q;
+        5'd10: rd_reg_data = reg_r10_q;
+        5'd11: rd_reg_data = reg_r11_q;
+        5'd12: rd_reg_data = reg_r12_q;
+        5'd13: rd_reg_data = reg_r13_q;
+        5'd14: rd_reg_data = reg_r14_q;
+        5'd15: rd_reg_data = reg_r15_q;
+        5'd16: rd_reg_data = reg_r16_q;
+        5'd17: rd_reg_data = reg_r17_q;
+        5'd18: rd_reg_data = reg_r18_q;
+        5'd19: rd_reg_data = reg_r19_q;
+        5'd20: rd_reg_data = reg_r20_q;
+        5'd21: rd_reg_data = reg_r21_q;
+        5'd22: rd_reg_data = reg_r22_q;
+        5'd23: rd_reg_data = reg_r23_q;
+        5'd24: rd_reg_data = reg_r24_q;
+        5'd25: rd_reg_data = reg_r25_q;
+        5'd26: rd_reg_data = reg_r26_q;
+        5'd27: rd_reg_data = reg_r27_q;
+        5'd28: rd_reg_data = reg_r28_q;
+        5'd29: rd_reg_data = reg_r29_q;
+        5'd30: rd_reg_data = reg_r30_q;
+        5'd31: rd_reg_data = reg_r31_q; 
+      default : rd_reg_data = 32'h00000000;
+      endcase
+    end : Read_register
 endmodule

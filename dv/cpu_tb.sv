@@ -87,9 +87,11 @@ module cpu_tb;
         .m_rvalid        (m_rvalid),
         .m_rlast         (m_rlast),
         .m_rready        (m_rready),
-        // DMA IRQ signaling
-        .dma_irq         (0),
-        .dma_clear_irq   ()
+        .irq             (0),
+        .enable          (1),
+        .rd_reg_en       (0),
+        .rd_reg_addr     (0),
+        .rd_reg_data     ()
     );
     
     // Instantiate the Slave SDRAM module
@@ -147,7 +149,7 @@ module cpu_tb;
 
     // Optional: Stimulus or monitor tasks can be added here.
     initial begin
-        $readmemh("memory.mem", sdram_inst.sdram_inst.ram); // Load test data into SDRAM
+        $readmemh("memory1.mem", sdram_inst.sdram_inst.ram); // Load test data into SDRAM
     end
 
 endmodule

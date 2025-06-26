@@ -10,8 +10,13 @@ module riscv_cache(
     input logic [`DATA_WIDTH_CACHE-1:0] rdata_i,
     input logic rvalid_i,
 	input logic e_irq,
-	//for debug
-	output logic [1:0] led_o
+	//
+	input logic enable,
+	input logic rd_reg_en,
+	input logic [4:0] rd_reg_addr,
+	output logic [31:0] rd_reg_data
+
+	
 	);
 	
 	logic BrEq_w, BrLt_w;
@@ -107,8 +112,8 @@ module riscv_cache(
 		.rst_ni(rst_ni),
 		.hit_i(hit_w),
 		.predicted_pc_i(predicted_pc_w),
-		.enable_pc_i(~(Stall_IF_w | stall_by_dcache_w | stall_by_icache_w)),
-		.enable_i   (~(Stall_ID_w | stall_by_dcache_w | stall_by_icache_w)),
+		.enable_pc_i(~(Stall_IF_w | stall_by_dcache_w | stall_by_icache_w | ~enable)),
+		.enable_i   (~(Stall_ID_w | stall_by_dcache_w | stall_by_icache_w | ~enable)),
 		.reset_i(Flush_ID_w),
 		.mispredicted_pc_i(pc4_ex_w),
 		.wrong_predicted_i(wrong_predicted_w),
@@ -142,7 +147,7 @@ module riscv_cache(
 		.pc4_d_i(pc4_d_w),
 		.RegWEn_i(RegWEn_wb_w),
 		.rsW_i(rsW_wb_w),
-		.enable_i(~(Stall_EX_w | stall_by_dcache_w  | stall_by_icache_w)),
+		.enable_i(~(Stall_EX_w | stall_by_dcache_w  | stall_by_icache_w | ~enable)),
 		.reset_i(Flush_EX_w),
 		.hit_d_i(hit_d_w),
 		.e_intr(e_irq),		
@@ -173,7 +178,9 @@ module riscv_cache(
 		.intr_flag (intr_flag),
 		.is_mret_o   (is_mret_ex_w),
 		.pc_mret_o   (pc_mret_ex_w),
-		.led_o(led_o)
+		.rd_reg_en (rd_reg_en),
+		.rd_reg_addr (rd_reg_addr),
+		.rd_reg_data (rd_reg_data)
 		);
 		
 	EX EX(
@@ -196,7 +203,7 @@ module riscv_cache(
 		.Bsel_haz_i(Bsel_haz_w),
 		.inst_ex_i(inst_ex_w),
 		.data_wb_i(data_wb_w),
-		.enable_i(~(Stall_MEM_w | stall_by_dcache_w  | stall_by_icache_w)),
+		.enable_i(~(Stall_MEM_w | stall_by_dcache_w  | stall_by_icache_w| ~enable)),
 		.reset_i(Flush_MEM_w),
 		.Valid_cpu2cache_ex_i(Valid_cpu2cache_ex_w),
 		.csr_rdata_ex_i(csr_rdata_ex_w),
@@ -233,7 +240,7 @@ module riscv_cache(
 		.RegWEn_mem_i(RegWEn_mem_w),
 		.rsW_mem_i(rsW_mem_w),
 		.inst_mem_i(inst_mem_w),
-		.enable_i(~(Stall_WB_w | stall_by_dcache_w | stall_by_icache_w)),
+		.enable_i(~(Stall_WB_w | stall_by_dcache_w | stall_by_icache_w| ~enable)),
 		.reset_i(Flush_WB_w),
 		.Valid_cpu2cache_mem_i(Valid_cpu2cache_mem_w),
 		.stall_by_icache_i(stall_by_icache_w),
@@ -314,7 +321,7 @@ module riscv_cache(
 		.predicted_pc_o(predicted_pc_w),
 		.wrong_predicted_o(wrong_predicted_w),
 		.alu_pc_o(alu_pc_w),
-		.enable_i (~(Stall_WB_w | stall_by_dcache_w | stall_by_icache_w))
+		.enable_i (~(Stall_WB_w | stall_by_dcache_w | stall_by_icache_w| ~enable))
 		);
 		
 	arbiter arbiter_inst (

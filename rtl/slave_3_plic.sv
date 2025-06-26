@@ -40,7 +40,6 @@ module slave_3_plic(
 
   input logic aes_interrupt,
   input logic dma_interrupt,
-  input logic sd_interrupt,
   output logic irq_out
 
 );
@@ -103,7 +102,6 @@ plic plic_inst (
 .rst_ni,
 .aes_interrupt,
 .dma_interrupt,
-.sd_interrupt,
 .irq_out,
 
 .addr (plic_addr),

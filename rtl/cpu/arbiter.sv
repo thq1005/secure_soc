@@ -60,8 +60,8 @@ module arbiter(
         end
         else if (state == MEM)
         begin
-            i_cs_r = 0;
-            d_cs_r = (d_we_i);
+            i_cs_r = (i_cs_i & ~d_cs_i);
+            d_cs_r = (d_we_i && d_cs_i);
         end
         else
         begin

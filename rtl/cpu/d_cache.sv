@@ -6,6 +6,8 @@ module d_cache(
     input logic rst_ni,
     input cpu_req_type cpu_req_i,
     input mem_data_type mem_data_i,
+    input logic stall,
+    output logic stall_o,
     output cpu_result_type cpu_res_o,
     output mem_req_type mem_req_o
 //    output logic [31:0] no_acc_o,
@@ -39,7 +41,7 @@ module d_cache(
     cache_pLRU LRU(
         .clk_i(clk_i),
         .rst_ni(rst_ni),
-        .valid_i(lru_valid),
+        .valid_i(lru_valid && ~stall),
         .index_i(cpu_req_i.addr[`INDEX+3:4]),
         .address_i(address_way_a2p),
         .address_o(address_way_p2a)
@@ -71,6 +73,7 @@ module d_cache(
         .tag_read_i(tag_read),
         .data_read_i(data_read),
         .full_i(full_w),
+        .stall (stall),
         .tag_write_o(tag_write),
         .tag_req_o(tag_req),
         .data_write_o(data_write),
@@ -81,7 +84,7 @@ module d_cache(
 //        .no_hit_o(no_hit_o),
 //        .no_miss_o(no_miss_o),
         .lru_valid_o(lru_valid),
-        .accessing_o()
+        .accessing_o(stall_o)
     );
 
 endmodule

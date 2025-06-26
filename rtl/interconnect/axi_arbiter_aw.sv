@@ -38,7 +38,7 @@ module axi_arbiter_aw (
                     next_state = AXI_MASTER_1;
                 else if (m0_AWVALID && awready && m1_AWVALID)
                     next_state = AXI_MASTER_0;
-                else if (m2_AWVALID && awready && m0_AWVALID)
+                else if (m2_AWVALID && awready && m1_AWVALID)
                     next_state = AXI_MASTER_2;
                 else if (m0_AWVALID)
                     next_state = AXI_MASTER_0;
